@@ -1,0 +1,204 @@
+---
+title: "The Tailor RNA-Seq Pipeline: a Tool for *De Novo* Disease Biomarker Identification"
+author: "Andrew Judell-Halfpenny"
+date: "BIOL607 Fall 2018: Final Project Slides"
+output: html_document
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      titleSlideClass: ["center", "top", "The Tailor RNA-Seq Pipeline: a Tool for *De Novo* Disease Biomarker Identification"]
+      countIncrementalSlides: true
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+library(knitr);library(ggplot2);library(gplots)
+library(limma);library(multtest);library(edgeR)
+library(cummeRbund);library(outliers);library(nortest)
+library(genefilter);library(qvalue)
+```
+
+name: helix
+class: inverse, bottom
+background-image: ![](/home/drew/Downloads/BIOL607-Introduction-to-Biological-Data-Analysis/Final-Project/img/cores-genomics.png)
+background-size: contain
+layout: true
+
+---
+
+# 
+.center[
+ Background Related to Personalized Medicine and NGS Technology
+]
+High-Throughput Sequencing is one of the most promising tools available to researchers united by the common-goals of personalized medicine. But identifying clinically informative features from the massive sequence libraries (~1-2 Tb) produced during one experiment necessitates the use of a high-performance computing cluster (HPCC) and represents a bottleneck that creates a skills gap in the personalized medicine pipeline. 
+
+.bottom[.center[
+![HPCC](/home/drew/Downloads/BIOL607-Introduction-to-Biological-Data-Analysis/Final-Project/img/hpc-workflow.png)
+]]
+---
+name: helix
+# 
+.center[
+Introduction to the Tailor Pipeline
+]
+
+>- The Tailor RNA-Seq Pipeline was developed to perform the comparative genomic analyses designed by UMass Boston’s Center for Personalized Cancer Therapy (CPCT) and Genomics Core.
+>- Tailor's workflow facilitates biomarker discovery from RNA-Seq libraries produced by Illumina's Sequencing-by-Synthesis (SBS) protocol.
+
+.bottom[.center[
+![SBS](/home/drew/Downloads/BIOL607-Introduction-to-Biological-Data-Analysis/Final-Project/img/illumina_workflow.png)
+]]
+
+---
+name: helix
+
+# 
+.center[
+Tailor Simplifies and Extends the Tophat-Cufflinks Workflow
+]
+
+>- Tailor performs several sequence library preparation steps before performing the Tophat-Cufflinks-Cuffmerge-Cuffquant-Cuffdiff differential expression workflow.
+>- Tailor produces visuallly digestible summations of the salient feautures and differential gene expression accross two or more condtions.
+
+.bottom[.center[
+![Tophat-Cufflinks-Tool-Suite](/home/drew/Downloads/BIOL607-Introduction-to-Biological-Data-Analysis/Final-Project/img/tophat-workflow.png)
+]]
+---
+name: helix
+
+
+Tailor Provides Several Pre-Configured Workflows with Varying Levels of *De Novo* Discovery
+
+
+>- Tailor provides a default analysis that quantifies gene expression against a reference annotation and does not perform any feature discovery.
+>- Tailor's provides a *De Novo* isoform discovery workflow that identifies novel features that overlap the gene models included in a reference annotation and genome sequence.
+
+.bottom[.center[
+![Tailor's Workflows](/home/drew/Downloads/BIOL607-Introduction-to-Biological-Data-Analysis/Final-Project/img/Tailors-workflows.png)
+]]
+---
+name: helix
+
+# 
+.center[
+Tailor Identifies Biomarkers from the Significantly Differential Expression Across Two or More Conditions
+]
+
+- Tailor quantifies expression accross 6 feature levels of gene expression. 
+- Simple expression levels include Genes, Isoforms, Coding Sequences (CDS) and Transcripts (TSS) - Differential transcription (promoter-use) and translation (splicing) are more abstract
+- Differential loadings are quantified for genes with variable numbers of exons and more than one transcription start sites.
+
+.bottom[.center[
+![Differential Expression and Differential Loading](/home/drew/Downloads/BIOL607-Introduction-to-Biological-Data-Analysis/Final-Project/img/transcriptional-vs-translational-load.png)
+]]
+
+---
+name: helix
+
+# 
+.center[
+Comparison of Tailor to Other Commonly Used Software Packages fro Differential Expression Anlysis
+]
+
+To determine the accuracy of Tailor's biomarker predictions, a secondary analysis of data recently processed by Tailor was performed with *EdgeR* and *Limma*, two commonly used Bioconductor packages for differential expression analysis.  Gene expression data from a comparison of samples produced by a control group and samples produced by lower urinary tract syndrome sympotomatic males was extracted from Tailor's SQL database backend using *CummeRbund* a *Bioconductor* package for visualization of statistical analysis of RNA-Seq data.
+
+```{r gene-expr-initialization}
+cuff.hg38 <- readCufflinks(dir='/home/drew/umb_triley/urine1/cuffdiff_results_hg38_default/LUTS-over-CTRL/',genome="hg38",gtfFile='/home/drew/umb_triley/Reference-Genomes-and-Gene-Sets/Reference-Genomes/Human/UCSC_hg38/genes.gtf', rebuild=F)
+cuff<-cuff.hg38
+replicates.info<-cummeRbund::replicates(cuff)
+groups<-replicates.info$sample_name
+samples<-replicates.info$rep_name
+conditions<-as.factor(groups)
+under=groups[1]
+over=groups[((length(groups)/2)+1)]
+```
+
+---
+
+name: helix
+
+# 
+.center[
+Preparing a Design Matrix for Analysis of Gene Expression with Linear Models
+]
+
+```{r design-matrix}
+# design matrix
+design <- model.matrix(~0 + groups, data=replicates.info)
+colnames(design) <- levels(conditions)
+row.names(design) <- samples
+design
+# contrast matrix
+contr.matrix <- makeContrasts(lutsVSctrl = CTRL - LUTS,
+                              levels = colnames(design))
+# gene expr data
+g.cnt.matrix<-repCountMatrix(cummeRbund::genes(cuff))
+# factors for conditions
+under.group<-grep(pattern=under, colnames(g.cnt.matrix))
+over.group<-grep(pattern=over, colnames(g.cnt.matrix))
+## filter the data enough to perform Shapiro-Wilk normality test
+keep.cpm <- rowSums(cpm(g.cnt.matrix) > 1) >= (length(groups)/2)
+table(keep.cpm)
+g.f.cnt.data <- g.cnt.matrix[keep.cpm,]
+```
+
+---
+
+name: helix
+
+# 
+.center[
+Employing the Negative Binomial Model for Gene Expression Values
+]
+
+After filtering low expression genes, *EdgeR* was used to employ a negative binomial model for the gene expression data with empirical bayes estimation of the gene-wise dispersion. Over half of the genes can be characterized as over-dispersed beyond the expectations of a poisson model and an obvious mean-variance realtionship is evident in the plot.
+
+```{r negative-binomial}
+# a minimal log-fold-change can be chosen isntead of using `eBayes`
+dgeObj<- DGEList(counts=g.f.cnt.data, group=factor(groups))
+dge.norm <- calcNormFactors(dgeObj)
+voooom<-voom(dge.norm, plot=TRUE)
+dgeObj.disp <- estimateDisp(dgeObj, design)
+plotBCV(dgeObj.disp,"Squared Coefficient of Variation Across Log Expression Values")
+glmfit <- glmFit(dgeObj.disp, design, dispersion=dgeObj.disp$common.dispersion)
+glmfit
+glm.lrt <- glmLRT(glmfit, contrast=contr.matrix)
+# overdispersion
+dispers<-deviance(glm.lrt)/df.residual(glm.lrt)
+over.disp<-dispers[which(dispers > 1)] 
+length(over.disp)
+not.over.disp<-dispers[which(dispers < 1)] 
+length(not.over.disp)
+
+```
+
+
+---
+
+name: helix
+
+# 
+.center[
+Using a Quasipoisson Generalized Linear Model and a Likelihood Ratio Test to Identify Differential Expression
+]
+
+ A quasipoisson model was used ameliorate the overdispersion and to fit a glm to each gene that models the control groups expression values as the predictor vairable of the lower urinary tract syndrome group as the response variable. A likelihood ratio test was employed to identify the significant differential expression across the conditions and produced a biomarker set of 279 genes.
+
+```{r quasipoisson}
+# Fix overdisperion
+q.fit <- glmFit(dgeObj.disp, design, dispersion=dgeObj.disp$common.dispersion, family="quasipoisson")
+head(coef(q.fit))
+# Conduct likelihood ratio tests for luts vs ctrl and show the top genes:
+lrt.qfit <- glmLRT(q.fit, coef=2, contrast=contr.matrix) 
+t.lrt<-topTags(lrt.qfit, n=Inf)
+table(t.lrt$table$PValue < 0.05)
+sig.qfit.genes<-subset(lrt.qfit$table,(PValue < 0.05))
+de2 <- decideTestsDGE(glm.lrt, adjust.method="BH", p.value = 0.05)
+```
+
+---
+
+
+.center[
+THE END
+]

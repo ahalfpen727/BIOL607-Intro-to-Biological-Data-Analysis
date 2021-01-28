@@ -1,0 +1,367 @@
+---
+title: "Homework-06: Correlation And Regression Homework"
+author: "Andrew Judell-Halfpenny"
+output: html_document
+---
+
+# Github url of Rmd and HTML files
+> https://github.com/ahalfpen727/BIOL607-Intro-to-Biological-Data-Analysis/blob/master/Homework/HW_06_Judell_Halfpenny_Andrew_2018.html
+> https://github.com/ahalfpen727/BIOL607-Intro-to-Biological-Data-Analysis/blob/master/Homework/HW_06_Judell_Halfpenny_Andrew_2018.Rmd
+
+
+```{r library-load, echo=FALSE}
+library(mnormt);library(tidyverse);library(ggplot2)
+library(gplots); library(modelr); library(broom)
+```
+
+---
+
+# 1. Correlation - W&S Chapter 16
+> Question 15 and 19
+---
+
+# 15) Does learning a second language change brain structure? Mechelli et al. (2004) tested 22 native Italian speakers who had learned English as a second language. Proficiencies in reading, writing, and speech were assessed using a number of tests whose results were summarized by a proficiency score. Gray-matter density was measured in the left inferior parietal region of the brain using a neuroimaging technique, as mm3 of gray matter per voxel. (A voxel is a picture element, or “pixel,” in three dimensions.) The data are listed in the accompanying table.
+
+# 15.a) Display the association between the two variables in a scatter plot.
+
+```{r include=T}
+greymat<-read.csv("http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter16/chap16q15LanguageGreyMatter.csv")
+par(mfrow=c(2,1))
+
+scatter.smooth(greymat$proficiency, greymat$greymatter,main="language proficiency and grey matter density", col=c("blue"))
+
+langbrain.lm <- lm(greymatter ~ proficiency, data=greymat)
+#summary(langbrain.lm)
+plot(langbrain.lm, which=2)
+plot(langbrain.lm, which=4)
+hist(residuals(langbrain.lm))
+
+```
+
+
+# 15.b) Calculate the correlation between second language proficiency and gray-matter density.
+
+```{r}
+cor(greymat$proficiency, greymat$greymatter)
+
+```
+
+# 15.c) Test the null hypothesis of zero correlation.
+
+```{r}
+cor.test(greymat$proficiency, greymat$greymatter)
+
+```
+
+# 15.d) What are your assumptions in part (c)?
+> 15.d) This test assumes that:
+> i) The samples are randomly selected from a population
+> ii) Each observation is independent
+> iii) The sample data exhibits a linear (not polynomial, log, etc ) relationship.
+> iii) The X and Y variables each independently exhibit a normal distribution.
+
+# 15.e) Does the scatter plot support these assumptions? Explain.
+> 15.e) The scatterplots support the previously described assumptions.  The Q-Q plot does not exhibit a large deviation from normality.  The scatterplot does not exhibit an obviously nonlinear relationship.  The sample size isn't enormous or incredibly low.
+
+# 15.f) Do the results demonstrate that second language proficiency affects gray-matter density in the brain? Why or why not?
+> 15.f) Answer: No, the results do not sufficiently demonstrate that second language proficiency affects gray-matter density in the brain. The pearson correlation coefficient suggests that only slightly higher than half of the data is explained by the relationship with language and therefor is not a reliable predictor of grey matter density. The cor.test function does not test whether one variable affects and influences the other variable. The cor.test only produces test statistics with p-values based on a hypothesis of 0 correlation between the two variables.  Furthmore, correlation is not a universal metric of causation and may be completely unrelated due to lurking variables.
+
+---
+
+# 19) The following data are from a laboratory experiment by Smallwood et al. (1998) in which liver preparations from five rats were used to measure the relationship between the administered concentration of taurocholate (a salt normally occurring in liver bile) and the unbound fraction of taurocholate in the liver.
+> 19.a) Calculate the correlation coefficient between the taurocholate unbound fraction and the concentration.
+
+```{r}
+liverprep<-read.csv("http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter16/chap16q19LiverPreparation.csv")
+cor(liverprep$concentration, liverprep$unboundFraction)
+```
+
+# 19.b) Plot the relationship between the two variables in a graph.
+```{r}
+ggplot(data=liverprep, aes(x=concentration, y=unboundFraction)) + 
+  geom_point()+
+   ggtitle("rat administered concentration of taurocholate and the unbound fraction of taurocholate in the liver")
+conc.fract.lm<-lm(unboundFraction ~ concentration, data=liverprep)
+par(mfrow = c(1,2))
+plot(conc.fract.lm, which=2)
+plot(conc.fract.lm, which=4)
+par(mfrow = c(1,1))
+
+```
+
+# 19.c) Examine the plot in part (b). The relationship appears to be maximally strong, yet the correlation coefficient you calculated in part (a) is not near the maximum possible value. Why not?
+> 19.c) Answer: The relationship is negative rather than positive, the sample size is extremely low and there seems to be an outlier.
+
+# 19.d) What steps would you take with these data to meet the assumptions of correlation analysis?
+> 19.d) Answer: Given that the sample size is very low I would suggest increasing samples above all over options.  Transforming the data doesnt solve the issue of small sample size but a nonparametric like the spearmans rank correlation could be used without a violation of assumptions.
+
+# 2. Correlation SE
+
+---
+
+## Consider the following dataset:
+
+```{r make_data}
+set.seed(20181011)
+mat <- rmnorm(10, varcov = matrix(c(1,0.3, 0.3, 1), ncol=2)) %>%
+  round(2) %>%
+  as.data.frame %>%
+  rename(cats = "V1", happiness_score = "V2")
+mat
+
+```
+
+## 2a. Are these two variables correlated? What is the output of `cor()` here. What does a test show you?
+```{r}
+cor(mat$cats, mat$happiness_score)
+# lineary model and visualization of qqplot and cook's distance
+cathappy.lm<-lm(happiness_score ~ cats, data=mat)   
+ggplot(data=mat, aes(x=cats, y=happiness_score,))+
+ geom_point()+
+   ggtitle("Cats Influence on the Happiness of People")+
+     theme(plot.title = element_text(lineheight=2, face="bold",hjust=.5))
+par(mfrow = c(1,2))
+plot(cathappy.lm, which=c(2,4))
+par(mfrow = c(1,1))
+# testing via anova
+anova(cathappy.lm)
+
+
+```
+
+
+> 2b. What is the SE of the correlation based on the info from `cor.test()`
+
+
+```{r, eval=FALSE}
+catcor<-cor.test(mat$cats, mat$happiness_score)
+catcor$estimate/catcor$statistic
+sqrt((1-catcor$estimate^2)/(catcor$parameter))
+sqrt((1-catcor$estimate^2)/(nrow(mat)-2))
+
+```
+
+# 2c. Now, what is the SE via simulation? To do this, you'll need to use `cor()` and get the relevant parameter from the output (remember - you get a matrix back, so, what's the right index!), `replicate()`, and `sample()` or `dplyr::sample_n()` with `replace=TRUE` to get, let's say, 1000 correlations. How does this compare to your value above?
+
+```{r}
+simfor.std.err.cor <- replicate(n=1000, expr=cor(sample_n(mat, nrow(mat), replace=TRUE)))
+se.of.cor.sim<-sd(simfor.std.err.cor[1,2, 1:1000])
+se.of.cor.sim
+#comparison<-c(se.of.cor.sim/as.numeric(std.err.cortest))
+
+```
+> 2.c) Answer: The standard error from a sampling distribution of the mean correlation coefficient is its standard deviation which was about 35% less in the bootstrapped simulation than in the cor.test function example.
+
+---
+
+# 3. W&S Chapter 17
+> Questions 19, 30, 31
+
+---
+
+## 19) You might think that increasing the resources available would elevate the number of plant species that an area could support, but the evidence suggests otherwise. The data in the accompanying table are from the Park Grass Experiment at Rothamsted Experimental Station in the U.K., where grassland field plots have been fertilized annually for the past 150 years (collated by Harpole and Tilman 2007). The number of plant species recorded in 10 plots is given in response to the number of different nutrient types added in the fertilizer treatment (nutrient types include nitrogen, phosphorus, potassium, and so on).
+## 19.a) Draw a scatter plot of these data. Which variable should be the explanatory variable (X), and which should be the response variable (Y)?
+
+```{r}
+species.nuts<-read.csv("http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter17/chap17q19GrasslandNutrientsPlantSpecies.csv")
+
+scatter.smooth(species.nuts$species ~ species.nuts$nutrients,main="Plant species numbers based on Nutrient types in fertilizer", col=c("blue"))
+
+```
+
+
+## 19.b) What is the rate of change in the number of plant species supported per nutrient type added? Provide a standard error for your estimate.
+
+```{r}
+species.nutrients.lm <- lm(species ~ nutrients, data=species.nuts)
+rate.of.delta<-species.nutrients.lm$coefficients
+
+secies.nutrients.lm.sum<-summary(species.nutrients.lm)
+secies.nutrients.lm.Rdub<-summary(species.nutrients.lm)$r.squared
+secies.nutrients.lm.Rdub
+std.err.delta<-secies.nutrients.lm.sum$coefficients[2,"Std. Error"]
+
+print(paste("The rate of change is ", rate.of.delta[2], "and its standard error is ", std.err.delta))
+```
+
+
+## 19.c) Add the least-squares regression line to your scatter plot. What fraction of the variation in the number of plant species is “explained” by the number of nutrients added?
+
+```{r}
+int.slope<-species.nutrients.lm$coefficients
+intercept<-as.numeric(int.slope[1])
+rate.of.delta<-as.numeric(int.slope[2])
+plot(y=species.nuts$species, x=species.nuts$nutrients,main="Plant species numbers based on Nutrient types in fertilizer", xlab="nutrient quantity", ylab="species quantity", col="blue")
+abline(intercept,rate.of.delta, col=2,lwd=3)
+
+ggplot(data=species.nuts, aes(y=species, x=nutrients))+
+  geom_point()+
+     ggtitle("Plant species numbers based on Nutrient types in fertilizer")+
+     theme(plot.title = element_text(lineheight=2, face="bold",hjust=.5))+
+                stat_smooth(method="lm", formula=y~x)
+cor(y=species.nuts$species, x=species.nuts$nutrients)
+```
+> 19.c) Answer: Roughly 73 percent of the data are explained by the inverse relationship between number of species of plants exhibited as a result of the number of nutrients in the fertilizer used.
+
+## 19.d) Test the null hypothesis of no treatment effect on the number of plant species.
+
+```{r}
+cor.test(y=species.nuts$species, x=species.nuts$nutrients)
+```
+
+> 19.d) Answer: The null hypothesis in this example was that nutrient quantity of the soil has zero correlation with the species quantity.  The data exhibited an inverse relationship that accounted for roughly 75% of the data and produced a test statistic with a p-value below the standard alpha level.  This allows the rejection of the null hypothesis in favor of exploration of the alternate hypothesis: H~a~ The nutrient quantity of fertilizer correlates with the number of species of plant that are found growing in the fertilized soil.
+
+
+## 30) Calculating the year of birth of cadavers is a tricky enterprise. One method proposed is based on the radioactivity of the enamel of the body’s teeth. The proportion of the radioisotope 14C in the atmosphere increased dramatically during the era of aboveground nuclear bomb testing between 1955 and 1963. Given that the enamel of a tooth is non-regenerating, measuring the 14C content of a tooth tells when the tooth developed, and therefore the year of birth of its owner. Predictions based on this method seem quite accurate (Spalding et al. 2005), as shown in the accompanying graph. The x-axis is A14C, which measures the amount of 14C relative to a standard (as a percentage). There are three sets of lines on the graph. The solid line represents the least-squares regression line, predicting the actual year of birth from the estimate based on amount of 14C. One pair of dashed lines shows the 95% confidence bands and the other shows the 95% prediction interval.
+
+```{r radio-teeth, echo=FALSE, fig.cap="carbon dating teeth with 14C", out.width = '100%'}
+
+knitr::include_graphics("../data/WS2_Ch17_UN25.png")
+
+```
+
+## 30.a) What is the approximate slope of the regression line?
+```{r}
+nuclear.teeth<-read.csv("http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter17/chap17q30NuclearTeeth.csv")
+
+radio.teeth.lm<-lm(deltaC14 ~ dateOfBirth, data=nuclear.teeth)
+
+print(paste0("The slope of the regression line is ", as.numeric(radio.teeth.lm$coefficients[2])))
+
+```
+
+## 30.b) Which pair of lines shows the confidence bands? What do these confidence bands tell us?
+> 30.b) Answer: The confidence bands are the inner-most two dotted-lines with slight curvature that surround the regression line.  Confidence bends exhibit their narrowist point close to the mean value of the data and flare out on either side of the mean towards the extreme values of the data creating a range that brackets the true regression line in 95% of the samples of the population.  These lines are a precision estimate of the MEAN of the response variable for each of the explanatory variables
+
+## 30.c) Which pair of lines shows the prediction interval? What does this prediction interval tell us?
+ > 30.c) The two outermost two dotted-lines are the prediction intervals.  These lines characterizes the upper and lower limits of a single value of the response variable across the range of the explanatory variables.  The lines essentially measure precision of SINGLE response variable for each of the explanatory variables
+
+## 31) A lot of attention has been paid recently to portion size in restaurants, and how it may affect obesity in North Americans. Portions have grown greatly over the last few decades. But is this phenomenon new? Wansink and Wansink (2010) looked at representations of the Last Supper in European paintings painted between about 1000 AD and 1700 AD. They scanned the images and measured the size of the food portions portrayed (relative to the sizes of heads in the painting). (For example, the painting reproduced here was painted by Ugolino di Nerio in 1234 AD.)
+## 31.a) Calculate a regression line that best describes the relationship between year of painting and the portion size. What is the trend? How rapidly has portion size changed in paintings?
+
+```{r}
+year.size.art<-read.csv("http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter17/chap17q31LastSupperPortionSize.csv")
+year.size.lm<-lm(portionSize ~ year, data=year.size.art)
+year.size.lm
+yrsize.slope<-year.size.lm$coefficients
+intercept<-as.numeric(yrsize.slope[1])
+rate.of.delta<-as.numeric(yrsize.slope[2])
+plot(y=year.size.art$portionSize, x=year.size.art$year, main="Proportion change in the size of art per Year", xlab="year", ylab="proportion", col="blue")
+abline(intercept,rate.of.delta, col=2,lwd=3)
+
+```
+
+## 31.b) What is the most-plausible range of values for the slope of this relationship? Calculate a 95% confidence interval.
+
+```{r}
+slope.conf.int<-confint(year.size.lm,level=0.95)
+slope.conf.int
+paste("The 95% confidence interval for the slope of this relationship is from", round(slope.conf.int[2,1],digits=5),"to", round(slope.conf.int[2,2],digits=5))
+```
+
+## 31.c) Test for a change in relative portion size painted in these works of art with the year in which they were painted.12
+
+```{r}
+incremental.delta.per.yr<-c()
+incremental.delta.per.yr[1]<-0
+incremental.delta.per.yr[2:33]<-(year.size.art$portionSize[2:33]/year.size.art$portionSize[1:32])/(year.size.art$year[2:33]-year.size.art$year[1:32])
+incremental.delta.per.yr
+#year.size.art.delta<-cbind(year.size.art,incremental.delta.per.yr)
+anova(year.size.lm)
+```
+> 31.c) Answer: Performing an f-test test on change in the relative proportion size of paintings per year produced a p-value well below the standard alpha level. This suggests that the null hypothesis that the relative change in proportion size per year is equal to zero, should be rejected in favor of consideration of the alternative hypothesis.
+
+## 31.d) Draw a residual plot of these data and examine it carefully. Can you see any cause for concern about using a linear regression? Suggest an approach that could be tried to address the problem.
+
+```{r}
+library(modelr)
+year.size.art %>% 
+  add_residuals(year.size.lm) -> year.size.art
+   
+plot(year.size.art$resid - fitted(year.size.lm), ylab="Residuals",xlab="Fitted Values", main="Residual Plot", col="blue")
+   
+year.size.art$resid %>%
+   exp() -> year.size.art$exp.resid
+
+plot(year.size.art$exp.resid - fitted(year.size.lm), ylab="Residuals",xlab="Fitted Values", main="Residual Plot", col="blue")
+
+ggplot(data=year.size.lm, aes(y=residuals(year.size.lm), x=fitted(year.size.lm))) + 
+ geom_point()+
+ scale_y_continuous(trans="log") +
+  stat_smooth(method=lm, formula=y~x)
+
+```
+> 31.d) Answer: The residual plot exhibits a distinct non-linear relationship that doesn not seem to be randomly dispered for a large ranges of values of the independent variable. Fortunately the quadratic relationship can be normalized out by log transforming the data.  After transforming the data exhibits a more random distribution along the y axus of the residual plot.  This data now meets the necessary criteria to be analyzed with linear models.
+
+---
+
+# 4. Intervals and simulation
+
+---
+
+## Fit the deet and bites model from lab.
+
+```{r}
+deet <- read.csv("../data/17q24DEETMosquiteBites.csv")
+ggplot(deet, aes(dose, bites)) +
+  geom_point() +
+  stat_smooth(method=lm)
+
+```
+
+> Now, look at `vcov()` applied to your fit. For example:
+
+```{r, echo = TRUE}
+deet.lm <- lm(bites ~ dose, data = deet)
+deet.lm
+vcov(deet.lm)
+
+```
+
+## What you have here is the variance-covariance matrix of the parameters of the model. In essence, every time you larger slopes in this case will have smaller intercepts, and vice-verse. This maintains the best fit possible, despite deviations in the slope and intercept.  BUT - what's cool about this is that it also allows us to produce simulations (posterior simulations for anyone interested) of the fit. We can use a package like `mnormt` that let's us draw from a multivariate normal distribution when provided with a vcov matrix.  For example...
+
+
+```{r mnorm, echo=TRUE}
+library(mnormt)
+rmnorm(4, mean = coef(deet.lm), varcov = vcov(deet.lm))
+```
+
+## produces a number of draws of the variance and the covariance!
+
+### 4a. Fit simulations!
+> Using `geom_abline()` make a plot that has the following layers and shows that these simulated lines match up well with the fit CI. 1) the data, 2) the lm fit with a CI, and 3) simulated lines. You might have to much around to make it look as good as possible.
+
+
+```{r, eval=TRUE}
+
+coef.sim.df<-as.data.frame(rmnorm(10000, mean = coef(deet.lm), varcov = vcov(deet.lm))) 
+
+ggplot(deet, aes(dose, bites))+
+  geom_point()+
+  geom_abline(data = coef.sim.df, aes(slope = coef.sim.df$dose, intercept = coef.sim.df[,"(Intercept)"]),alpha=.05 )+
+  stat_smooth(data = deet, method=lm, fill = "blue")
+
+confint(deet.lm)
+
+```
+
+### 4b. Prediction simulations!
+
+>That's all well and good, but what about the prediction intervals? To each line, we can add some error drawn from the residual standard deviation. That residual can either be extracted from `summary()` or you can get the `sd` of `residuals`. Now, visualize the simulated prediction interval around the fit versus the calculated prediction interval around the fit via `predict`. **+1 extra credit for a clever visualization of all elements on one figure - however you would like**
+
+```{r, warning = FALSE, eval=TRUE}
+
+coef.sim.df %>%
+   mutate(std.err = rnorm(10000, sd(deet.lm$residuals))) -> coef.sim.df
+
+pred.df <- predict(deet.lm, interval="prediction")
+prediction.df<-cbind(pred.df, deet)
+
+ggplot(deet, aes(dose, bites)) +
+  geom_point() +
+  geom_abline(data = coef.sim.df, aes(slope = coef.sim.df$dose, intercept = std.err+coef.sim.df[,"(Intercept)"]), alpha = 0.05, color = "Blue") +
+  geom_ribbon(data = prediction.df, aes(ymin = prediction.df$lwr, ymax = prediction.df$upr), fill = "purple", alpha = 0.05) +
+  geom_abline(data = coef.sim.df, aes(slope = coef.sim.df$dose, intercept = coef.sim.df[,"(Intercept)"]), alpha = 0.05) +
+  stat_smooth(data = deet, method=lm, fill = "yellow")
+
+```

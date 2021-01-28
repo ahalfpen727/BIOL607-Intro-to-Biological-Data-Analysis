@@ -1,0 +1,169 @@
+---
+title: "BIOL-607 Biological Data Analysis Homework 1: Sampling and Simulation"
+author: "Andrew Judell-Halfpenny"
+date: "September 21, 2018"
+output: pdf_document
+---
+
+# 1. R Warmup
+## 1a. Create a vector of 100 randomly distributed numbers between 0 and 100 using runif and save the vector into the variable my_vec. If you cannot figure out runif, try ?runif. What information does str and summary tell you about my_vec? How do they differ?
+```{r}
+# library initialization
+library(dplyr)
+library(purrr)
+library(magrittr)
+#random vector
+my_vec<-runif(100, min=0, max=100)
+class(my_vec)
+str(my_vec)
+summary(my_vec)
+```
+## 1a. Answer:
+### The str() function returns the class of the object, its dimensions, and returns the first few entries in the object.
+
+## 1b. Try out a little plot. What does hist(my_vec) show you? What information does the helpfile for hist tell you about what you just did?
+```{r}
+hist(my_vec)
+??hist
+
+```
+## 1b. Answer:
+### The hist() function produces a simple histogram of an object.  The helpfile produces a deluge of information about the type of data to which the function can be applied as well as the arguments that are expected by the functon.
+
+## 1c. Load up the mtcars data set using data(mtcars). Apply the following functions to mtcars: class, str, summary. What do these three functions tell you about mtcars?
+```{r}
+data(mtcars)
+class(mtcars)
+str(mtcars)
+summary(mtcars)
+```
+
+## 1c. Answer:
+### These functions describe the mtcars object as a data frame with 32 rows and 11 named columns of numeric data.  The summary() function produces a five number summary for each column in the data frame that includes the minimum, mean, median, maximum, first quartile, and third quartile values.
+
+## 1d. Look at the help file for the class data.frame. What does it tell you about these objects?
+```{r}
+??dplyr::data.frame
+```
+## 1d. Answer:
+### These files are not as strongly typed as matrices or numerics.  They can accept strings, floats, integers, and even multiple values as entries within a single data frame object.  Data frames can also include multiple classes of data in a single object.
+
+# 2. Sample Properties
+## 2a. Produce descriptive statistics for the following vasopressin expression levels in voles.
+```{r}
+vole_vaso <- c(98,96,94,88,86,82,77,74,70,60,
+           59,52,50,47,40,35,29,13,6,5)
+
+```
+
+
+## 2b. What is the mean, median, sd, and interquartile range of the sample
+```{r}
+mean(vole_vaso)
+median(vole_vaso)
+sd(vole_vaso)
+IQR(vole_vaso)
+
+```
+
+## 2c. What is the standard error of the mean (do this with a formula!)?
+```{r}
+vole_vaso
+std.er <- function(x){
+  output <-sd(x)/sqrt(length(x))
+  return(output)}
+std.er(vole_vaso)
+sd(vole_vaso)
+```
+
+## 2d. What does the standard error of the mean tell you about our estimate of the mean values of the population of vole vassopressin?
+## 2d. Answer:
+### The standard error of the mean is a measurement of the precision of the estimate of the mean of a population for a particular sample size of that population.
+
+# 3. Sample Size for upper quartiles.
+
+## Let’s assume this sample of vole vassopressin expression is representative of the popultion.    
+## We can get the upper quartile value of vole vassopressin with
+```{r}
+quantile(vole_vaso, probs = 0.75)
+
+```
+
+## 3a. Use sample() to get just one resample with a sample size of 10. What is its upper quartile?
+```{r}
+vole_vaso.resamped<-sample(x=vole_vaso,10, replace=T)
+quantile(vole_vaso.resamped, probs=0.75)
+```
+
+## 3b. Build an initial data frame for simulations with the sample sizes 5 through 20. Have 100 simulations per sample size.
+```{r}
+# initialize data frame description
+for (i in 5:20){
+   sampSim <- data.frame(samp_size=c(5:20),sim_num=list(100))}
+str(sampSim)
+# initialize data frame of appropriate size
+for (i in 5:20){
+   sampSim[[i]]<-map(i, ~data.frame(samp_size=rep(i,times=100)))}
+str(sampSim)
+
+x<-list()
+for (i in 5:20){
+   x[[i]]<-map(1:100, ~map(i, ~sample(vole_vaso, i,replace=T)))
+   names(x[[i]])<-replicate(100, expr=paste0("samp_size",sep="",i))}
+str(x)
+
+```
+
+
+### 3c. Use this data frame to get simulated upper quartiles for each sample size.
+```{r}
+for (i in 5:20){
+   print(map(i, ~quantile(sample(vole_vaso, i,replace=T), probs=0.75)))}
+
+```
+
+### 3d. With a plot, make a guesstimate as to the best sample size for estimating the upper quartile of the population.
+```{r}
+for (i in 5:20){
+   print(map(i, ~std.er(sample(vole_vaso, i,replace=T))))}
+
+
+for (i in 5:20){
+   qnts<-map(i, ~quantile(sample(vole_vaso, i,replace=T), probs=0.75))
+   qnts.df<-data.frame(qnts)
+   qnts.df
+   print(qnts.df)
+   std.er(qnts.df)
+   sd(qnts.df)}
+
+   
+str(qnts.df)
+
+
+```
+
+
+# 4. SE and CI
+
+## 4a. With the upper quartile simulations, calculate the SD for each sample size using dplyr
+## 4b. What does this value, the standard error of the upper quartile, mean?
+## 4c. What is the CI of the upper quartile with a sample size of 10. What does this mean?
+
+```{r}
+sample.size<-c()
+vole_vaso.df<-data.frame(vole_vaso)
+map(5:20 , ~sample.size)
+ss<-apply(vole_vaso,FUN=sample)
+samp_sim<-map(5:20. ~sample(1:nrow(vole_vaso.df),size=map(5:20) replace=T))
+head(samp_sim)
+for(i in 5:20){
+   print(i)
+   samp_sim.df<-data.frame<-map(1:100, ~map(5:20, ~sample(vole_vaso, size=i, replace=T)))}
+   print(samp_sim.df)
+for (i in 5:20){
+   print(i)
+   map(1:100, ~map(1:length(c(5:20)),~sample(vole_vaso, size=i, replace=T))) %>%
+   str()}
+```
+
+## 4d. Extra Credit: Instead of having each sim calculate a upper quartile, and then sifting down to the SE of that upper quartile (or the CI), have each simulation calculate a CI. Then, for just a sample size of 10, how many CI’s contain the true value of 83?

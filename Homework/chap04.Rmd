@@ -1,0 +1,358 @@
+---
+title: "Estimating with uncertainty: R code for Chapter 4 examples"
+author: "Michael Whitlock and Dolph Schluter"
+date: "February 1, 2017"
+output: 
+  html_document:
+    toc: yes
+    toc_depth: 3
+---
+
+_Note: This document was converted to R-Markdown from [this page](http://whitlockschluter.zoology.ubc.ca/r-code/rcode04), with modifications, by M. Drew LaMar.  You can download the R-Markdown [here](https://qubeshub.org/collections/post/1054/download/chap04.Rmd)._
+
+Download the R code on this page as a single file [here](http://whitlockschluter.zoology.ubc.ca/wp-content/rcode/chap04.r)
+
+-----
+
+## New methods
+
+Hover over a function argument for a short description of its meaning.  The variable names are plucked from the examples further below.
+
+**Take a random sample from a known population of measurements:**
+
+> genesample100 <- sample(<u><a color=black title="The name of the variable with the data representing the population.">humanGeneLengths$geneLength</a></u>, <u><a title="Sample size (number of individuals) to be taken.">size = 100</a></u>, <u><a title="Prevents the same individual from being sampled more than once.">replace = FALSE</a></u>)
+
+**Standard error of the mean:**
+
+> n <- length(<u><a title="A single numeric variable, a vector.">genesample100</a></u>) <br \>
+sd(<u><a title="The same, single numeric variable (vector).">genesample100</a></u>) / sqrt(<u><a title="The sample size, calculated in the previous step.">n</a></u>)
+
+**Create a loop to repeatedly sample from a known population** and calculate the mean each time:
+
+> for (<u><a title="1000 is the total number of repetitions of the loop. i is a counter, which will count from 1 to 1000 by 1 during the execution of the loop. When the counter reaches 1000, the commands are executed one last time and then the loop halts.">i in 1:1000</a></u>) <br \>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<u><a title="The name of a vector where each new random sample will be stored. This vector is not saved in this loop, but is reused on each iteration">temporarySample</a></u> = sample(humanGeneLengths$geneLength, size = 100, replace = FALSE)<br \>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<u><a title="This step calculates the mean of each random sample. Ordinarily, you would want to save these means in a results vector, as we show in the main page below.">mean(temporarySample)</a></u> <br \>
+}
+
+**Other new methods:**
+
+Add error bars to a strip chart.
+
+-----
+
+## Example 4.1. [The length of human genes](http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter04/chap04e1HumanGeneLengths.csv)
+
+*Describe the __parameters of a known population__ of human gene lengths. Then, __take a random sample from the known population__ to estimate the population mean.*
+
+Read the human gene length data, which we will use as our **known population of measurements.**
+
+```{r}
+humanGeneLengths <- read.csv("http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter04/chap04e1HumanGeneLengths.csv")
+head(humanGeneLengths)
+```
+
+**Draw a histogram** of the length of genes in the human genome (Figure 4.1-1). We first use `subset` to grab the large majority of genes that are 15,000 nucleotides or less in length and put into a second data frame. 
+
+```{r}
+geneLengthsUpTo15K <- subset(humanGeneLengths, geneLength <= 15000)
+hist(geneLengthsUpTo15K$geneLength, right = FALSE)
+```
+
+A fancier histogram that makes use of additional options can be produced with the commands here.
+
+```{r}
+hist(geneLengthsUpTo15K$geneLength, 
+     breaks = seq(0,15000,500), 
+     xlab = "Gene length (Number of nucleotides)", 
+     ylab = "Frequency", 
+     col = "firebrick", 
+     las = 1, 
+     main = "", 
+     right = FALSE)
+```
+
+Calculate the **population mean and standard deviation** (Table 4.1-1). Just this once we must use the total number of genes `N` instead of `N - 1` in the denominator when calculating the variance and standard deviation, because we treat all the genes of the human genome as a population for this exercise, not as a sample. For this reason we can't use the built-in commands to calculate variance and standard deviation, because they divide by `N - 1`.
+
+```{r}
+meanGeneLength <- mean(humanGeneLengths$geneLength)
+meanGeneLength
+N <- nrow(humanGeneLengths)
+varGeneLength <- sum( (humanGeneLengths$geneLength - meanGeneLength)^2 ) / N
+sdGeneLength <- sqrt(varGeneLength)
+sdGeneLength
+```
+
+Commands to put the mean and standard deviation into a table are shown here.
+
+```{r}
+data.frame(Parameter = c("Mean", "Standard deviation"), 
+           Value = c(meanGeneLength, sdGeneLength))
+```
+
+-----
+
+## Sampling distributions and confidence intervals
+
+**Take a single random sample** of 100 genes from the population of genes. The argument `replace = FALSE` ensures that the same gene is not sampled twice. Save your random sample to a vector. Note: your sample won't be the identical to the one in the book, because each random sample is subject to sampling error.
+
+```{r}
+geneSample100 <- sample(humanGeneLengths$geneLength, 
+                        size = 100, 
+                        replace = FALSE)
+```
+
+Draw a **histogram** of the unique random sample.
+
+```{r}
+hist(geneSample100, right = FALSE)
+```
+
+Commands for a fancier version of the histogram are provided here.
+
+```{r}
+# These commands adjust the axes so that this sample's histogram can be 
+# compared with that of the population histogram.
+hist(geneSample100[geneSample100 <= 15000], 
+     breaks = seq(0,15000,500), 
+     right = FALSE, 
+     col = "firebrick", 
+     las = 1,  
+     xlab = "Gene length (no. nucleotides)", 
+     ylab = "Frequency", 
+     main = "")
+```
+
+Calculate the **sample mean and standard deviation of the unique random sample.** Note: because of sampling error, your values won't be the identical to the ones in Table 4.1-2.
+
+```{r}
+mean(geneSample100)
+sd(geneSample100)
+```
+
+Calculate the **standard error of the mean** gene length for the unique sample of 100 genes. The `length` command indicates the number of elements in a vector variable, which is the sample size if there are no missing (`NA`) elements in the vector. You won't get the same value for the standard error as we obtained (146.3, p 102) because your unique random sample will not be the same as ours.
+
+```{r}
+n <- length(geneSample100)
+sd(geneSample100) / sqrt(n)
+```
+
+**Create a loop to take repeated random samples** from the population and calculate the mean on each sample. This generates the sampling distribution of the mean. Take a large number (10,000) of random samples, each of size 100. On each iteration, the sample mean is calculated and saved in a vector named `results100` (the samples themselves are not saved). The results vector is initialized before the loop. The term `results100[i]` refers to the ith element of `results100`, where `i` is a counter. This many iterations might take a few minutes to run on your computer. 
+
+```{r}
+results100 <- vector() 
+for(i in 1:10000){
+	temporarySample <- sample(humanGeneLengths$geneLength, size = 100, replace = FALSE)
+	results100[i] <- mean(temporarySample)
+}
+```
+
+**Plot the sample means in a histogram.** The histogram shows the sampling distribution of the sample mean. Note: your results won't be completely identical to Figure 4.1-3, because 10,000 random samples is not a large enough number of iterations to obtain the true sampling distribution with extreme accuracy.
+
+```{r}
+hist(results100, 
+     breaks = 50, 
+     right = FALSE)
+```
+
+A histogram showing the sampling distribution as relative frequencies (Figure 4.1-3) can be obtained with the commands here. 
+
+```{r}
+# These commands use "hist" to count the frequencies in each bin (without generating a plot).
+# The frequencies are converted to proportions, which are finally plotted.
+saveHist <- hist(results100, 
+                 breaks = 50, 
+                 right = FALSE, 
+                 plot = FALSE)
+
+saveHist$counts <- saveHist$counts / sum(saveHist$counts) 
+
+plot(saveHist, 
+     col = "firebrick", 
+     las = 1, 
+     main = "", 
+     xlab = "Sample mean length (nucleotides)",
+     ylab = "Relative frequency")
+```
+
+Commands to compare the sampling distribution of the mean for different sample sizes (Figure 4.1-4) are shown here.
+
+```{r}
+results20 <- vector()
+for (i in 1:10000) {
+	tmpSample <- sample(humanGeneLengths$geneLength, 
+	                    size = 20, 
+	                    replace = FALSE)
+	results20[i] <- mean(tmpSample)
+}
+
+results100 <- vector()
+for (i in 1:10000) {
+	tmpSample <- sample(humanGeneLengths$geneLength, 
+	                    size = 100, 
+	                    replace = FALSE)
+	results100[i] <- mean(tmpSample)
+}
+
+results500 <- vector()
+for (i in 1:10000) {
+	tmpSample <- sample(humanGeneLengths$geneLength, 
+	                    size = 500, 
+	                    replace = FALSE)
+	results500[i] <- mean(tmpSample)
+}
+
+par(mfrow = c(3,1))  # put 3 plots on the same page in 3 rows, 1 column
+hist(results20, 
+     breaks = 50, 
+     right = FALSE, 
+     xlim = range(results20), 
+     col = "firebrick", 
+     main = "n = 20", 
+     xlab = "")
+hist(results100, 
+     breaks = 50, 
+     right = FALSE, 
+     xlim = range(results20), 
+     col = "firebrick", 
+     main = "n = 100", 
+     xlab = "")
+hist(results500, 
+     breaks = 50, 
+     right = FALSE, 
+     xlim = range(results20), 
+     col = "firebrick", 
+     main = "n = 500", 
+     xlab = "")
+par(mfrow = c(1,1))  # change layout back to 1 plot per page
+```
+
+Commands to **display approximate confidence intervals of the population mean** for 20 random samples (Figure 4.3-1) are available here.
+
+```{r}
+geneLengthsUpTo15K <- subset(humanGeneLengths, geneLength <= 15000)
+results100 <- data.frame(mean = rep(0,20), 
+                         lower = rep(0,20), 
+                         upper = rep(0,20))
+
+index <- 1:20
+useapprox <- TRUE
+for (i in index) {
+	tmpSample <- sample(geneLengthsUpTo15K$geneLength, 
+	                    size = 100, 
+	                    replace = FALSE)
+  if (useapprox) {
+    sem <- sd(tmpSample)/sqrt(length(tmpSample))  # Standard error of the mean
+    results100$mean[i] <- mean(tmpSample)
+    results100$lower[i] <- results100$mean[i] - 2*sem
+    results100$upper[i] <- results100$mean[i] + 2*sem
+  } else {
+    t <- t.test(tmpSample)
+    results100$mean[i] <- t$estimate
+    results100$lower[i] <- t$conf.int[1]
+    results100$upper[i] <- t$conf.int[2]    
+  }
+}
+
+plot(index ~ mean, # Plots sample means as red points
+     data = results100, 
+     pch = 16, 
+     col = "red", 
+     yaxt = "n", 
+     xlim = c(min(results100$lower), max(results100$upper)), 
+     bty = "l", 
+     xlab = "Gene length (number of nucleotides)", 
+     ylab = "")
+
+lines(c(2622.0, 2622.0), # Dashed vertical line representing population mean
+      c(0,20), 
+      lty = 2)
+
+segments(results100$lower, # Creates main segment of barbell for confidence interval
+         index, 
+         results100$upper, 
+         index)
+segments(results100$lower, # Creates left-end of barbell
+         index - 0.25, 
+         results100$lower, 
+         index + 0.25)
+segments(results100$upper, # Creates right-end of barbell
+         index - 0.25, 
+         results100$upper, 
+         index + 0.25)
+```
+
+-----
+
+## Figure 4.4-1. [Locust serotonin](http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter04/chap02f1_2locustSerotonin.csv)
+
+*__Draw a strip chart with standard error bars__ for the locust serotonin data. The data are from Chapter 2 (Figure 2.1-2).*
+
+Read and inspect the data.
+
+```{r}
+locustData <- read.csv("http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter02/chap02f1_2locustSerotonin.csv")
+head(locustData)
+```
+
+First, **calculate the statistics by group needed for the error bars:** the mean and standard error. Here, `tapply` is used to obtain each quantity by treatment group. 
+
+```{r}
+meanSerotonin <- tapply(locustData$serotoninLevel, 
+                        locustData$treatmentTime, 
+                        mean)
+sdSerotonin <- tapply(locustData$serotoninLevel, 
+                      locustData$treatmentTime, 
+                      sd)
+nSerotonin <- tapply(locustData$serotoninLevel, 
+                     locustData$treatmentTime, 
+                     length)
+seSerotonin <- sdSerotonin / sqrt(nSerotonin)
+```
+
+**Draw the strip chart and then add the error bars.** Offset their position (a constant `offsetAmount` is used below) so that they are drawn to the right of the data points. Somewhat confusingly, the treatments are "0", "1", and "2", but the positions of points for the three treatments along the x-axis are 1, 2, and 3. This is because the treatment variable is a factor, whose first level is always at position 1, the second is at 2, and so on.
+
+```{r}
+offsetAmount <- 0.2
+stripchart(serotoninLevel ~ treatmentTime, 
+           data = locustData, 
+           method = "jitter", 
+           vertical = TRUE)
+segments(c(c(1,2,3) + offsetAmount), 
+         meanSerotonin - seSerotonin, 
+         c(c(1,2,3) + offsetAmount), 
+         meanSerotonin + seSerotonin)
+points(meanSerotonin ~ c(c(1,2,3) + offsetAmount), 
+       pch = 16, 
+       cex = 1.2)
+```
+
+Commands for a fancier stripchart with additional options are provided here.
+
+```{r}
+offsetAmount <- 0.2
+par(bty = "l") 
+stripchart(serotoninLevel ~ treatmentTime, 
+           data = locustData, 
+           vertical = TRUE, 
+           method = "jitter", 
+           jitter = 0.1, 
+           pch = 16, 
+           xlab = "Treatment time (hours)", 
+           ylab = "Serotonin (pmoles)", 
+           col = "firebrick", 
+           cex = 1.5, 
+           las = 1, 
+           ylim = c(0, max(locustData$serotoninLevel)))
+
+points(meanSerotonin ~ c(c(1,2,3) + offsetAmount), 
+       pch = 16, 
+       cex = 1.2)
+
+arrows(c(c(1,2,3) + offsetAmount), # Another way to create barbell ends
+       meanSerotonin - seSerotonin, 
+       c(c(1,2,3) + offsetAmount), 
+       meanSerotonin + seSerotonin, 
+       angle = 90, 
+       code = 3,
+       length = 0.1)
+```

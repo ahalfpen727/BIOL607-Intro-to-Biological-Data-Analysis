@@ -1,0 +1,103 @@
+\documentclass{article}
+\usepackage[T1]{fontenc}
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+\title{Laboratory 2 - Simulated Sampling}
+\author{Andrew Judell-Halfpenny}
+\maketitle
+
+%\documentclass[a4paper,titlepage]{tufte-handout}
+%\title{ggplot2 Gallery}
+%\begin{document}
+%\maketitle
+%\tableofcontents
+
+<<setup, include=FALSE>>=
+library(knitr);library(magrittr); library(markdown); library(dplyr)
+library(ggplot2)
+# cache chunks and do not tidy ggplot2 examples code
+#opts_chunk$set(tidy = FALSE, cache = TRUE)
+@
+
+
+<<model, fig.width=4, fig.height=3, fig.align='center'>>=
+# r samp
+#There are a number of ways to get random numbers in R from a variety of distributions.
+#For our simulations, let's start with a sample of 40 individuals that's from a population with a mean value of 10, a SD of 3.
+
+set.seed(323)
+samp <- rnorm(n = 40, mean = 10, sd = 3)
+
+
+
+par(mar = c(4, 4, 1, 1), mgp = c(2, 1, 0), cex = 0.8)
+plot(cars, pch = 20, col = 'darkgray')
+fit <- lm(dist ~ speed, data = cars)
+abline(fit, lwd = 2)
+
+@
+
+
+<<<include=T>>=
+#This is *incredibly* useful in a wide variety of context. For example, let's say we wanted five rows of mtcars.
+
+# r sample_mtcars
+mtcars[sample(1:nrow(mtcars), 5), ]
+
+# Of course, for that kind of thing, `dplyr` has you covered with
+
+#r sample_dplyr
+# sample_n(mtcars, 5)
+
+#  use a porportions - so, here's a random sampling of 10 percent of mtcars
+
+#r sample_dplyr_frac
+#sample_frac(mtcars, 0.1)
+sample(1:3, 15, replace = TRUE)
+
+### 3.2 Using `group_by()` for simulation
+
+sampSim <- data.frame(samp_size = rep(3:50, times = 10))
+
+# Take the data frame
+samp_size <- sampSim %>%
+   rowwise() %>%
+     mutate(samp.mean = mean(rnorm(samp_size,
+                                   mean = 10, sd = 3)),
+     samp_mean_from_sample = mean(sample(samp, size = samp_size, replace=T)))
+
+plot(samp.mean ~ samp_size, data=samp_size)
+# Also draw a mean from the samp vector with n = samp_size, with replacement
+
+# For each individual simulation
+
+
+#     group_by(sim_number) %>%
+# Use samp_size to get the mean of a random normal population with mean 10 and sd 3
+#  mutate(mean_pop = mean(rnorm(samp_size, mean = 10, sd = 3)),
+
+# Also draw a mean from the samp vector with n = samp_size, with replacement
+#         mean_sample = mean(sample(samp, size = samp_size, replace=T))) %>%
+# Cleanup
+#    ungroup()
+
+#### 3.3.1 Faded Examples.
+# Lets try this out, and have you fill in whats missing in these faded examples.
+# r faded_sim, eval=FALSE
+#Some preperatory material
+set.seed(42)
+samp <- rnorm(100, 10, 3)
+sampSim <- data.frame(samp_size = rep(3:50, times = 10))
+sampSim$sim_number = 1:nrow(sampSim)
+
+#Mean simulations
+sampSim %>%
+  group_by(sim_number) %>%
+  mutate(mean_pop = mean(rnorm(samp_size, mean = 10, sd = 3)),
+         mean_sample = mean(sample(samp, size = samp_size, replace=T))) %>%
+  ungroup()
+
+@
+
+
+\end{document}

@@ -1,0 +1,212 @@
+---
+title: "Comparing two means: R code for Chapter 12 examples"
+author: "Michael Whitlock and Dolph Schluter"
+output: 
+  html_document:
+    toc: yes
+    toc_depth: 3
+---
+
+_Note: This document was converted to R-Markdown from [this page](http://whitlockschluter.zoology.ubc.ca/r-code/rcode12) by M. Drew LaMar.  You can download the R-Markdown [here](https://qubeshub.org/collections/post/1280/download/chap12.Rmd)._
+
+Download the R code on this page as a single file [here](http://whitlockschluter.zoology.ubc.ca/wp-content/rcode/chap12.r)
+
+## New methods
+
+Hover over a function argument for a short description of its meaning.  The variable names are plucked from the examples further below.
+
+**Paired $t$-test** and **95% confidence interval** of a mean difference:
+
+> t.test(<u><a title="A numerical variable (vector) measured on all individuals.">blackbird\$logAfterImplant</a></u>, <u><a title="A numerical variable (vector) measured on the same individuals as the previous variable.">blackbird\$logBeforeImplant</a></u>, <u><a title="This stipulates that the two variables you provided are paired (if left out, R carries out a two-sample test instead because paired = FALSE is the default).">paired = TRUE</a></u>)
+
+**Two-sample $t$-test** and **95% confidence interval** for a difference between two means:
+
+> t.test(<u><a title="The '~' indicates that this argument is a formula. squamosalHornLength is the response variable. Survival is the explanatory variable, indicating to which group each response measurement belongs (alive or dead in this example).">squamosalHornLength ~ Survival</a></u>, <u><a title="The name of the data frame containing the two variables.">data = lizard</a></u>, <u><a title="Specifies that the variance is assumed to be equal in the two groups in an ordinary two-sample t-test. Set var.equal = FALSE (the default) if you want a Welch's t-test instead.">var.equal = TRUE</a></u>)
+
+**Other new methods:**
+
+ * The $F$ test to compare two variances.
+ * The 95% confidence interval for the variance ratio.
+ * Levene’s test to compare variances between two (or more) groups.
+
+## Example 12.2. [Red-winged blackbirds](http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter12/chap12e2BlackbirdTestosterone.csv)
+
+*__Confidence interval for mean difference__ and the __paired t-test__, comparing immunocompetence of red-winged blackbirds before and after testosterone implants.*
+
+**Read the data into a data frame.** The data are in "wide" format (one row per individual).
+
+```{r}
+blackbird <- read.csv(url("http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter12/chap12e2BlackbirdTestosterone.csv"))
+blackbird
+```
+
+**Calculate and plot differences (Figure 12.2-2).** We add a variable called `d` to the data frame with the After minus Before difference.
+
+```{r, fig.width=4, fig.height=4}
+blackbird$d <- blackbird$logAfterImplant - blackbird$logBeforeImplant
+head(blackbird)
+hist(blackbird$d, right = FALSE, col = "firebrick")
+```
+
+To see how to produce the **strip chart with lines (Figure 12.2-1)**:
+
+```{r, fig.width=4, fig.height=4}
+# It helps to obtain a version of the data in "long" format.
+blackbird2 = reshape(blackbird, varying = 4:5, direction = "long", idvar = "blackbird", v.names = "logAntibody", times = factor(c("before","after"), levels = c("before","after")))
+head(blackbird2)
+
+par(bty="l")
+stripchart(logAntibody ~ time, data = blackbird2, vertical = TRUE, xlab = "Implant treatment", ylab="Antibody production rate (ln[mOD/min])", xlim = c(0.6,2.4), las = 1, pch = 16, col = "firebrick")
+segments(1, blackbird$logBeforeImplant, 2, blackbird$logAfterImplant)
+```
+
+**95% confidence interval for the mean difference.** 95% confidence intervals are part of the output of the `t.test` function, viewed in isolation by adding `$conf.int` to the command.
+
+```{r}
+t.test(blackbird$d)$conf.int
+```
+
+or using the `paired = TRUE` argument of `t.test` and specifying the paired variables.
+
+```{r}
+t.test(blackbird$logAfterImplant, blackbird$logBeforeImplant, paired = TRUE)$conf.int
+```
+
+**Paired t-test.** A paired $t$-test can be done either on differences you have already calculated (`d` here) or by using the `paired=TRUE` argument with the measurements from the two groups.
+
+```{r}
+t.test(blackbird$d)
+```
+
+or
+
+```{r}
+t.test(blackbird$logAfterImplant, blackbird$logBeforeImplant, paired = TRUE)
+```
+
+## Example 12.3. [Horned lizards](http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter12/chap12e3HornedLizards.csv)
+
+*__Confidence interval for the difference between two means__, and the __two-sample $t$-test__, comparing horn length of live and dead (spiked) horned lizards.*
+
+```{r}
+lizard <- read.csv(url("http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter12/chap12e3HornedLizards.csv"))
+lizard
+```
+
+Note that there is one missing value for the variable `squamosalHornLength`. Everything is easier if we eliminate the row with missing data.
+
+```{r}
+lizard2 <- na.omit(lizard)
+lizard2
+```
+
+**Multiple histograms** using the lattice package.
+
+```{r, fig.width=4, fig.height=4}
+library(lattice)
+histogram( ~ squamosalHornLength | Survival, data = lizard2, layout = c(1,2), col = "firebrick", breaks = seq(12, 32, by = 2), xlab = "Horn length (mm)")
+```
+
+Here is code to make multiple histograms using `hist` in base R instead.
+
+```{r, fig.width=8, fig.height=6}
+oldpar = par(no.readonly = TRUE) # make backup of default graph settings
+par(mfrow = c(2,1), oma = c(4, 6, 2, 6), mar = c(3, 4, 3, 2))
+hist(lizard2$squamosalHornLength[lizard2$Survival == "living"], breaks = seq(12,32,by=2), col = "firebrick", las = 1, main = "living", ylab = "Frequency")
+hist(lizard2$squamosalHornLength[lizard2$Survival == "killed"], breaks = seq(12,32,by=2), col = "firebrick", las = 1, main = "killed", ylab = "Frequency")
+mtext("Horn length (mm)", side = 1, outer = TRUE, padj = 0)
+par(oldpar) # revert to default graph settings
+```
+
+**95% confidence interval for the difference between means**
+
+The output of `t.test` includes the 95% confidence interval for the difference between means. Add `$confint` after calling the function to get R to report only the confidence interval. The formula in the following command tells R to compare `squamosalHornLength` between the two groups indicated by `Survival`.
+
+```{r}
+t.test(squamosalHornLength ~ Survival, data = lizard, var.equal = TRUE)$conf.int
+```
+
+**A two-sample $t$-test** of the difference between two means can be carried out with `t.test` by using a formula, asking if `squamosalHornLength` is predicted by `Survival`, and specifying that the variables are in the data frame `lizard`.
+
+```{r}
+t.test(squamosalHornLength ~ Survival, data = lizard, var.equal = TRUE)
+```
+
+## Example 12.4. [Salmon survival with brook trout](http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter12/chap12e4BrookTrout.csv)
+
+*__Welch's two-sample t-test for unequal variances__, comparing chinook salmon survival in the presents and absence of brook trout. Below, we use this same example to demonstrate the __95% confidence interval for the ratio of two variances__, and the __F-test of equal variances__.*
+
+Read the data.
+
+```{r}
+chinook <- read.csv(url("http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter12/chap12e4ChinookWithBrookTrout.csv"))
+```
+
+Set the preferred order of categories in tables and graphs
+
+```{r}
+chinook$troutTreatment <- factor(chinook$troutTreatment, levels = c("present", "absent"))
+```
+
+**Strip chart of the data** (bare bones version of Figure 12.4-1)
+
+```{r, fig.width=4, fig.height=4}
+stripchart(proportionSurvived ~ troutTreatment, data = chinook, method = "jitter", vertical = TRUE)
+```
+
+Adding the means and confidence intervals to the plot is trickier. Code for a fancier plot is as follows.
+
+```{r, fig.width=4, fig.height=4}
+# Calculate means and confidence intervals for the means.
+meanProportion = tapply(chinook$proportionSurvived, chinook$troutTreatment, mean)
+ciPresence = t.test(chinook$proportionSurvived[chinook$troutTreatment == "present"])$conf.int
+ciAbsence = t.test(chinook$proportionSurvived[chinook$troutTreatment == "absent"])$conf.int
+lower = c(ciPresence[1], ciAbsence[1])
+upper = c(ciPresence[2], ciAbsence[2])
+
+# Stripchart with options
+adjustAmount = 0.2
+par(bty = "l") 
+stripchart(proportionSurvived ~ troutTreatment, data = chinook, vertical = TRUE,method = "jitter", jitter = 0.1, pch = 1, col = "firebrick", cex = 1.5, las = 1, ylim = c(0, max(chinook$proportionSurvived)), lwd = 1.5, xlab = "Trout treatment", ylab = "Proportion surviving")
+segments( c(1,2) + adjustAmount, lower, c(1,2) + adjustAmount, upper)
+points(meanProportion ~ c( c(1,2) + adjustAmount ), pch = 16, cex = 1.2)
+```
+
+**Calculating summary statistics by group** (as found in Table 12.4-3)
+
+Use `tapply` to calculate statistics by group. It has three required arguments. The first is the numeric variable of interest (a vector). The second argument is a categorical variable (a vector of the same length) identifying the groups that individuals belong to. The third argument is the name of the R function that you want to apply to the variable by group.
+
+```{r}
+meanProportion <- tapply(chinook$proportionSurvived, chinook$troutTreatment, mean)
+sdProportion <-   tapply(chinook$proportionSurvived, chinook$troutTreatment, sd)
+nProportion <-    tapply(chinook$proportionSurvived, chinook$troutTreatment, length)
+data.frame(mean = meanProportion, std.dev = sdProportion, n = nProportion)
+```
+
+**Welch's two-sample $t$-test** of means for unequal variances can also be done with `t.test`, when the `var.equal` argument is set to `FALSE` (as it is by default):
+
+```{r}
+t.test(proportionSurvived ~ troutTreatment, data = chinook, var.equal = FALSE)
+```
+
+*Here, we demonstrate the __95% confidence interval for the ratio of two variances__, and __F-test of equal variances__, using the chinook salmon experiment.*
+
+**95% confidence interval for variance ratio.** (Warning: remember that the method is not robust to departures from assumption of normality.)
+
+```{r}
+var.test(proportionSurvived ~ troutTreatment, data = chinook)$conf.int
+```
+
+**$F$-test** of equal variances (Warning: Remember that the $F$-test is not robust to departures from assumption of normality.)
+
+```{r}
+var.test(proportionSurvived ~ troutTreatment, data = chinook)
+```
+
+**Levene's test** of equal variances. This function is in the `car` package, which must first be installed and loaded with the library function before use.
+
+```{r, warning=FALSE, message=FALSE}
+if (!require("car")) {install.packages("car", dependencies = TRUE, repos="http://cran.rstudio.com/")}
+library(car)
+leveneTest(chinook$proportionSurvived, group = chinook$troutTreatment, center = mean)
+```

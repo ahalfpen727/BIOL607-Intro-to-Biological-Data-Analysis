@@ -1,0 +1,101 @@
+---
+title: "Homework_1"
+author: "Isaac Rosenthal"
+date: "September 8, 2016"
+output: html_document
+---
+<br><br>
+
+#### 0.) 
+This was written in R markdown, I like free points!
+<br><br>
+
+#### 1.) 
+*Create a vector of 100 randomly distributed numbers between 0 and 100 using* `runif` *and save the vector into the variable* `my_vec`. *If you cannot figure out* `runif`*, try* `?runif`. *What information does* `str` *and* `summary` *tell you about* `my_vec`*? How do they differ?*
+<br><br>
+
+First, make the vector.
+```{r myvec}
+myvec <- runif(100, min = 0, max = 100) #this creates a vector of 100 values with a minimum value of 0 and a maximum value of 100 
+myvec
+```
+Then, run `str` and `summary` on it to find out more.
+```{r str}
+str(myvec) #to see the structure of myvec
+```
+
+```{r summary}
+summary(myvec) #to see some summary statistics of myvec
+```
+
+`str` tells me that it is numeric and contains 100 values.  
+
+`summary` tells me the minimum, 1st quartile, median, mean, 3rd quartile, and maximum values of `myvec`.  
+
+They are different because they tell me different things. str tells me about the structure of the vector itself, whereas summary tells me more about the values within the vector.
+<br><br>
+
+#### 2.)
+*Try out a little plot. What does* `hist(my_vec)` *show you? What information does the helpfile for* `hist` *tell you about what you just did?*
+
+<br><br>
+First, run `hist`.
+
+```{r hist, fig.align="center"}
+hist(myvec) #creates a histogram from the data in myvec
+```
+
+`hist` shows me a histogram from the values within `myvec`  
+The helpfile for `hist` tells me a lot. It explains that it creates a histogram of the given data. It also provides a lot of info about the many arguments that can be used to modify the plot, primarily some additional labelng and aesthetic choices.  It also gives some examples and references to if you want to know more.
+
+```{r, out.width = "400px", fig.align="center", echo = FALSE}
+knitr::include_graphics("http://i.imgur.com/K3N5JyI.png")
+```
+<br><br>
+
+#### 3.)
+*Load up the mtcars data set using* `data(mtcars)`*. Apply the following functions to* `mtcars`*: *`class` *,* `str` *,* `summary`*. What do these three functions tell you about* `mtcars`*?*
+<br><br>
+
+First, I will load the data.
+
+```{r cars}
+data(mtcars) # load the data
+```
+
+Now I will look at the class of `mtcars`
+
+```{r cars class}
+class(mtcars)
+```
+
+`class` tells me that `mtcars` has the class of data.frame.
+
+Then I will look at the structure of `mtcars`
+
+```{r cars str}
+str(mtcars)
+```
+
+`str` tells me that `mtcars` is a data frame with 32 observations of 11 variables. All variables in this case are numeric and include things like mpg (miles per gallon), cyl (number of cylinders), disp (displacement), and various other statistics about the cars.
+
+Finally, I will check out some summary statistics of `mtcars`
+
+```{r cars summary}
+summary(mtcars)
+```
+
+`summary` tells me the minimum, 1st quartile, median, mean, 3rd quartile, and maximum values of each column (which correspond to variables) of the data frame.
+<br><br>
+
+#### 4.)
+*Look at the help file for the class* `data.frame`*. What does it tell you about these objects?*
+<br><br>
+
+The help file tells me that a data frame is a "tightly coupled collection of variables", and that it is very similar to both matrices and lists. More specifically, it is a list of variables, each with a unique row name and of the same length.  The help file also mentions that they are the fundamental data structure used by R.
+<br><br>
+
+#### 5.)
+For my final project, I am going to polish up my progress on Floating Forests, wherever that may be. I'm hoping to be able to include some maps, potentially creating a few figures that are at least poster quality. I would love to be able to perform some analyses on kelp coverage changes over time, at least within CA.
+
+My backup idea (if FF is not at a point where I can test hypotheses easily) is to use some of the KEEN data.

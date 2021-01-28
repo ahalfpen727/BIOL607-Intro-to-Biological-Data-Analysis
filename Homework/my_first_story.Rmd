@@ -1,0 +1,15 @@
+---
+title: "My first story"
+author: "Jarrett Byrnes"
+date: "September 10, 2015"
+output: html_document
+---
+
+Once upon a time we were in a class with a fire drill.
+
+It delayed class by a good quarter of an hour.
+
+
+That was not fun.
+
+Was it?

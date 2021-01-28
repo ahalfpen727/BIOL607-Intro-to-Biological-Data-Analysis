@@ -1,0 +1,106 @@
+---
+title: "BIOL-607 Biological Data Analysis Homework 3: Data Visualization"
+author: "Andrew Judell-Halfpenny"
+date: "September 27, 2018"
+runtime: shiny
+output: ioslides_presentation
+---
+
+<font color=“red”> GRADED: 24/42. didn't do the ggplot part of the HW </font>
+
+---
+# Analysis of Biological Data Michael C. Whitlock; Dolph Schluter
+# Chapter 4
+
+###  For the first three problems, consider the data from problem 9 on page 109
+
+```{r}
+# load the libraries and the abd dat
+library(devtools);library("ggvis");library(phangorn)
+library(ggtree);library(treeio);library(gganimate)
+library(readr);library(abd)
+library(dplyr);library(magrittr)
+library(tidygraph)
+
+abd.genes<-read.csv(url("http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter04/chap04e1HumanGeneLengths.csv"))
+
+abd.genes<-as.matrix(abd.genes)
+
+```
+
+## 1) Complete problems 10 and 17-18 on pg. 109-111. Use R where possible.  Using an approximate method, provide a rough 95% confidence interval for the population mean.
+
+```{r}
+
+# standard error function
+std.er <- function(x){
+  output <-sd(x)/sqrt(length(x))
+  return(output)}
+abd.std.er<-std.er(abd.genes)
+
+# This is the standard eror variable
+abd.std.er
+
+l.abs.genes=abd.genes - 2 * abd.std.er
+h.abs.genes=abd.genes + 2 * abd.std.er
+
+# This variable serves as the lower bound of the 95% confidence interval
+l.abs.genes
+# This variable serves as the upper bound of the 95% confidence interval
+h.abs.genes
+
+```
+
+<font color=“red”> you should do a summarize() so it doenst spit out this huge output! </font>
+
+## 1 b) Provide an interpretation of the interval you calculated.
+# Answer:
+## The confidence interval that was just calculated is the range of range of values that we can be 95% certain holds the value of the true mean of the sample populatio.
+
+### The following figure is from the website of a U.S. national environmental laboratory.7 It displays sample mean concentrations, with 95% confidence intervals, of three radioactive
+###  substances. The text accompanying the figure explained that “the first plotted mean is 2.0 ± 1.1, so there is a 95% chance that the actual result is between 0.9 and 3.1, a 2.5% chance # it is less than 0.9, and a 2.5% chance it is greater than 3.1.” Is this a correct interpretation of a confidence interval? Explain.
+# Answer:
+## No this is statement belies a misunderstanding of the nature of a confidence interval.  The 95% confidence interval is not integrated over the area of a probability densityy function therefor it is not possible to calculate the probability that the true population parameter mean for a subset or slice of the original field.
+
+## 18 Amorphophallus johnsonii is a plant growing in West Africa, and it is better known as a “corpse-flower.” Its common name comes from the fact that when it flowers, it gives off a “powerful aroma of rotting fish and faeces” (Beath 1996). The flowers smell this way because their principal pollinators are carrion beetles, who are attracted to such a smell. Beath (1996) observed the number of carrion beetles (Phaeochrous amplus) that arrive per night to flowers of this species. The data are as follows:
+```{r}
+dung_visits<-c(51, 45, 61, 76, 11, 117, 7, 132, 52, 149)
+dung_visits<-as.matrix(dung_visits)
+```
+
+## 18 a)  What is the mean and standard deviation of beetles per flower?
+```{r}
+mean_dung_vists<-mean(dung_visits)
+mean_dung_vists
+
+```
+
+## 18 b) What is the standard error of this estimate of the mean?
+```{r}
+sd(dung_visits)
+str(dung_visits)
+
+visit.st.er<-std.er(dung_visits)
+
+
+```
+
+## 18 c)  Give an approximate 95% confidence interval of the mean. Provide lower and upper limits.
+```{r}
+
+mean_dung_vists + 2 * visit.st.er
+
+mean_dung_vists - 2 * visit.st.er
+
+```
+
+
+## 18 d) If you had been given 25 data points instead of 10, would you expect the mean to be greater, less than, or about the same as the mean of this sample?
+## Answer: I expect that the walue be identified as the mean could potentially change not necessarilly in a particular direction.  I assume with greater sample size the calculation of the mean would be ed mean approaches the vb but the measurement closer to the paramter that is the mean of
+
+## 18 e) If you had been given 25 data points instead of 10, would you have expected the standard deviation to be greater, less than, or about the same as this sample?
+## Answer:  I expect that with aa greater sample size the estimate ofthe standard deviation wouuld be slightly different due to stochasticirty of the valculation but booth the mean and stanard deviation
+## area independent of the size of a sample.
+
+## 18 f) If you had been given 25 data points instead of 10, would you have expected the standard error to be greater, less than, or about the same as this sample?
+## Answer:  The standard error can be expected to decrease after resampling with a grater population.  This is because with a larger sample the calculation of the true mean is more  precice.  The true meaan and standard deviation.

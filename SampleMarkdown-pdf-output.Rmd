@@ -1,0 +1,72 @@
+---
+title: "Sample R Markdown Document"
+author: "Name"
+date: "Date of lab session"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax
+for authoring HTML, PDF, and MS Word documents. For more details on
+using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that
+includes both content as well as the output of any embedded R code
+chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+## Including Plots
+
+You can also embed plots, though you may need to resize to generate
+pleasing page breaks.  You should leave a blank line above and below
+your code blocks.
+
+```{r pressure1}
+plot(pressure,pch=17)
+```
+
+```{r pressure2, echo=FALSE}
+plot(pressure,pch=18)
+```
+Note that the `echo = FALSE` parameter was added to the code chunk to
+prevent printing of the R code that generated the plot.
+
+Resizing the image with fig.width and fig.height:
+
+```{r pressure3, echo=FALSE, fig.width=4, fig.height=3.5}
+plot(pressure,pch=19)
+```
+Try making this change to the first plot, and re-knitting.
+
+You can also typeset formulas:
+$$ \bar{X} = \frac{1}{n}\sum_{i=1}^n X_i = (X_1+ X_2 + \ldots +X_n)/n$$
+
+
+Assignment:  Load the Cascadia Subduction Zone Quake data, and plot
+the magnitude (Mw) against the inter-event interval, that is the
+time elapsed since the previous quake.
+
+```{r CSZ}
+Quakes <- read.table("http://people.reed.edu/~jones/Courses/Quakes.dat",
+                      header=TRUE)
+head(Quakes)
+```
+The C14Age is years before 1950, based on Carbon dating.  To compute the
+inter-event intervals, use the diff() function.  There will be one less interval
+than event, so you need to drop the last (40th event).
+
+```{r CSZ1}
+# note: labels have to be unique (we can't call this block CSZ again)
+attach(Quakes)
+Wait <- diff(C14Age)
+Size <- Mw[-40]     # drop event number 40
+```
+Now, make some plots and edit the Rmd file to include just the CSZ portion
+to submit with your homework this Friday.

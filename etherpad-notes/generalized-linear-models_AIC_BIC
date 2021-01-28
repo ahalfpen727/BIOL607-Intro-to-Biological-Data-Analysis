@@ -1,0 +1,437 @@
+Notes: 11/26/18
+
+MULTIPLE PREDICTOR VARIABLES IN GENERAL LINEAR MODELS
+
+Data generating process up until now:
+    -One predictor with one response; except ANOVA had multiple possible treatment levels
+
+General linear model
+    -Y (response variables) = vector of coefficients * matrix of predictors
+    -X can be anything (categorical, continuous, etc); there can be straight additivity or interactions
+
+Models with many predictors: ANOVA, ANCOVA, multiple linear regression, MLR with interactions
+
+
+ANCOVA-Analysis of Covariance
+
+    - Combine linear regression with analysis of variance
+
+    -continuous predictor (regression) and categorical predictors simultaneously
+
+    -Often used to correct for a gradient or some continuous variable affecting outcome
+
+    -OR used to correct a regression due to additional groups that may throw off slope estimates (e.g. Simpson's Paradox-incorporation of different groups can sometimes reverse sign of relationship)
+
+*Evaluate a categorical effeect, controlling for a covariate (parallel lines)
+
+    -Asking if intercepts of two different lines are different
+
+
+Assumptions of multiway ANOVA:
+    -Independence of data points
+    -Normality and homoscedacticity within groups (of residuals)
+    -No relationship between fitted and residual values
+    -Additivity of Treatment and Covariate (Parallel Slopes) (new)
+
+Look at standard diagnostics AND test interaction effect: effect where slope differs by group as well (parallel slope assumption). Test with F-test, significant p-value = interaction
+-Type II Sums of Squares: because covariate that is continuous is by its nature not balanced
+
+Estimated marginal means; marginalizing over covariate to estimate means after
+
+Expected means: controlling for covariate. Post hoc Tukey test (after correcting for continuous covariate)
+
+
+Multiple Linear Regression:
+    - Regression with multiple predictors
+    - No connection between predictors (like in ANOVA)
+    - Recognize covariance between predictors, therefore we must control for that covariation. What is the unique influence of each predictor after accounting for corrlation? Presence of one predictor may be driving the influence of the other predictor.
+*MLR controls for the correlation, estimates unique cotnribution of each predictor
+
+Assumptions:
+    -Data Generating Process: Linearity
+    - Error Generating Process: Normality & homoscedasticity of residuals
+    - Data: Outliers not influencing residuals
+    -Predictors: Minimal multicollinearity (new)
+
+Checking for multicollinearity -> correlation matrices: correlations over 0.4 can be problematic but may be OK even as high as 0.8
+
+Variance inflation factor: the more tightly a single variable is to the other variables, the wider the confidence interval. More and more correlation blows up CI's. 
+
+    -Variance inflation factor: larger this number the more the variance is inflated
+
+    -When VIF's greater than 5 or 10 can be problematic and indicate an unstable solution
+
+    -Solution: evaluate correlation and drop a predictor, combine predictors or transform a predictor
+
+
+Other diagnostics are the same; Type II SS is more conservative for A
+
+Cannot say from coefficiences the strength of differences because they are all in different units; instead rescale coefficients to draw a direct comparison.
+
+Component residual plot: parceling out component due to each predictor + residuals
+Additive variable plot: take contribution of one and allow to vary while holding the others constant (using mean or median)
+
+
+MLR with Interactions:
+WHAT IF CONTINUOUS PREDICTORS ARE NOT ADDITIVE?
+-interactions between continuous covariates
+-counterfactuals: predicted values under different inputs
+
+Assumptions:
+    -Data Generating Process: Linearity
+    -Error Generating Process: Normality & homoscedasticity of residuals
+    -Data: Outliers not influencing residuals
+    -Predictors: Minimal collinearity
+
+Often, interactions or nonlinear derived predictors are collinear with one or more of their predictors. To remove this we center predictors
+
+    -Centering: puts zero in center to put nonlinear portion of the curve (peak) in the center (X = Xbar)
+
+    -Additive coefficients are the effect of a predictor at the mean value of the other predictors
+
+    -Intercepts are at the mean value of all predictors
+
+    -Visualization is your friend
+
+    -Interaction effect will stay the same (only concerned about additive coefficients)
+
+
+Type II SS: F-tests
+
+Interpretation:
+    -Interaction effect; we can look at the effect of one variable at different levels of the other
+    -We can look at the surface
+    -We can construct counterfactual plots plots showing how changing both variables influences our outcome
+
+-----------------------------------------------------------------
+
+Notes: 11/28/18
+
+
+Each parameter increases the SE of other parameter estimates; More parameters = wider uncertainty for each parameter -> overfitting
+
+Underfit (i.e. null model) vs overfitting (explaining sample but not population level processes; model is specific to that data set)
+
+How to compare fits? 
+
+How complex a model do you need to be useful?
+
+    -Different hypotheses are suited for different purposes/better at predicting certain things
+
+
+Regularization
+
+    Penalize parameters with weak support
+
+
+Optimization for Prediction
+
+    Information Theory
+
+    Draws from comparison of information loss
+
+
+Model Selection
+ - The Frequentist P-Value testing framework emphasizes the evaluation of a single hypothesis - the null. We evaluate whether we reject the null.
+
+     -Whether we reject one hypothesis or not
+
+    - This is perfect for an experiment where we are evaluating clean causal links, or testing for a a predicted relationship in data.
+
+- Often, though, we have multiple non-nested hypotheses, and wish to evaluate each. To do so we need a framework to compare the relative amount of information contained in each model and select the best model or models. We can then evaluate the individual parameters
+
+Deviance = -2*loglikelihood
+If all we do is try to make deviance as small as possible then optimizing for fit. But if all you do is optimize for fit, then you are leaving something out. 
+
+Prediction; what is the deviance of a new point? = Out of sample deviance
+If optimize for out of sample deviance then model is better at predicting new data points
+
+So, fit a model, and evaluate how different the deviance is for a training versus test data set is; This is called cross validation.
+
+
+A criteria extimating test sample deviance
+
+    -We don’t always have enough data for a “test” dataset
+
+    -What if we could estimate out of sample deviance?
+
+    -The difference between training and testing deviance shows overfitting
+
+
+Akaike's Information Criteria (AIC)
+AIC=Deviance+2K
+
+
+Information theory: quantify the amount of information...
+
+Information loss and Kullback-Leibler Divergence
+-likelihood of the truth * log (likelihood of truth/likelihood of model)
+
+    -Comparing Information Loss between model1 and model2, truth drops out as a constant!
+
+    -We can therefore define a metric to compare Relative Information Loss (instead of absolute information loss)
+
+
+Lower AIC means less information is lost by a model
+
+    AIC=−2log(L(θ|x))+2K
+
+
+Balancing general and specific truths: which model is going to be a better descriptor of the population?
+
+
+AIC optimized for forecasting (out of sample deviance)
+-Assumes large N (sample size) relative to K (number of parameters)
+
+    -AICc for a correction
+
+
+But sample size can influence fit
+
+AIC V. BIC
+Many other IC metrics for particular cases that deal with model complexity in different ways. For example:
+
+AIC=−2log(L(θ|x))+2KAIC=−2log(L(θ|x))+2K
+
+    Lowest AIC = Best Model for Predicting New Data
+
+    Tends to select models with many parameters
+
+
+
+BIC=−2log(L(θ|x))+Kln(n)BIC=−2log(L(θ|x))+Kln(n)
+
+    Lowest BIC = Closest to “Truth”"
+
+    Derived from posterior probabilities
+
+
+How can we use AIC Values?
+
+    ΔAIC = AICi − min(AIC)
+
+
+Rules of thumb:
+    - ΔΔ AIC << 2 implies that two models are similar in their fit to the data 
+    - ΔΔ AIC between 3 and 7 indicate moderate, but less, support for retaining a model 
+    - ΔΔ AIC >> 10 indicates that the model is very unlikely
+
+
+Quantitative measure of relative support (w) 
+wi=e−Δi/2∑r=1Re−Δi/2
+
+    -Model weights summed together = 1
+
+
+
+How to I evaluate the importance of a variable?
+
+    -Variable Weight = sum of all weights of all models including a variable. Relative support for inclusion of parameter in models
+
+
+Model averaged parameters
+
+
+-While sometimes the model you should use is clear, more often it is not
+-Further, you made those models for a reason: you suspect those terms are important
+-Better to look at coefficients across models
+-For actual predictions, ensemble predictions provide real uncertainty
+
+Ensemble Prediction
+-Ensemble prediction gives us better uncertainty estimates
+-Takes relative weights of predictions into account
+-Takes weights of coefficients into account
+-Basicaly, get simulated predicted values, multiply them by model weight
+
+
+^Different philosophy: Evaluating relative weight of evidence and embracing uncertainty. Recognizes that all models are wrong but can be useful.
+
+
+What about AIC in Bayes?
+-We do estimate the posterior distribution of the deviance
+-Average of the posterior, D¯D¯ is our DtrainDtrain
+-But what about # of parameters?
+
+    With flat priors, it’s just the # of params!
+
+    But once priors are not flat, we are using additional information
+
+    It is as if we have fewer parameters to estimate, so AIC becomes problematic
+
+
+How do we maximize prediction?
+-Why not look at the pieces that make up the deviance
+
+    The pointwise predictive power of the posterior
+
+-We can define the Pr(yi | posterior simulations)
+
+    This tells us the distribution of the predictive power of our posterior for each point
+
+    llpd=∑logPr(yi|θ)
+
+
+What about parameters?
+-We know that as k increases, our uncertainty in coefficients increases
+
+    And priors shrink uncertainty when good
+
+-Uncertainty is reflected in the distribution of Pr(yi | simulations)
+-Thus, this variance gives us an effective penalty term
+
+    pwaic=∑Var(logPr(yi|θ))
+
+
+Widely Applicable IC (or Wantanabe’s Information Criteria):
+
+    WAIC=−2∑logPr(yi|θ)+2∑Var(logPr(yi|θ))WAIC=−2∑logPr(yi|θ)+2∑Var(logPr(yi|θ))
+
+    =−2llpd+2pwaic=−2llpd+2pwaic
+
+
+-Advantage in being pointwise is that we also get an estimate of uncertainty
+-Disadvantage that inaprporpiate to use with lagged (spatial or temporal) predictors
+
+
+Draw values from posterior of each model with frequency porportional to model weight
+
+
+Embracing Full Uncertainty:
+-Current controversy over meaning of coefficient weights (even with AIC)
+-In a Bayesian worldview, we want to embrace uncertainty!
+
+    Look at weighted predictions over all models
+
+    Weights determine probability of drawing from a model’s posterior
+
+-So, ensemble predictions marginalizing over variables not of interest
+
+
+
+-IC analyses aid in model selection. One must still evaluate parameters and parameter error.
+-Your inferences are constrained solely to the range of models you consider. You may have missed the ’best’ model.
+-All inferences MUST be based on a priori models. Post-hoc model dredging could result in an erroneous ’best’ model suited to your unique data set.
+-Ensemble predictions are a powerful practice to show true unertainty
+
+-------------------------------------------------------------------------
+
+Notes: 12/5/18
+
+Generalized Least Squares and Heteroscedasticity
+
+What to do when error generating process incorrect?
+-i.e. residuals messy
+
+ general linear model
+-Y is determined by X
+-relationship between X and Y is linear
+-residuals of fitted values of Y are normally distributed with constant variance
+(true for continuous or categorical data)
+
+
+-non-normal distribution of residuals
+-different precision for different data points
+
+    -weighted least squares
+
+
+Why weight?
+-Minimized influence of heteroskedasticity
+-Increases precision of estimates
+-Decreases influence of imprecision in measurements
+-Minimize sampling bias
+-Other reasons to count some measurements more than others
+
+Residual is no longer constant- residual will vary for each different data point. 
+Changing error generating assumption: Heteroscedasticity is part of process
+Residual matrix is variance/covariance matrix instead of simple normal distribution
+
+How can we use weighting?
+1) Weighting by variance
+2) Mean-Variance relationship
+2) Unequal variance between groups
+
+1)
+1/variance = precision of an estimate
+-larger data point, higher precision
+-sample size is estimator of precision, so can also use n
+
+Weighting by Data Quality:
+We typically weight by 1/variance (precision)
+- Or N, or other estimate of sample precision
+
+This is different than variance weighted meta-analysis
+-We are still estimating a residual error for fits
+
+Implementation in R:
+lm function has a weight argument where you can supply 1/variance (or specify sample size)
+
+
+2)
+Breusch-Pagan/Godfrey/Koenker test
+
+    Variant of White’s test (you’ll see this)
+
+    Get squared residuals
+
+    Regress on one or more predictors; ask if there is a slope (if there is then it would fail a chisquare test)
+
+    Results fail χ2χ2 test of heteroskedastic
+
+
+
+Weight by predictor:
+-Need to determine the direction variance increases
+
+    Weight by X or 1/X
+
+-Is it a linear or nonlinear relationship between variance and X?
+-Is more than one predictor influencing variance (from BP Test/Graphs)
+
+If you only have one predictor then can weight like before; if not, then need to simultaneously model variance and data generating process
+
+-NonLinear Mixed Effects Model package
+-BUT - also has likelihood-based methods to fit WLS and GLS
+-Flexible weighting specification
+
+gls()
+VarFixed - Linear continuous variance
+VarPower - Variance increases by a power
+VarExp - Variance exponentiated
+VarConstPower - Variance is constant + power
+VarIdent - Variance differs by groups (categorical data; each group could have a different variance; will lose df)
+VarComb - Combines different variance functions
+
+*plotResidual function in 'car' package to find out which one to use^
+
+
+Multiple sources of heteroskedasticity
+(i.e. add month if it was another driver)
+squid_gls_month <- gls(Testisweight ~ DML, data=squid,   weights = varComb(varFixed(~DML),                                                                                  
+varFixed(~MONTH)))
+
+
+*often results are not wildly different from original model (particularly if you have large sample size)*
+
+3)Unequal variance between groups
+-categorical variable-
+example is month as a factor
+
+Residuals vs fitted (high variance in middle months, low variance in other months)
+Variance differs by month
+
+Solution: weight by month
+vMonth <- varIdent(form = ~ 1 | fMONTH)
+-Note 1 | x form, different variance for different strata
+
+
+squid_month_gls <- gls(Testisweight ~ fMONTH,  data=squid,  weights=vMonth)
+
+Summary of results: shows estimates of parameters and by month
+Would report coefficients and st dev table
+
+Compare with unweighted fit (sig different from anova)
+*lower AIC and BIC with weighted fit (gls vs lm)
+
+
+*only thing that is different is that you are modeling the variance. Work flow is the same (apart from Breusch-Pagan test)

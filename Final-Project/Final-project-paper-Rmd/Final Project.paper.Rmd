@@ -1,0 +1,310 @@
+---
+title: 'The Tailor RNA-Seq Pipeline: a Tool for *De Novo* Disease Biomarker Identification'
+author: "Andrew Judell-Halfpenny"
+date: "Fall Semester 2018"
+output:
+  html_document: default
+  pdf_document: default
+subtitle: BIOL607 Final Project
+---
+
+
+```{r library-load, message=FALSE, warning=FALSE, include=FALSE}
+library(tidyverse);library(ggplot2); library(gplots)
+library(limma);library(edgeR);library(cummeRbund)
+library(multtest);library(nortest);library(outliers)
+library(RColorBrewer);library(VennDiagram);library(genefilter)
+library(stats4);library(stats);library(car)
+library(pastecs);library(psych)
+```
+
+
+# Background
+High-Throughput Sequencing is one of the most promising tools available to researchers united by the common-goals of personalized medicine. The first step towards providing targeted interventions for genetic diseases is identifying the genomic features common to a particular phenotype. Identifying a unique transcriptional signature through comparative RNA-Seq analysis enables earlier detection, informs future drug design, and ultimately saves lives. But identifying clinically informative features from the massive sequence libraries (~1-2 Tb) produced during one experiment exceed the capabilities of personal computers and necessitates the use of a high-performance computing cluster (HPCC). These circumstances create a skills-gap bottleneck that requires molecular biologists to develop extensive knowledge of computer programming and software engineering. This bottleneck is further exacerbated by the difficulty of identifying high-confidence population-level biomarkers from a small sample experiment with low statistical power. UMass Boston's Genomics Core and Center for Personalized Cancer Therapy (CPCT) was established to resolve these issues and facilitate genomics research.
+
+The Genomics core employs next-generation sequencing (NGS) technology for research and clinical applications in order to identify the genetic variants and the complex mechanisms involved in human disease. One of the ongoing projects at the CPCT focuses on prostate pathology. Fibrosis associated benign prostatic hyperplasia (BPH) is a chronic, progressive condition observed in 30-35% of men aged 60 or older (1). BPH is assotiated with a negative impact on patient quality of life due the concurrent development of a complex of lower urinary tract symptoms (LUTS) that include urgency, urinary frequency, weak urinary stream, and incomplete emptying of the bladder (2). Current surgical and medical interventions are not effective for all men and can produce siginificant adverse effects (3). This project represents an opportunity to explore the genetic mechanisms of fibrosis-asscoiated BPH and explore the efficacy of urinalysis diagnostics via the Tailor RNA-Seq pipeline for biomarker discovery. The Tailor Pipeline was designed to perform the comparative genomic analyses performed at UMass Boston's CPCT and Genomics Core. Tailor is optimized for use with the unprocessed binary bcl data files produced by the Sequencing-by-Synthesis (SBS) protocol of an Illumina HiSeq 2500. Tailor’s analysis workflow enables biologists to extract RNA in a noninvasive manner from blood or urine and identify the causal genetic phenomena associated with the presentation of a diseased phenotype.
+
+# Introduction to the Tailor Pipeline
+
+The Tailor RNA-Seq analysis pipeline is an end-to-end tool-suite that produces a set of biomarkers from a comparative differential expression analysis between two or more conditions. Tailor extends and simplifies the Tophat-Cufflinks tool-suite for RNA-Seq library preparation in order to perform comparative gene expression analyses and visualize significant differences in the gene expression profiles between two or more conditions (5,6,7,8,9). The pipeline provides an automated workflow that facilitates resource requests over a HPCC through multi-step, in-parallel, computational “jobs” submitted to either LSF or SGE job-schedulers. Each step is initiated with a simple two-word command (“tailor fastqc,” “tailor trimgalore”) from a command-line interface. The output from each step is provided as input to the next step.
+
+A user provided sample sheet maps the names of the input (bcl) files to the human readable sample names from each group or condition. Tailor uses gene model annotations and an indexed whole genome fasta file to quantify gene expression. Tailor includes *Bowtie* and other secondary tools for genome indexing and gene-model building for analyses with non-model organisms (6). Tailor's workflow can be customized via modification of the provided settings configuration file. This feature enables the user to initiate the workflow from any step of the pipeline and utilizing most standard RNA-Seq file formats (fastq.gz,  sam,  bam, gtf, gff, cxb, and fg.gz). Several pre-configured settings files are included with Tailor to provide different levels of de-novo feature discovery. The default workflow does not perform any novel feature discovery while the genome-guided workflow uses gene-model annotations to guide isoform discovery.
+ 
+# Experimental Design and Tailor's Analysis Workflow:
+In a recent comparative analysis between 9 males diagnosed with non-cancerous, fibrosis-associated, lower urinary tract syndrome (LUTS) and 9 canonically healthy males serving as a control group, Tailor analyzed ~1 Tb of RNA-Seq data over the course of 31 hours. The samples were provided by 9 males diagnosed with non-cancerous fibrosis-associated lower urinary tract syndrome and 9 males serving as an archetypal control group. RNA was extracted, ligated to sample-specific adapters, and multiplexed to reduce flow-cell lane bias. The pipeline began with file conversion and de-multiplexing via **bcl2fastq**, a tool designed by Illumina. **FastQC** quality control inspection of the sequence data was performed in order to check for over-represented sequences, anomalous features, and phred quality scores (10). The paired end reads were then parsed by **Trim-galore** in order to identify and trim the sample-specific adapter sequence that ligated the reads to the bottom of the flow-cell (11). After adapter trimming, the sequence libraries were mapped to the hg38 reference genome by **Tophat**, a splice aware mapper (4,5). After read-mapping, the transcripts were assembled by Cufflinks into de-Bruijn graphs (6). **Cufflinks** determined each gene's isoform structure from bipartite matching the isoforms into a minimum-spanning-trees (mst) that accounts for the distribution of all of the reads arising from a particular gene (6). After the transcripts are assembled, a gene transfer format file was produced for each sample and compared to the reference annotation by **Cuffmerge** (6,7). The new gene models and the mapped bam files from the Tophat step are input to **Cuffquant** for gene expression quantification (6,7). The gene models and the gene expression files were input to **Cuffdiff** for comparative differential expression analysis (6,8,9). Cuffdiff modeled the gene expression using an overdispersed Poisson-model. The variance is calculuated as a function of the mean gene expression. Cuffdiff calculates dispersion from the variance present in a group beyond what is expected from a simple Poisson model.  Tailor calls Cuffdiff to perform means tests of the expression values for each gene across both conditions. Cuffdiff outputs gene expression values (FPKM),log-fold-change expression values, FDR corrected p-values (q-values), p-values, and their associated test-statistic from the means tests of the distribution of expression values for each gene accross both conditions. Biomarker candidates were identified from q-values below $\alpha=0.05$. Cuffdiff output served as input for CummeRbund, a Bioconductor package that produces visually digestible summations of the salient features from RNA-Seq data (12).
+
+# Results/Summary of the Investigation:
+Tailor used Tophat to align the libraries of paired-end sequence data to UCSC's hg38 Homo sapiens reference genome yielding a per-sample average overall mapping rate of 94.0% with a minimum overall mapping rate of 82.3%. Average concordant pair-mapping rate to the hg38 genome was 82.2% with a minimum per-sample concordant pair-mapping rate of 66.8%. Tailor assembled transcripts for 32245 genes, 92397 isoforms, 54249 coding sequences. Tailor detected sufficient expression levels to identify significant differential expression for 25171 coding sequences, 15118 genes, and 32316 isoforms. Of the features with adequate expression levels, 115 coding sequences, 370 genes, and 251 isoforms were identified as significantly differentially expressed. 
+
+```{r import-gene-expr-data}
+cuff<- readCufflinks(dir='/home/drew/umb_triley/urine1/cuffdiff_results_hg38_default/LUTS-over-CTRL/',genome="/home/drew/umb_triley/Reference-Genomes-and-Gene-Sets/Reference-Genomes/Human/UCSC_hg38/genome.fa",gtfFile='/home/drew/umb_triley/Reference-Genomes-and-Gene-Sets/Reference-Genomes/Human/UCSC_hg38/genes.gtf', rebuild=F)
+cuff
+replicates.info<-cummeRbund::replicates(cuff)
+replicates.info
+
+groups<-replicates.info$sample_name
+samples<-replicates.info$rep_name
+conditions<-as.factor(groups)
+conditions
+samples
+groups
+
+under=groups[1]
+over=groups[((length(groups)/2)+1)]
+over;under
+# design matrix
+design <- model.matrix(~0 +groups, data=replicates.info)
+colnames(design) <- levels(conditions)
+row.names(design) <- samples
+design
+# contrast matrix
+contr.matrix <- makeContrasts(LUTS - CTRL,
+                               levels = design)
+
+contr.matrix
+# gene expr data
+gene_exp.df<-diffData(cummeRbund::genes(cuff))
+#g.cnt.matrix<-repCountMatrix(cummeRbund::isoforms(cuff))
+g.cnt.matrix<-repCountMatrix(cummeRbund::genes(cuff))
+# factors for conditions
+under.group<-grep(pattern=under, colnames(g.cnt.matrix))
+over.group<-grep(pattern=over, colnames(g.cnt.matrix))
+
+# Library Sizes
+colSums( g.cnt.matrix ) 
+
+# Library Sizes in millions of reads
+colSums( g.cnt.matrix ) / 1e06 
+
+```
+
+
+# Extended Analysis Section:
+To refine the biomarker set produced by Tailor, repeated differential expression analyses were performed in the R statistical programming environment (13). **EdgeR** and **Limma**, two commonly used Bioconductor packages for differential expression analysis, were employed to reanalyze the data and mitigate the influence of biases resulting from choise of software in the biomarker gene-set (14,15,16,17,18). Raw read counts extracted from Tailor's SQLite database backend via CummeRbund (12) were used as input for the additional analyses.
+
+## Filtering and Normalizing Gene Expression Values
+
+While RNA-Sequencing is less biased than microarrays, there are several sources of noise that must be filetered from the data. Lane biases in the flowcell can be mitigated through multiplexing but differences in sequencing depth require scaling the sizes of the libraries across each sample. This sample-specific normalization is performed using a relative log expression method which is calculated from the geometric mean of the gene expression of the samples. Additionally, longer genes which produce more reads per transcript than smaller genes, require additional normalization from raw read counts to FPKM values. This conversion normalizes counts by the fragments per kilobase (gene length) per million mapped reads (genome length). Genes that were not expressed at a biologically meaningful level in either condition were filtered to reduce the number of unproductive differential expression tests carried out downstream. A minimum of 1 transcript per million mapped reads in at least $\frac{1}{4}$ of the samples was set as the thresh-hold to characterize a gene as expressed. Genes that were expressed below this threshold were characterized as not expressed. Filtered gene expression counts were used as input for differential expression analyses with **EdgeR** and **Limma** (14,15,16,17,18).
+
+
+```{r filtering-gene-expr}
+## filter the data enough to perform Shapiro-Wilk normality test
+g.CPM.ma <- cpm(g.cnt.matrix, prior.count=1)
+str(g.CPM.ma)
+g.LCPM.ma <- cpm(g.cnt.matrix, log=TRUE, prior.count=1)
+str(g.LCPM.ma)
+## filter genes with at less than 1 cpm in at least 9 samples
+keep.exprs <- rowSums(g.LCPM.ma > 1) >= length(groups)/2
+table(keep.exprs)
+# Subset the rows of countdata to keep the more highly expressed genes
+g.f.cnt.ma <- as.data.frame(g.LCPM.ma[keep.exprs,])
+str(g.f.cnt.ma)
+# Visualize distribution of gene expression levels
+plotDensities(g.LCPM.ma, legend = FALSE, main = "Log Counts per Million (Before filtering)")
+# Visualize distribution of gene expression levels
+plotDensities(g.f.cnt.ma, legend = FALSE, main = "Log Counts per Million (After filtering)")
+# visualize coefficient of variation
+
+# Test normality
+norm.1st.group<-apply(g.f.cnt.ma[1:round(nrow(g.f.cnt.ma)/3),], 1, function(x) shapiro.test(x)$p.value)
+sum(norm.1st.group < 0.05)
+norm.2nd.group<-apply(g.f.cnt.ma[c(round(nrow(g.f.cnt.ma)/3):c(2*round(nrow(g.f.cnt.ma)/3))),], 1, function(x) shapiro.test(x)$p.value)
+sum(norm.2nd.group < 0.05)
+norm.3rd.group<-apply(g.f.cnt.ma[c(((2*round(nrow(g.f.cnt.ma)/3))+1):nrow(g.f.cnt.ma)),], 1, function(x) shapiro.test(x)$p.value)
+sum(norm.3rd.group < 0.05)
+
+# visualize 
+keep.cpm <- rowSums(cpm(g.cnt.matrix) > 1) >= (length(groups)/2)
+table(keep.cpm)
+g.f.cnt.ma <- g.cnt.matrix[keep.cpm,]
+g.u.cnt.mu = rowMeans(as.matrix(g.f.cnt.ma[,under.group]))
+g.o.cnt.mu = rowMeans(as.matrix(g.f.cnt.ma[,over.group]))
+g.u.cnt.vars = rowVars(as.matrix(g.f.cnt.ma[,under.group]))
+g.o.cnt.vars = rowVars(as.matrix(g.f.cnt.ma[,over.group]))
+
+plot(log2(g.u.cnt.vars) ~ log2(g.u.cnt.mu),
+     main=c("Mean-Variance of Relationship for", under,"group's Gene Expression"),
+     xlab=c("Log Mean Gene Expression of", under),
+     ylab=c("Log Variance of Gene Expression for", under, "group"),
+     cex = .5, col = "blue")
+plot(log2(g.o.cnt.vars) ~ log2(g.o.cnt.mu),
+     main=c("Mean-Variance of Relationship for", over,"group's Gene Expression"),
+     xlab=c("Log Mean Gene Expression of", over),
+     ylab=c("Log Variance of Gene Expression for", over, "group"),
+     cex = .5, col = "blue")
+plot(log2(g.o.cnt.vars) ~ g.o.cnt.mu,
+     main=c("Quadratic Relationship for", over,"group's Gene Expression"),
+     xlab=c("Mean Gene Expression of", over), xlim=c(0, 20000),
+     ylab=c("Log Variance of Gene Expression for", over, "group"),
+     cex = .5, col = "purple")
+plot(log2(g.u.cnt.vars) ~ g.u.cnt.mu,
+     main=c("Quadratic of Relationship for", under,"group's Gene Expression"),
+     xlab=c("Mean Gene Expression of", under),xlim=c(0, 20000),
+     ylab=c("Log Variance of Gene Expression for", under, "group"),
+     cex = .5, col = "purple")
+
+g.f.cnt.sds <- rowSds(as.matrix(g.f.cnt.ma))
+#effect.size<-sqrt((g.u.cnt.mu - g.o.cnt.mu)^2)/g.f.cnt.sds
+g.cnt.fstats = rowFtests(as.matrix(g.f.cnt.ma), as.factor(groups))
+g.cnt.s.fstats<-subset(g.cnt.fstats, p.value < 0.05)
+num.pval<-nrow(g.cnt.fstats)
+num.sig.pvals<-sum(g.cnt.fstats$p.value < 0.05)
+true.sig<-c(num.pval *0.05)
+sig.calls<-c((num.pval *0.05)-num.sig.pvals)
+typeIIerrs<-true.sig-sig.calls
+typeIIerr.rate<-c(true.sig-sig.calls)/nrow(g.cnt.fstats)
+power=1-typeIIerr.rate
+power
+ftest.sigs<-row.names(g.cnt.s.fstats)
+
+```
+
+## Limma Linear Models
+
+Limma was used to fit a linear model of the gene expression of the control group as the predictor variable and the gene expression of the luts group as the response variable for each gene.  A Shapiro-Wilks test of the distribution across each gene demonstrated that the gene expression values are not normally distributed. The non-normality of the data represents a violation of the assumptions associated with an ordinary least squares (OLS) regression. The count data also exhibits heteroscedascity of the variance that is not independent of the mean. The mean-variance relationship across both groups is evident in the following plots. To accommodate this mean-variance relationship a negative binomial distribution was used to model the count data. The negative binomial assumes a quadratic relationship between the mean and the variance which is evident in both groups. This relationship results from a combination of technical variation in the sequencing experiment and biological variation among the replicates from each group. Normalization of the count data was performed with the **voom** Bioconductor packages (18). Voom produces $\log_2(counts/million)$ and weighs each sample based on the sample's library size. The voom command (voom::voom) produces a plot that demonstrates a reduction in the mean-variance relationship. However a problematic trend between the model’s residual variances and the average expression values persists. To eliminate this relationship empirical Bayes estimation of the gene-wise biological variation was produced by borrowing information from the entire dataset to produce moderated test-statistics.  The qqplot of these results demonstrate an adequate model-fit. A biomarker set was culled from the model by setting  a minimum log fold change threshold of two, with a threshold $\alpha\ level=0.05$ for the fdr corrected p-values. From Limma's analysis a biomarker set of 114 genes.
+
+```{r limma-model}
+dgel<- DGEList(counts=g.f.cnt.ma, group=factor(groups))
+log2.cpm <- voom(dgel,design,plot=TRUE)
+fit.lm <- lmFit(log2.cpm,design,weights=log2.cpm$weights)
+genas(fit.lm, coef=c(1,2), plot=TRUE, subset="all",alpha=0.85)
+fit2 <- contrasts.fit(fit.lm, contr.matrix)
+#  Estimate biological correlation between the logFC profiles
+fit.bayes <- eBayes(fit2)
+tfit <- treat(fit.bayes,lfc=1)
+plotSA(fit.bayes, main="Final model: Mean-variance trend")
+# Q-Q plot of moderated t-statistics
+qqt(fit.bayes$t[,1], df=fit.bayes$df.residual+fit.bayes$df.prior)
+   abline(0,1, col="blue")
+# Fold-change thresholding
+# Treat relative to a 10% fold-change
+sig.tfit<-subset(tfit$p.value, tfit$p.value < 0.05)
+volcanoplot(fit.bayes,coef=1,highlight=30,names=row.names(fit.bayes$p.value),main="LUTS vs CTRL")+  
+   abline(h=3)
+fdr.rate<-sum(tfit$F.p.value <0.05)-sum(tfit$p.value <0.05)
+power<-1-fdr.rate/length(tfit$p.value)
+power
+limma.sigs<-row.names(sig.tfit)
+
+```
+
+## EdgeR Analysis
+In order to produce a high-confidence biomarker set from the consistent calls of significant differential expression across multiple methods, a final analysis was performed with **EdgeR**, a Bioconductor package for differential expression analysis. EdgeR's built in normalization employs a trimmed mean method (TMM) of filtering gene expression data. **EdgeR** provides a generalized linear model (glm) approach for differential expression analysis. EdgeR's glm method produces a negative binomial model of gene expression counts and employs an empirical bayes method for squeezing the gene-wise dispersion towards a common value to prevent over representation in the model from outliers. Given the previously demonstrated non-normality of the gene expression data and the mean-variance relationship, EdgeR's glm method provides an ideal model for this RNA-Seq data. In order to employ EdgeR's glm method, a new design matrix was created. Dispersion estimates were calculated from an empirical bayes method and a negative binomial glm model was fitted for each gene of the RNA-Seq data. EdgeR's glm approach provides two methods for testing differential expression, a likelihood ratio test and a quasi-likelihood F-test. The quasi-likelihood F-test incorporates uncertainty estimates for gene-wise dispersion yielding a more robust method of differential expression. This method produced 119 biomarkers which was reduced to 52 biomarkers when employed with a mimimum log fold change thresh of at least two and a p-value theshold of $\alpha=0.05$. 
+
+```{r edgeR-Diff-Expr}
+# design matrix
+design <- model.matrix(~groups, data=replicates.info)
+colnames(design) <- levels(conditions)
+row.names(design) <- samples
+design
+# contrast matrix
+contr.matrix <- makeContrasts(LUTS - CTRL,CTRL - LUTS,
+                               levels = design)
+contr.matrix
+de.obj <- DGEList(counts=g.f.cnt.ma,group=groups)
+disp <- estimateDisp(de.obj,design)
+plotBCV(disp, main="Squared Coefficient of Variation as a Function of Counts/Million Mapped Reads")
+norm.factor <- calcNormFactors(de.obj)
+f.disp <- estimateDisp(norm.factor,design, robust=TRUE)
+plotBCV(f.disp, main="Negative Binomial Dispersion Estimate")
+f.disp$common.dispersion
+# coefficient of variation
+sqrt(f.disp$common.dispersion)
+#To perform quasi-likelihood F-tests:
+fit <- glmQLFit(f.disp,design, robust=TRUE)
+plotQLDisp(fit,main="Quasi-Likelihood Dispersion")
+contr.matrix <- makeContrasts(CTRL - LUTS,
+                               levels = design)
+contr.matrix
+
+qlf <- glmQLFTest(fit,coef=2,contrast=contr.matrix)
+tr <- glmTreat(fit, coef=2, lfc=1)
+glm.treat.DE <-tr$table[tr$table$PValue < 0.05,]
+edger.sigs<-row.names(glm.treat.DE)
+
+```
+
+
+# Results/Summary of Initial Tailor Analysis:
+Tailor aligned paired-end reads to the hg38 version of the Homo sapiens reference genome with the Tophat tool-suite yielding an average overall unique mapping rate of 94.0% with a minimum overall mapping rate of 82.3%. Average concordant pair-mapping rate to the hg38 genome was 82.2% with a minimum per-sample concordant pair-mapping rate of 66.8%. Tailor assembled transcripts for 32245 genes, 92397 isoforms, 54249 coding sequences. Tailor detected sufficient expression levels to determine statistical significance during differential expression analysis for 25171 coding sequences, 15118 genes, 32316 isoforms. Of the features with adequate expression levels, 115 coding sequences, 370 genes, and 251 isoforms were identified as significantly differentially expressed. Leave-one-out cross validation produced 18 sets of significantly differentially expressed genes with similar totals for the significant differential expression of sed gene set from each iteration.
+
+```{r}
+genes_exp.df<-diffData(cummeRbund::genes(cuff))
+sig.genes.df<-subset(genes_exp.df, genes_exp.df$significant=="yes")
+l.sig.genes.df<-subset(genes_exp.df, genes_exp.df$gene_id %in% limma.sigs)
+l.sig.genes.df$gene_id
+e.sig.genes.df<-subset(genes_exp.df, genes_exp.df$gene_id %in% edger.sigs)
+e.sig.genes.df$gene_id
+f.sig.genes.df<-subset(genes_exp.df, genes_exp.df$gene_id %in% ftest.sigs)
+f.sig.genes.df$gene_id
+
+fl.sigs<-f.sig.genes.df$gene_id %in% l.sig.genes.df$gene_id
+fl.sigs<-f.sig.genes.df[fl.sigs,]
+fl.sigs$gene_id
+fe.sigs<-f.sig.genes.df$gene_id %in% e.sig.genes.df$gene_id
+fe.sigs<-f.sig.genes.df[fe.sigs,]
+fe.sigs$gene_id
+
+gene_exp.fl.df<-gene_exp.df$gene_id %in% fl.sigs$gene_id
+fl.genes<-which(gene_exp.fl.df==TRUE)
+fl_gene_exp.df<-gene_exp.df[fl.genes,]
+
+gene_exp.fe.df<-gene_exp.df$gene_id %in% fe.sigs$gene_id
+fe.genes<-which(gene_exp.fe.df==TRUE)
+fe_gene_exp.df<-gene_exp.df[fe.genes,]
+fle.sigs<-fl_gene_exp.df$gene_id %in% fe_gene_exp.df$gene_id
+biomarker.set<-fl_gene_exp.df[fle.sigs,]
+length(biomarker.set)
+
+
+```
+
+# Interpretation/Conclusion of the Investigation:
+Repeated analysis of the significant differentially expressed features accross samples provided by lower urindary tract syndrome symptomatic males and samples provided by healthy males serving as a canonical control group was performed using the Tailor RNA-Seq pipeline for Biomarker discovery as well as several commonly used Bioconductor packages (**EdgeR** and **Limma**) The biomarker set produced by each method totaled fewer than 200 features and exhibited a minor overlap in the biomarkers identified by each method. The final biomarker set is comprised of 11 genes that were consistently identified as differentially expressed accross the conditions.  These 11 genes that Tailor, *EdgeR*, and *Limma* identified as significantly differentially expressed will serve as biomarker candidates for the next phase of the analysis. *In vivo* verification of the biomarker candidates is currently being planned with qtPCR and **nanoDrop** sequencing, a far less sensitive technology than RNA-Seq. The results of **nanoDrop** sequencing will demonstrate the verasity of the biomarker gene-set and Tailor's biomarker discovery workflow. If *in vivo* verification produces results consistent with the results of this analysis, then **nanoDrop** sequencing of RNA extracted from urine samples may serve as a low-cost, non-invasive diagnostic for the detection of fibrosis-associated lower urinary tract syndrome in the future.
+
+
+# Future Plans
+Tailor is currently being prepared for release as an open-source tool-package available for academic research. A second release of the Tailor pipeline is being planned in order to incorporate a variant/SNP analysis as well.
+ 
+ <center>
+**Works Cited**
+</center>
+
+1) Meigs JB, Mohr B, Barry MJ, Collins MM, McKinlay JB. "Risk factors for clinical benign prostatic hyperplasia in a community-based population of healthy aging men." *Journal of Clinical Epidemiology*. 2001; 54: 935–944.
+
+2) Verhamme KM, Dieleman JP, Bleumink GS, van der Lei J, Sturkenboom MC, et al. "Incidence and prevalence of lower urinary tract symptoms suggestive of benign prostatic hyperplasia in primary care–the Triumph project." *Eur Urology* 2002; 42: 323–328.
+
+3) McVary KT. "A review of combination therapy in patients with benign prostatic hyperplasia." *Clinical Therapy* 2007; 29: 387–398. 
+
+4) Kim D, Pertea G, Trapnell C, Pimentel H, Kelley R, Salzberg SL. TopHat2: accurate alignment of transcriptomes in the presence of insertions, deletions and gene fusions.*Genome Biology*. 2013; 14(4):R36. doi: 10.1186/gb-2013-14-4-r36.
+
+5) Langmead B, Trapnell C, Pop M, Salzberg SL. Ultrafast and memory-efficient alignment of short DNA sequences to the human genome. *Genome Biology*.2009;10:R25. https://doi.org/10.1186/gb-2009-10-3-r25
+
+6) Trapnell C, Williams BA, Pertea G, Mortazavi AM, Kwan G, van Baren MJ, Salzberg SL, Wold B, Pachter L. Transcript assembly and quantification by RNA-Seq reveals unannotated transcripts and isoform switching during cell differentiation *Nature Biotechnology*. 2010; 28:511-515. http://dx.doi.org/10.1038/nbt.1621
+
+7) Roberts A, Trapnell C, Donaghey J, Rinn JL, Pachter L. Improving RNA-Seq expression estimates by correcting for fragment bias. *Genome Biology*. 2011;14:R22. doi: 10.1186/gb-2011-12-3-r22.
+
+8) Trapnell C, Hendrickson DG, Sauvageau M, Goff L, Rinn JL, Pachter L. Differential analysis of gene regulation at transcript resolution with RNA-seq. *Nature Biotechnology*. 2012;31(1):46-53.
+
+9) Trapnell C, Roberts A, Goff L, Pertea G, Kim D, Kelley D, Pimentel H, Salzberg S, Rinn J, Pachter L. "Differential gene and transcript expression analysis of RNA-seq experiments with TopHat and Cufflinks" *Nature Protocols*. 2012; volume 7, pages 562–578; https://doi.org/10.1038/nprot.2012.016
+
+10) Andrews, S. **FastQC** A Quality Control tool for High Throughput Sequence Data. 2014 http://www.bioinformatics.babraham.ac.uk/projects/fastqc/. 
+
+11) Stubbs T, Bonder M, Stark A, Krueger F. Multi-tissue DNA methylation age predictor in mouse. *Genome Biology*. 2017; 18:68. https://doi.org/10.1186/s13059-017-1203-5
+
+12)  L. Goff, C. Trapnell and D. Kelley. "CummeRbund: Analysis, Exploration, Manipulation, and Visualization of Cufflinks High-Throughput Sequencing Data." 2013; R package version 2.20.0.
+
+13) R Core Team. R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria. 2014; http://www.R-project.org/.
+
+14) Robinson, M. D., D. J. McCarthy, and G. K. Smyth. “edgeR: a Bioconductor package for differential expression analysis of digital gene expression data.” *Bioinformatics*. 2009; 26 (1). Oxford University Press:139–40. https://doi.org/10.1093/bioinformatics/btp616.
+
+15) Lun, ATL, Chen, Y, and Smyth, GK. It’s DE-licious: a recipe for differential expression
+analyses of RNA-seq experiments using quasi-likelihood methods in edgeR. *Methods in Molecular
+Biology*. 2016; 1418, 391–416
+
+16) Smyth, G. K. Linear models and empirical Bayes methods for assessing differential expression in microarray experiments. *Statistical Applications in Genetics and Molecular Biology*. 2004; 3, No. 1, Article 3. http://www.statsci.org/smyth/pubs/ebayes.pdf
+
+17) Ritchie, M. E., B. Phipson, D. Wu, Y. Hu, C. W. Law, W. Shi, and G. K. Smyth. “limma Powers Differential Expression Analyses for RNA-Sequencing and Microarray Studies.” *Nucleic Acids Research* 2015; 43 (7):e47.
+
+18) Law, Charity W., Yunshun Chen, Wei Shi, and Gordon K. Smyth. “Voom: precision weights unlock linear model analysis tools for RNA-seq read counts.” *Genome Biology*. 2014; 15 (2). BioMed Central Ltd:R29+. https://doi.org/10.1186/gb-2014-15-2-r29.
+

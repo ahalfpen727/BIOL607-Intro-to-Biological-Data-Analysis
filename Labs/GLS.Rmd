@@ -1,0 +1,86 @@
+---
+title: "GLS"
+author: "Andrew JH"
+date: "November 29, 2018"
+output: html_document
+---
+   
+   
+```{r library-load}
+source("http://faculty.ucr.edu/~tgirke/Documents/R_BioCond/My_R_Scripts/dendroCol.R")
+library(tidyverse);library(broom);library(mnormt)
+library(igraph);library(ggplot2); library(gplots)
+library(pvclust);library(Hmisc); library(ellipse)
+library(stats4);library(stats); library(car)
+library(limma);library(DESeq2);library(edgeR)
+library(cummeRbund);library(ArrayExpress)
+library(party); library(rpart)
+library(nlme);library(lmtest)
+require(multtest)
+library(CopTea)
+library(rafalib)
+
+```
+
+```{r}
+
+
+clams<-read_delim("/home/drew/Downloads/BIOL607-Introduction-to-Biological-Data-Analysis/data/Clams.txt", delim="\t")
+ 
+clam.lm<-lm(clams$LENGTH ~ clams$MONTH )
+clam.lm
+plot(clam.lm)
+bptest(clam.lm)
+
+bptest(clam.lm, varformula = ~ MONTH, data=clams)
+bptest(clam.lm, varformula = ~ LENGTH, data=clams)
+
+clam.wlm<-lm(clams$LENGTH ~ clams$MONTH,data=clams, weights=c(1/clams$MONTH))
+clam.wlm
+plot(clam.wlm)
+
+
+plot(clams$LNLENGTH ~ clams$LNAFD)
+pairs(clams)
+
+
+
+clam.lm<-lm(clams$LNLENGTH ~ clams$LNAFD)
+plot(clam.lm)
+summary(clam.lm)
+
+clam.gls <- gls(LENGTH ~ MONTH, data=clams, weights = varFixed(~MONTH)) 
+clam.gls
+plot(clam.gls)
+clam.gls1<-gls(LENGTH ~ MONTH, data=clams, weights = varComb(varFixed(~LENGTH), varFixed(~MONTH)))
+clam.gls2
+plot(clam.gls2)
+
+vMonth <- varIdent(form = ~ 1 | MONTH)
+clam.gls2<-gls(LENGTH ~ MONTH, data=clams, weights =vMonth)
+clam.gls2
+anova(clam.gls1, clam.gls2)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

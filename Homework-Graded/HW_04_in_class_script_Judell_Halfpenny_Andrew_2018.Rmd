@@ -1,0 +1,500 @@
+---
+title: 'BIOL-607 Biological Data Analysis Homework 4: Hypothesis Testing'
+author: "Andrew Judell-Halfpenny"
+date: "October 6, 2018"
+output:
+  slidy_presentation: 
+    incremental: yes
+    keep_md: yes
+  beamer_presentation:
+    colortheme: wolverine
+    fig_crop: no
+    fig_height: 7
+    fig_width: 7
+    fonttheme: serif
+    incremental: yes
+    keep_tex: yes
+  ioslides_presentation:
+    incremental: yes
+---
+  
+```{r install-libraries}
+#1. Install libraries
+#install.packages("revealjs")
+#library(devtools);#devtools::install_github(gganimate)
+library(devtools);library(dplyr);library(ggplot2)
+#library(revealjs);library(ggvis);library(phangorn)
+#devtools::install_github(phangorn)
+#devtools::install_github(treeio)
+```
+
+---
+   
+```{r load-libraries, eval=-1}
+library(animation);library(readr);library(dplyr);library(magrittr)
+library(tidyr);library(tidygraph);library(lubridate);library(ggplot2)
+library(ggtree);library(treeio);library(gganimate);library(forcats)
+```
+
+---
+
+# Part 1-W&S Chapter 6 questions 15, 21, 29
+
+> 15) For the following alternative hypotheses, give the appropriate null hypothesis.
+
+---
+
+## a) Ha = Pygmy mammoths and continental mammoths differ in their mean femur lengths.
+> Ho = Mean femur lengths for Pygmy mammoths and continental mammoths equal.
+
+## b) Ha = Patients who take phentermine and topira-mate lose weight at a different rate than control patients without these drugs.
+> Ho = Patients who take phentermine and topira-mate lose weight at a the same rate as control patients without these drugs.
+
+---
+
+## c) Ha = Patients who take phentermine and topiramate have different proportions of their babies born with cleft palates than do patients not taking these drugs.
+> Ho = Patients who take phentermine and topiramate the same proportions of their babies born with cleft palates than do patients not taking these drugs.
+
+## d) Ha = Shoppers on average buy different amounts of candy when Christmas music is playing in the shop compared to when the usual type of music is playing.
+> Ho =Shoppers on average buy the same amount of candy when Christmas music is playing in the shop compared to when the usual type of music is playin
+
+---
+
+## e) Ha = Male white-collared manakins (a tropical bird) dance more often when females are present than when they are absent.
+> Ho = Male white-collared manakins (a tropical bird) dance exactly as often when females are present as when they are absent.
+
+---
+
+## 21) Imagine that two researchers independently carry out clinical trials to test the same null hypothesis, that COX-2 selective inhibitors (which are used to treat arthritis) have no effect on the risk of cardiac arrest. They use the same population for their study, but one experimenter uses a sample size of 60 participants, whereas the other uses a sample size of 100. Assume that all other aspects of the studies, including significance levels, are the same between the two studies.
+
+---
+
+## 21.a) Which study has the higher probability of a Type II error, the 60-participant study or the 100-participant study?
+> The 60-participant study has  a greater probability of producing a Type II error than the 100-participant study.  This is proportiion of participants chosen from random sample from the 60 participant study that produce a result that leads to rejection of a false null hypothesis is greater than the proportion in the 100 participant study.
+
+---
+
+## b) Which study has higher power?
+> The 100-participant study has greater power because of its reduced likelihood of a Type II error.
+
+## c) Which study has the higher probability of a Type I error?
+> The study with 100 patients has a higher probability of a Typer I error (false positive) 
+
+## d) Should the tests be one-tailed or two-tailed? Explain.
+> In each one of these statistical tests the null hypothesis is that there is no difference (up or down) between the two populations and therefor requires a two-tailed test.
+
+---
+
+# 29)  A team of researchers conducted 100 independent hypothesis tests using a significance level of α = 0.05.
+## a) If all 100 null hypotheses were true, what is the probability that the researchers would reject none of them?
+> At an alpha level of 0.05, the probability of 100 out of 100 true null hypotheses can be calculated from the discrete binomial distribution function with success defined as a type I error, and a rejection of the null hypothesis.
+> 0.59%, (less than 1&)
+
+```{r}
+pbnn<-dbinom(0, 100, 0.05)
+pbnmp<-pbnn * 100
+paste0(pbnmp,sep="%")
+
+```
+
+## b)  If all 100 null hypotheses were true, how many of these tests on average are expected to reject the null hypothesis?
+> Give 100 true null hypotheses, and the previously stated alpha level (0.05), 5 tests are expected to produce results that suggest that the researchers should reject the null hypothesis.
+
+---
+
+# Part 2 W & S Chapter 7 questions 22
+
+## 22) In a test of Murphy’s law, pieces of toast were buttered on one side and then dropped. Murphy’s law predicts that they will land butter-side down. Out of 9821 slices of toast dropped, 6101 landed butter-side down.
+
+---
+
+# 22.a) What is a 95% confidence interval for the probability of a piece of toast landing butter-side down? 
+## > Manual calculation of proportional confidence interval
+ 
+```{r conf-interval}
+n=9821 # butter-side-down toast
+p.hat=6101/n # Proportion estimate of the sample
+p.hat
+z=1.96  # for 95% confidence interval
+se.p.est=((p.hat*(1-p.hat)/n)^.5)  # std.err
+p.hatl=p.hat - (z*se.p.est)
+p.hath=p.hat + (z*se.p.est)
+paste0(p.hatl,sep=" to ", p.hath)
+# The 95% confidence interval of the proportion is from 
+```
+
+---
+
+# 22.a) The binom.test function performs an automated version of the steps that were just performed
+
+```{r}
+dropped.bread.proportion<-binom.test(6101, n = 9821)
+dropped.bread.proportion
+
+```
+
+---
+
+# 22.b) Using the results of part (a), is it plausible that there is a 50:50 chance of the toast landing butter-side down or butter-side up?
+> Given that the 95% confidence interval for the proportion of the population of butter side down slices of dropped bread is from 0.611626 to 0.6301837 and doesn't include 0.5, it would be incorrect to characterize the chances as 50:50. To produce a p-value for the hypothesis that the proportion of butter-down bread slices can be characterized as 50:50 despite a priori estimate of ~0.6116 via sampling, the prop.test function can be used with the expected number of butter-down slices for 9821 trials given probability of 50:50 
+
+```{r}
+# assuming a 50:50 chance, the nnumber of butter side down slices in 9821 trials
+s.not<-n/2
+prop.test(round(s.not), n=n,p=p.hat,correct=F)        
+```
+
+---
+
+# 3) From the Lab: A Simulation of Many SDs and Alphas |  Here’s the exercise we started in lab. Feel free to look back copiously at the lab handout if you’re getting stuck. Remember, for each step, write-out in comments what you want to do, and then follow behing with code. 
+> Now, let’s assume an average population-wide resting heart rate of 80 beats per minute with a standard deviation of 6 BPM. 
+> A given drug speeds people’s heart rates up on average by 5 BPM. What sample size do we need to achieve a power of 0.8?
+> An initial distribution of 2000, mean of 80 bpm, and a standard deviation 6 bpm from which to draw samples. Extreme and unlikely values in either direction were identified from one less than 3 standard deviations (63 and 97). 
+
+```{r}
+hrh.mu<-80; hrh.sd<-6
+hrl<-80-(2*6); hrl # floor of 95% of the distribution of BPM
+hrh<-80+(2*6); hrh # ceiling of 95 of the distribution of BPM
+# initialize a distribution with n=2000 and extreme values
+hrh.avg <- c(seq(62,98, length.out=2000))
+```
+
+# 3) 
+
+```{r}
+prob_observed =  c(rep(0.9/1000, 1000), rep(0.1/1000, 1000))
+samp <- sample(hrh.avg, 100000, replace=TRUE,
+               prob = prob_observed)
+
+length(which(samp >= 97 | samp <= 63))/length(samp)
+length(which(samp >= 97))/length(samp)
+length(which(samp <= 63))/length(samp)
+
+```
+
+
+```{r}
+sim_data <- data.frame(samps = rep(1:20, 100000)) %>%
+  #a trick - group by 1:n() means you don't need sim numbers!
+  group_by(1:n()) %>%
+  #get a sample mean
+  mutate(sample = mean(rnorm(samp, 85, 6))) %>%
+  #clean up
+  ungroup()
+
+sim_data <- sim_data %>%
+  mutate(se_y = 6/sqrt(samp)) %>%
+  mutate(z = (sample-80)/se_y) %>%
+  mutate(p = 2*pnorm(abs(z), lower.tail=FALSE))
+
+Cool! We have p values! We can even plot this by sample size
+
+ggplot(data = sim_data, mapping = aes(x=samps, y=p)) +
+  geom_jitter(alpha=0.4)
+
+
+sim_tradeoff <- sim_data %>%
+  #more alphas!
+  crossing(alpha = 10^(-1:-10)) %>%
+  #now calculate power for each alpha
+  group_by(samps, alpha) %>%
+  summarise(power = 1-sum(p>alpha)/500) %>%
+  ungroup()
+```
+
+We can then plot this with `ggplot`
+
+```{r plot_tradeoff}
+ggplot(sim_tradeoff) +
+  aes(x=samps, y=power, color=factor(alpha)) +
+  geom_point() + geom_line() +
+  xlab("Sample Size") +
+  
+  #just a little note on greek letters and re-titling
+  #colorbars
+  scale_color_discrete(guide = guide_legend(title=expression(alpha)))
+
+
+```
+
+
+#first make a data frame with sample sizes
+ 
+ 
+```{r}
+
+log(1)
+
+sim_data <- sim_data %>%
+     mutate(se_y =3:10 %>%
+     log() - sqrt(samps)) %>%
+   #mutate(se_y = 6/sqrt(samps)) %>%
+  mutate(z = (5)/se_y) %>%
+   #mutate(z = (sample-80)/se_y) %>%
+  mutate(p =pnorm(abs(z)))
+
+
+ggplot(data = sim_data, mapping = aes(x=samps, y=p)) +
+  geom_jitter(alpha=0.4)
+
+```
+ 
+
+############################################################################
+```{r}
+
+  #get a sample mean
+  mutate(sample = mean(rnorm(samp, 90, 6))) %>%
+  
+  #clean up
+  ungroup()
+
+sim_data <- sim_data %>%
+  mutate(se_y = 6/sqrt(samps)) %>%
+  mutate(z = (sample-80)/se_y) %>%
+  mutate(p = 2*pnorm(abs(z), lower.tail=FALSE))
+
+#Cool! We have p values! We can even plot this by sample size
+
+ggplot(data = sim_data, mapping = aes(x=samps, y=p)) +
+  geom_jitter(alpha=0.4)
+
+
+sim_power <- sim_data %>%
+  group_by(samps) %>%
+  summarise(power = 1-sum(p>0.05)/n()) %>% 
+  ungroup()
+
+sim_power <- sim_data %>%
+  group_by(samps) %>%
+  summarise(power = 1-sum(p>0.2)/n()) %>% 
+  ungroup()
+
+And we can plot that result with our critical threshold for power.
+
+ggplot(data=sim_power, mapping = aes(x=samps, y=power)) +
+  geom_point() +
+  geom_line() +
+  geom_hline(yintercept=0.8, lty=2)
+
+library(tidyr)
+
+sim_tradeoff <- sim_data %>%
+  
+  #more alphas!
+  crossing(alpha = 10^(-1:-10)) %>%
+  
+  #now calculate power for each alpha
+  group_by(samps, alpha) %>%
+  summarise(power = 1-sum(p>alpha)/500) %>%
+  ungroup()
+
+#We can then plot this with ggplot
+
+ggplot(sim_tradeoff) +
+  aes(x=samps, y=power, color=factor(alpha)) +
+  geom_point() + geom_line() +
+  xlab("Sample Size") +
+  
+  #just a little note on greek letters and re-titling
+  #colorbars
+  scale_color_discrete(guide = guide_legend(title=expression(alpha)))
+
+```
+
+```
+
+OK, we know that if `nose_length` $\le$ 10, there's a 90% chance of seeing one of those values. Otherwise, a 10% chance. So first we find the index of where nose length begins being over 10. 
+
+`which` is a great function that 
+
+
+
+```
+
+1001 - cool, so, right in the middle. That means, the first 1000 have a high chance of being chose, and the second 1000 have a low chance of being chosen.
+
+If you're in the first 1000, each individual size has a 0.9/1000 chance of being observed. If you're in the second 1000, each size has a 0.1/1000 chance of being observed. Let's turn that into a vector
+```{r probs}
+prob_observed =  c(rep(0.9/1000, 1000), rep(0.1/1000, 1000))
+```
+
+Now we can use `sample` to take replicate samples of a fictional population to create a distribution. Let's use a population size of 100000 - although you could go larger. We'll sample from the list of nose lengths, with replacement, but use the `probs` argument to specify the chance of being chosen using our `prob_observed` vector.
+
+```{r sample_tapir}
+samp <- sample(nose_length, 100000, replace=TRUE,
+               prob = prob_observed)
+samp <- sample(nose_length, 100000, replace=TRUE,
+               prob = prob_observed)
+
+```
+
+### 3.2 Getting a p-value
+OK, you have a null population. How do you get a p-value from that population sample? Let's say, for example, we have a tapir with a nose length of 14.5. Is it a tapir, or a *faux* tapir?
+
+Given that p-values are the probability of observing a value or something greater than it, this translates to the fraction of individuals in a population that is equal to or greater than some value. So, what fraction of the observations in your simulated population are equal to or greater than 14.5?
+
+We can assess this a number of ways. Using our ```which``` function above, we can look at the length of the output vector.
+
+Or, in any comparison that produces boolean values, `TRUE` = 1 and `FALSE` = 0. So we could sum up a comparison.
+
+```{r sample_p}
+length(which(samp >= 14.5))/length(samp)
+
+sum(samp >= 14.5)/length(samp)
+```
+
+We can of course make this a two-tailed comparison by doubling our simulated p-value.
+
+```
+
+
+```{r}
+avg.rhr <- c(seq(62,98, length.out=500))
+plot(avg.rhr)
+length(which(samp >= 14.5))/length(samp)
+
+prob_observed =  c(rep(0.9/250, 250), rep(0.1/250, 250))
+summary(sim_data)
+
+
+There are all sorts of tricks one can do to minimize coding here in different tests. For example, for a z-test, one can take the absolute value of the z-test, now that it's positive, and then use `lower.tail=FALSE` and multiply the whole shebang by 2. You'll see this with t-tests next weeek.
+
+For example, let's assume a sample of 10 flies with an antenna length of 0.4mm. The population of fly antenna lengths has a mean of 0.3mm with a SD of 0.1SD.
+
+```{r pnorm}
+#Calculate SE based on the population
+sigma_ybar = 0.1/sqrt(5)
+
+#Z-Score
+z <- (0.4 - 0.5)/sigma_ybar
+
+#P-Value
+2*pnorm(abs(z), lower.tail=FALSE)
+
+```
+
+## 3. P-Value via Simulation
+What if you don't know your distirbution, or it's something weird? Let's go back to the tapir example from class
+
+### 3.1 Creating a null distribution
+So, we know that tapirs have a 90% chance, with even probability, of having a nose that is 5-10cm in length. And a 10% chance, with an even distribution of probability, of having noses from 10 to 15cm in length. Greater than that or less than that means that those tapirs have experienced the wrath of Papa Darwin.
+
+
+## 4. Power Via Simulation
+
+To evaluate how power works via simulation, let's walk through an example with a z-test. Let's assume an average population-wide resting heart rate of 80 beats per minute with a standard deviation of 6 BPM.
+
+A given drug speeds people's heart rates up on average by 5 BPM. What sample size do we need to achieve a power of 0.8?
+
+### 4.1 Creating the simulation
+
+To begin with, we need to create a simulated data frame of observations at different sample sizes. We've done this before two weeks ago using dplyr, so, making a data frame with, let's say 500, replicates of each sample size between 1-10 shouldn't be too onerous. We'll draw our random samples from a normal distribution with mean of 85 BPM and a SD of 6 BPM.
+
+```{r sim_data}
+library(dplyr)
+
+#first make a data frame with sample sizes
+sim_data <- data.frame(samps = rep(1:10, 500)) %>%
+  
+  #a trick - group by 1:n() means you don't need sim numbers!
+  group_by(1:n()) %>%
+  
+  #get a sample mean
+  mutate(sample = mean(rnorm(samps, 90, 6))) %>%
+  
+  #clean up
+  ungroup()
+```
+
+### 4.2 Applying the Test
+OK, now you have the data....so, let's do a z-test! We can define a variable for the population standard error of the mean, and then use that to calculate z, and then calculate p.
+
+```{r z_sim}
+
+sim_data <- sim_data %>%
+  mutate(se_y = 6/sqrt(samps)) %>%
+  mutate(z = (sample-80)/se_y) %>%
+  mutate(p = 2*pnorm(abs(z), lower.tail=FALSE))
+```
+
+Cool! We have p values! We can even plot this by sample size
+
+```{r p-plot}
+ggplot(data = sim_data, mapping = aes(x=samps, y=p)) +
+  geom_jitter(alpha=0.4)
+```
+
+### 4.3 Calculating Power
+Now - power! We know that our type II error rate, beta, is the fraction of p values that are greater than our alpha (here 0.05). Great! Power is then 1 - beta.
+
+Note, I'm going to use `n()` within a group here rather than trying to remember how big my number or replicate simulations for each sample size was. Protect yourself! Practice lazy coding!
+
+```{r power}
+sim_power <- sim_data %>%
+  group_by(samps) %>%
+  summarise(power = 1-sum(p>0.05)/n()) %>% 
+  ungroup()
+```
+
+And we can plot that result with our critical threshold for power.
+
+```{r powerplot}
+ggplot(data=sim_power, mapping = aes(x=samps, y=power)) +
+  geom_point() +
+  geom_line() +
+  geom_hline(yintercept=0.8, lty=2)
+```
+
+Wow - pretty good!
+
+### 4.3 Exercise
+OK, let's take the above example, and now, assume that the drug only increased the BPM by 2, the population has a SD of 7, and our alpha is 0.01.  What is our power?
+
+
+### 4.3 Multiple Alphas
+
+Let's say we wanted to look at multiple alphas. Well, we'd need another column for alpha! And we want all possible combinations of alpha and the `sim_data`. For that, we can use a function in the `tidyr` library that does that sort of all possible combinations of values in two objects called `crossing()`.
+
+```{r alphas}
+library(tidyr)
+
+sim_tradeoff <- sim_data %>%
+  
+  #more alphas!
+  crossing(alpha = 10^(-1:-10)) %>%
+  
+  #now calculate power for each alpha
+  group_by(samps, alpha) %>%
+  summarise(power = 1-sum(p>alpha)/500) %>%
+  ungroup()
+```
+
+We can then plot this with `ggplot`
+
+```{r plot_tradeoff}
+ggplot(sim_tradeoff) +
+  aes(x=samps, y=power, color=factor(alpha)) +
+  geom_point() + geom_line() +
+  xlab("Sample Size") +
+  
+  #just a little note on greek letters and re-titling
+  #colorbars
+  scale_color_discrete(guide = guide_legend(title=expression(alpha)))
+```
+
+
+### 4.3 Exercise (and homework): Many SDs
+
+1) Let's start from scratch. Assume a mean effect of 5 again. But now, make a simulated data frame that not only looks at multiple sample sizes, but also multiple SD values. You're going to want `crossing` with your intitial data frame of sample sizes and a vector of sd values from 3 to 10 (just iterate by 1).
+
+2) OK, now that you've done that, calculate the results from z-tests. Plot p by sample size, using `facet_wrap` for different SD values.
+
+3) Now plot power, but use color for different SD values. Include our threshold power of 0.8.
+
+4) Last, use `crossing` again to explore changing alphas from 0.01 to 0.1. Plot power curves with different alphas as different colors, and use faceting to look at different SDs. 
+
+5) What do you learn about how alpha and SD affect power? 
+
+6) How do you think that changing the effect size would affect power? You can just answer this without coding out anything. Based on what we've learned so far - what do you think?
+

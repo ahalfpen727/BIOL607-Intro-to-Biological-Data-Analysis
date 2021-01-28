@@ -1,0 +1,18 @@
+\documentclass{article}
+    \usepackage{enumerate}
+
+    \usepackage{hyperref} %must be last
+
+\usepackage{Sweave}
+\begin{document}
+\input{homework_3-concordance}
+
+\title{Homework 3} % provide title info
+\author{Biology 697} % provide author info
+\date{9/21/2012} % provide date
+\maketitle % format and print title page
+
+\begin{Schunk}
+\begin{Sinput}
+> #read_chunk("./homework_3_solution.R")
+> opts_chunk$set(echo=FALSE)

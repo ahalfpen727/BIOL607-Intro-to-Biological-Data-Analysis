@@ -1,0 +1,547 @@
+---
+title: "Midterm for BIOL607: Introduction to Biological Data Analysis"
+author: "Andrew Judell-Halfpenny"
+output: html_document
+---
+
+```{r setup, error = FALSE, include=TRUE, results="hide"}
+knitr::opts_chunk$set(echo = FALSE)
+library(ggplot2);library(tidyverse)
+library(stats4);library(MASS);library(pwr)
+library(profileModel);library(modelr)
+library(viridis); library(bbmle);library(broom)
+library(pastecs); library(Hmisc); library(psych)
+library(brms);library(MCMCpack); library(bayesplot)
+library(lme4);library(rstan);library(bayesplot)
+
+rstan_options(auto_write=TRUE)
+options(mc.cores=parallel::detectCores())
+seal.csv<-read_csv("http://www.zoology.ubc.ca/~whitlock/ABD/teaching/datasets/17/17e8ShrinkingSeals%20Trites%201996.csv")
+quaildata<-read_csv("https://datadryad.org/bitstream/handle/10255/dryad.51265/Morphology%20data.csv?sequence=1")
+
+s.mean=3730.246; s.sd=1293.485;s.ages.range =c(958:8353)
+s.slope=0.00237;s.intercept=115.767;s.sigma = 5.6805
+
+```
+
+
+# 1) Sampling your system (10 points)
+> Each of you has a study system your work in and a question of interest. Give an example of one variable that you would sample in order to get a sense of its variation in nature. Describe, in detail, how you would sample for the population of that variable in order to understand its distribution. Questions to consider include, but are not limited to: Just what is your sample versus your population? What would your sampling design be? Why would you design it that particular way? What are potential confounding influences of both sampling technique and sample design that you need to be careful to avoid? What statistical distribution might the variable take, and why?
+
+# 1. Answer:
+>  I am interested in sampling the population to identify the features of the human genome that are pervasively transcribed/consituitively expressed.  In order to identify theses features, public repositories (GEO-profiles) could be queryied for RNA-Seq data. All available human RNA-Seq data would be culled and mapped to the same genome (hg38/GRCh38). Gene expression would be quantified in fragments per kilobase of transcript per million mapped read (FPKM). For each comparative experiment, correlation coeficients would be calculated for each gene across all conditions. Only genes with (arbitrarily) high correlation (90%) across both conditions would be added to a librabry of pontentially constitiutively expressed genes for that experiment. For each comparative experiment, correlation coefficients would be caclcuted for each gene to identify consistently expressed features independent of condition. The initial library of constituitively expressed genes could be culled from hierarchical clustering of the correlation coefficients of gene expression across all conditions for several experiments. This could also be done with a principal component analysis (PCA) mutli dimensional scaling (MDS) analysis of the gene expression across all samples from many experiments.  Rather than looking at the direction of maximal variation, the loadings for the features of minimal variation could be used to identify genes with consistenet expression across all conditions and all experiments. Genes from new experiments could then be added to the library of constituitively expressed features by performing  ANOVA hypothesis tests. The consitituitively expressed features and the distribution of their expression could then be queried to produce a canonical control group for RNA-Seq analyses.
+
+---
+
+#  2) Let’s get philosophical. (10 points)
+> Are you a frequentist, likelihoodist, or Bayesian? Why? Include in your answer why you prefer the inferential tools (e.g. confidence intervals, test statistics, posterior probabilities, etc.) of your chosen worldview and why you do not like the ones of the other one. This includes defining just what those different tools mean! extra credit for citing and discussing outside sources - one point per source/point
+# 2. Answer:
+> Of the three statistical philosophies, I prefer likelihoodist. The likelihood ratio is a simple tool that can be used to identify model fit.  The metric for significance is the deviance, a modified version of the test statistic.  The philosophy is derivative of frequentist logic but lacks the obtuse frequentist language. Likelihoodist philosophy considers how well data supports a given hypothesis and provides more utility than the frequentist quest for extreme values. Frequentist statistics is more familiar to me but the idea of failing to reject a null hypothesis is a ridiculous endeavour in mental gymnastics. The frequentist p-value and condfidence interval are the most familiar statistical tools available. Bayesian statistics is a new and esoteric concept for me despite its utility. Bayesian statistics incorporates a prior belief into the likelihoodist data generating model and normalizes by the marginal probability of all outcomes. Although the degree of belief philosophy of bayesian statistics more appropriately models scientific hypothesis examination, it is conceptually novel and is often omitted from introductory statistics courses.
+
+---
+
+# 3) Power (20 points)
+> We have a lot of aspects of the sample of data that we collect which can alter the power of our linear regressions.
+* Slope
+* Intercept
+* Reidual variance
+* Sample Size
+* Range of X values
+> Choose three of the above properties and demonstrate how they alter power of an F-test from a linear regression using at least three different alpha levels (more if you want!) As a baseline of the parameters, (Your call what distribution to use for seal age simulation)
+* slope = 0.00237
+* intercept=115.767
+* sigma = 5.6805, 
+* range of seal ages = 958 to 8353
+* or seal ages ∼ N(3730.246, 1293.485).
+   
+```{r power-data-prep, error = FALSE, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+
+s.mean=3730.246; s.sd=1293.485;s.ages.range =c(958,8353)
+s.slope=0.00237;s.intercept=115.767;s.sigma = 5.6805
+
+seal.lm<-lm(length.cm ~ age.days, data=seal.csv)
+summary(seal.lm)
+anova(seal.lm)
+
+seal.sim <- seal.csv %>%
+   filter(age.days >= s.ages.range[1], age.days <= s.ages.range[2]) %>%
+   mutate(samp_size=1:nrow(seal.csv)) %>%
+   mutate(se_y = sd(age.days)/ sqrt(samp_size)) %>%
+   group_by(samp_size) %>%
+   mutate(z = (age.days-s.mean)/se_y) %>%
+   mutate(slope = c(length.cm/age.days)) %>%
+   mutate(p = 2*pnorm(abs(z), lower.tail=FALSE)) %>%
+   add_residuals(seal.lm) %>%
+   add_predictions(seal.lm) %>%
+   ungroup()
+
+# Assumptions, lack of correlation
+qplot(pred, resid, data=seal.sim) +
+  stat_smooth(method="lm")
+
+```
+
+# Sample Size Influence on the Power of an F-Test
+> The following graphs depict power as a function of sample size at several different $\alpha$ levels ($\alpha=0.01$ , $\alpha=0.05$ , and $\alpha=0.1$).
+
+```{r power-sample-size, error = FALSE, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+
+sample_sizes=2:nrow(seal.csv)
+power_f_test=pwr.f2.test(u=sample_sizes,v=sample_sizes, f2 = 0.1 , sig.level = 0.01, power = )
+plot(sample_sizes,power_f_test$power,col="blue",
+     ylab='statistical power',xlab='sample size', ylim = c(0,1),main="Sample size influence on power at alpha=0.01")
+abline(h = 0.80, lty=2, lwd=2,col='red')
+abline( v = 1200, col = "red", lty = 3)
+text(1,0, "abline( v = 1200 )", col = "gray60", adj = c(0, -.1))
+
+power_f2_test=pwr.f2.test(u=sample_sizes,v=sample_sizes, f2 = 0.1 , sig.level = 0.05, power = )
+plot(sample_sizes,power_f2_test$power,col="blue",
+     ylab='statistical power',xlab='sample size', ylim = c(0,1),main="Sample size influence on power at alpha=0.05")
+abline(h = 0.80, lty=2, lwd=2,col='red')
+abline( v = 750, col = "red", lty = 3)
+text(1,0, "abline( v = 750 )", col = "gray60", adj = c(0, -.1))
+
+power_f2_test=pwr.f2.test(u=sample_sizes,v=sample_sizes, f2 = 0.1 , sig.level = 0.1, power = )
+plot(sample_sizes,power_f2_test$power,col="blue",
+     ylab='statistical power',xlab='sample size', ylim = c(0,1),main="Sample size influence on power at alpha=0.1")
+abline(h = 0.80, lty=2, lwd=2,col='red')
+abline( v = 500, col = "red", lty = 3)
+text(1,0, "abline( v = 500 )", col = "gray60", adj = c(0, -.1))
+
+```
+
+## Sample Size Influence on the Power of an F-Test
+> For this dataset, optimal power (arbitrarily set around .8) could be achieved with a fraction of the total data points.  The dataset is so large that a logistic relationship between sample size and power becomes apparent. Maximal power (1.0) is asymptotically reached with increasing sample size. Generally, for smaller data sets, only the initial linear relationship between sample size and power is apparent. This fraction was inversely correlated with increasing $\alpha$ Increasing $\alpha$ at a particular sample sizes increases the statistical power of an f-test at that sample size.
+
+
+# Range of  X-values Influence on the Power of an F-Test
+
+```{r power-x-values, error = FALSE, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+
+seal.sim.xr.1.lm<-lm(length.cm ~ age.days, data=seal.sim)
+summary(seal.sim.xr.1.lm)
+anova(seal.sim.xr.1.lm)
+
+var(seal.sim$age.days)
+seal.sim %>%
+    summarise(power = 1-sum(p>0.01)/n()) %>% 
+    ungroup()
+seal.sim %>%
+   summarise(power = 1-sum(p>0.05)/n()) %>% 
+   ungroup()
+seal.sim %>%
+   summarise(power = 1-sum(p>0.1)/n()) %>% 
+   ungroup()
+
+seal.sim <-subset(seal.sim, seal.sim$age.days >= 2000 & seal.sim$age.days <= 6000)
+var(seal.sim$age.days)
+seal.sim %>%
+    summarise(power = 1-sum(p>0.01)/n()) %>% 
+    ungroup()
+seal.sim %>%
+   summarise(power = 1-sum(p>0.05)/n()) %>% 
+   ungroup()
+seal.sim %>%
+   summarise(power = 1-sum(p>0.1)/n()) %>% 
+   ungroup()
+
+seal.sim <-subset(seal.sim, seal.sim$age.days >= 2500 & seal.sim$age.days <= 5500)
+var(seal.sim$age.days)
+seal.sim %>%
+    summarise(power = 1-sum(p>0.01)/n()) %>% 
+    ungroup()
+seal.sim %>%
+   summarise(power = 1-sum(p>0.05)/n()) %>% 
+   ungroup()
+seal.sim %>%
+   summarise(power = 1-sum(p>0.1)/n()) %>% 
+   ungroup()
+
+```
+
+## Range of  X-values Influence on the Power of an F-Test
+> Minimizing the range of X-values in a way that also reduced that variance of the X-values lessened the Power of an F-Test in a similar fashion to a reduction in sample size.
+
+# Influence of Slope on the Power of an F-Test
+
+```{r power-slope, error = FALSE, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+
+seal.sim <- seal.csv %>%
+   filter(age.days >= s.ages.range[1], age.days <= s.ages.range[2]) %>%
+   mutate(samp_size=1:nrow(seal.csv)) %>%
+   mutate(se_y = sd(age.days)/ sqrt(samp_size)) %>%
+   group_by(samp_size) %>%
+   mutate(z = (age.days-s.mean)/se_y) %>%
+   mutate(slope = c(length.cm/age.days)) %>%
+   mutate(p = 2*pnorm(abs(z), lower.tail=FALSE)) %>%
+   add_residuals(seal.lm) %>%
+   add_predictions(seal.lm) %>%
+   ungroup()
+
+max(seal.sim$slope)
+min(seal.sim$slope)
+s.slope
+
+seal.sim.slope<-seal.sim %>%
+    filter(slope <= s.slope) %>%
+    ungroup()
+
+seal.sim.slope<-seal.sim %>%
+    filter(slope >= 0.03) %>%
+    ungroup()
+
+seal.sim.slope %>%
+    summarise(power = 1-sum(p>0.01)/n()) %>% 
+    ungroup()
+seal.sim.slope %>%
+   summarise(power = 1-sum(p>0.05)/n()) %>% 
+   ungroup()
+seal.sim.slope %>%
+   summarise(power = 1-sum(p>0.1)/n()) %>% 
+   ungroup()
+
+seal.sim.slope<-seal.sim %>%
+    filter(slope >= 0.05) %>%
+    ungroup()
+seal.sim.slope %>%
+    summarise(power = 1-sum(p>0.01)/n()) %>% 
+    ungroup()
+seal.sim.slope %>%
+   summarise(power = 1-sum(p>0.05)/n()) %>% 
+   ungroup()
+seal.sim.slope %>%
+   summarise(power = 1-sum(p>0.1)/n()) %>% 
+   ungroup()
+
+seal.sim.slope<- seal.sim %>%
+    filter(slope <= 0.075) %>%
+    ungroup()
+seal.sim.slope %>%
+    summarise(power = 1-sum(p>0.01)/n()) %>% 
+    ungroup()
+seal.sim.slope %>%
+   summarise(power = 1-sum(p>0.05)/n()) %>% 
+   ungroup()
+seal.sim.slope %>%
+   summarise(power = 1-sum(p>0.1)/n()) %>% 
+   ungroup()
+
+seal.sim.slope<- seal.sim %>%
+    filter(slope <= 0.1) %>%
+    ungroup()
+seal.sim.slope %>%
+    summarise(power = 1-sum(p>0.01)/n()) %>% 
+    ungroup()
+seal.sim.slope %>%
+   summarise(power = 1-sum(p>0.05)/n()) %>% 
+   ungroup()
+seal.sim.slope %>%
+   summarise(power = 1-sum(p>0.1)/n()) %>% 
+   ungroup()
+
+```
+
+## Influence of Slope on the Power of an F-Test
+> There werent any instantaneous slopes less than the stated value of the slope. Therefor the effect of slope could only be judged by incrementally increasing the slope beyond the stated value. Measuring power of f-test as a function of an increasing slope had a parabolic relationship.  Power increased with increased slope until a maximum was reached at a slope of 0.05 centimeters/day.  As slope increased above 0.05 centimeters/day power began to decrease.
+
+# Extra credit 1 - test whether the distribution of ages alters power: 3 points
+
+```{r}
+seal.sim <- seal.csv %>%
+   filter(age.days >= s.ages.range[1], age.days <= s.ages.range[2]) %>%
+   mutate(samp_size=1:nrow(seal.csv)) %>%
+   mutate(se_y = sd(age.days)/ sqrt(samp_size)) %>%
+   group_by(samp_size) %>%
+   mutate(z = (age.days-s.mean)/se_y) %>%
+   mutate(slope = c(length.cm/age.days)) %>%
+   mutate(p = 2*pnorm(abs(z), lower.tail=FALSE)) %>%
+   add_residuals(seal.lm) %>%
+   add_predictions(seal.lm) %>%
+   ungroup()
+
+seal.sim %>%
+    summarise(power = 1-sum(p>0.01)/n()) %>% 
+    ungroup()
+seal.sim %>%
+    summarise(power = 1-sum(p>0.05)/n()) %>% 
+    ungroup()
+seal.sim %>%
+    summarise(power = 1-sum(p>0.1)/n()) %>% 
+    ungroup()
+
+
+seal.sim %>%
+      filter(samp_size >2) %>%
+      group_by(samp_size) %>%
+      mutate(p = dlnorm(abs(z))) %>%
+      ungroup()
+
+seal.sim %>%
+    summarise(power = 1-sum(p>0.01)/n()) %>% 
+    ungroup()
+seal.sim %>%
+    summarise(power = 1-sum(p>0.05)/n()) %>% 
+    ungroup()
+seal.sim %>%
+    summarise(power = 1-sum(p>0.1)/n()) %>% 
+    ungroup()
+
+seal.sim %>%
+      filter(samp_size >2) %>%
+      group_by(samp_size) %>%
+      mutate(p =-pchisq(abs(z),df=samp_size,log.p=TRUE, lower.tail=FALSE)) %>%
+      ungroup()
+
+seal.sim %>%
+    summarise(power = 1-sum(p>0.01)/n()) %>% 
+    ungroup()
+seal.sim %>%
+    summarise(power = 1-sum(p>0.05)/n()) %>% 
+    ungroup()
+seal.sim %>%
+    summarise(power = 1-sum(p>0.1)/n()) %>% 
+    ungroup()
+
+```
+## Influence of Distribution on the Power of F-test
+> After implementing several different distributions to perform power calculations there does not seem to be any influence from distribution on the power of an f-test.
+
+## Extra Credit 2 Choose just one of the above elements to vary. Using likelihood to fit models, repeat your power analysis for a chi-square likelihood ratio test. You can use glm(), bbmle or some other means of fitting and obtaining a LRT at your discretion. 5 points.
+
+
+# 4) Bayes Theorem
+> I’ve referenced the following figure a few times. I’d like you to demonstrate your understanding of Bayes Theorem by hand showing what the probability of the sun exploding is given the data. Assume that your prior probability that the sun explodes is p(Sun Explodes) = 0.0001. The rest of the information you need is in the cartoon!
+
+```{r question4, error = FALSE, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+
+the.end.of.all.life<-tibble(pr_not_sixes = (5/6)^2,
+                            pr_dbl_sixes = (1/6)^2,
+                            prior_Sun_Explodes = .0001) %>% 
+   mutate(marginal = pr_not_sixes*prior_Sun_Explodes + pr_dbl_sixes*(1-prior_Sun_Explodes)) %>% 
+   mutate(prob_sun_Explodes = pr_not_sixes * prior_Sun_Explodes / marginal) %>% 
+   mutate(prob_sun_not_Exploded = pr_dbl_sixes * (1-prior_Sun_Explodes) / marginal) %>% 
+   glimpse()
+
+```
+
+   
+# 5) Quailing at the Prospect of Linear Models
+> I’d like us to walk through the three different ‘engines’ that we have learned about to fit linear models. To motivate this, we’ll look at Burness et al.’s 2012 study "Post-hatch heat warms adult beaks: irreversible physiological plasticity in Japanese quail http://rspb.royalsocietypublishing.org/content/280/1767/20131436.short the data for which they have made available at Data Dryad at http://datadryad.org/resource/doi:10.5061/dryad.gs661. We’ll be looking at the morphology data.
+
+# 5.1 Three fits (10 points)
+> To begin with, I’d like you to fit the relationship that describes how Tarsus (leg) length predicts upper beak (Culmen) length. Fit this relationship using least squares, likelihood, and Bayesian techniques. For each fit, demonstrate that the necessary assumptions have been met. Note, functions used to fit with likelihood and Bayes may or may not behave well when fed NAs. So look out for those errors.
+
+```{r question-5.1, error = FALSE, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+
+quaildata<-read_csv("https://datadryad.org/bitstream/handle/10255/dryad.51265/Morphology%20data.csv?sequence=1")
+
+quail.lm <- lm(quaildata$`Culmen (mm)` ~ quaildata$`Tarsus (mm)`, data = quaildata)
+#assumptions
+plot(quail.lm, which=1)
+plot(quail.lm, which=2)
+
+quail.mle <- glm(quaildata$`Culmen (mm)` ~ quaildata$`Tarsus (mm)`,
+                family = gaussian(link = "identity"),
+                data = quaildata)
+
+plot(quail.mle, which=1)
+plot(quail.mle, which=2)
+
+quail.prof <- profileModel(quail.mle,
+                     objective = "ordinaryDeviance")
+plot(quail.prof)
+
+quail.data<-as.data.frame(cbind(Culmen=quaildata$`Culmen (mm)`,Tarsus=quaildata$`Tarsus (mm)`))
+quail.data<-na.omit(quail.data)
+
+
+```
+
+## Using brm to peform bayesian linear modeling
+
+```{r brm-5.1.2, error = FALSE,eval=TRUE, echo=TRUE, include=TRUE, results="hide"}
+
+quail.brm<-brm(Culmen ~ Tarsus,
+                family = gaussian(link = "identity"),data = quail.data)
+                
+
+```
+
+
+```{r question-5.1.3, error = FALSE, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+
+plot(quail.brm, which=1)
+
+plot(quail.brm, which=2)
+
+prior_summary(quail.brm)
+quail_posterior <- posterior_samples(quail.brm, add_chain = T)
+
+head(quail_posterior)
+mcmc_trace(quail_posterior)
+
+```
+
+
+# 5.2 Three interpretations (10 points)
+> OK, now that we have fits, take a look! Do the coefficients and their associated measures of error in their estimation match? How would we interpret the results from these different analyses differently? Or would we? Note, confint works on lm objects as well.
+
+```{r interpretation, message=FALSE, warning=FALSE, error=FALSE, eval=TRUE, include=TRUE}
+# lm
+quail.lm
+summary(quail.lm)
+confint.lm(quail.lm)
+quail.lm$coefficients
+
+# MLE
+quail.mle
+summary(quail.mle)
+confint(quail.mle)
+quail.mle$coefficients
+
+# BRM
+quail.brm
+summary(quail.brm)
+
+```
+## Interpretation
+> The coefficients, standard error, and the confidence interval for the linear model and the generalized linear model produced almost the exact same results and should be interpreted in the same way.  They both modle Tarsus length as a predictor of Culmen length using a similar multiplier.  The bayesian method can be interpreted in this fashion but the results are slightly different than the glm and lm methods.  This is most likely the result of the prior in the model. Since the glm and lm methods do not incorporte a prior it is likely that the flat prior influenced the outcome of the brm method slightly. This would explain the difference in the outcome between the methods. 
+
+# 5.3 Everyday I’m Profilin’ (10 points)
+> For your likelihood fit, are your profiles well behaved? For just the slope, use grid sampling to create a profile. You’ll need to write functions for this, and use the results from your glm() fit to provide the reasonable bounds of what you should be profiling over (3SE should do). Is it well behaved? Plot the profile and give the 80% and 95% CI. Verify your results with profileModel.
+
+```{r Q-5.3-Profiling, error = FALSE, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+
+quallm<-summary(quail.lm)
+quallm
+res.sd<-quallm$sigma;res.sd
+m.est=quallm$coefficients[2,1];m.est
+m.sterr=quallm$coefficients[2,2];m.sterr
+b.est=quallm$coefficients[1,1];b.est
+b.sterr=quallm$coefficients[1,2];b.sterr
+
+quail_dist <- crossing(b = seq(b.est-3*b.sterr, b.est+3*b.sterr, b.sterr),
+                      m = seq(m.est-3*m.sterr, m.est+3*m.sterr, m.sterr),
+                      residual.sd = seq(res.sd/2,res.sd*2, .05)) %>%
+  rowwise() %>%
+  mutate(log_lik = sum(dnorm(quail.data$Tarsus, mean = m, sd = residual.sd, log=TRUE))) %>%
+  ungroup()
+
+quail_dist %>%
+  filter(log_lik == max(log_lik))
+
+quail_sd_profile<-quail_dist %>%
+  filter(log_lik > max(log_lik) - 1.92) %>%
+    filter(row_number()==1 | row_number()==n())
+quail_sd_profile
+
+fitted <- predict(quail.mle)
+res <- residuals(quail.mle)
+qplot(fitted, res)
+
+quail.profile <- profileModel(quail.mle,
+                     objective = "ordinaryDeviance",
+                     quantile = qchisq(0.95, 1))
+quail.profile
+plot(quail.profile)
+
+likelihood <- function(m, b, residual.sd){
+  fitted <- b + m * quail.data$Tarsus
+  sum(dnorm(quail.data$Culmen, fitted, residual.sd, log=TRUE))}
+
+minimum.likelihood<-function(m, b, residual.sd) -1*likelihood(m,b, residual.sd)
+
+quailmle2 <- mle2(minimum.likelihood, start = list(m = m.est, b =b.est, residual.sd =res.sd ))
+quail.mle2<-na.omit(quailmle2)
+summary(quail.mle2)
+plot(profile(quail.mle2))
+
+# 80% confidence interval
+prof80 <- profileModel(quail.mle,
+                     objective = "ordinaryDeviance",
+                     quantile = qchisq(0.8, 1))
+prof80
+plot(prof80)
+
+# 95% confidence interval
+prof95 <- profileModel(quail.mle,
+                     objective = "ordinaryDeviance",
+                     quantile = qchisq(0.95, 1))
+prof95
+plot(prof95)
+
+```
+
+## Likelihood Profile
+> The profiles are largely well behaved and consistent.  The graphs dont seem to have any major discontinuities. The results for both methods of confidence interval calculation are in agreement within the bounds of $\pm standard.error$.
+
+# 5.4 The Power of the Prior (10 points)
+> This data set is pretty big. After excluding NAs in the variables we’re interested in, it’s over 766 lines of data! Now, a lot of data can overhwelm a strong prior. But only to a point. Show first that there is enough data here that a prior for the slope with an estimate of 0.4 and a sd of 0.01 is overwhelmed by the data by demonstrating that it produces similar results to our already fit flat prior. Second, see if a very small sample size (n = 10) would at least include 0.4 in it’s 95% Credible Interval. Last, demonstrate at what sample size that 95% CL first begins to include 0.4 when we have a strong prior. How much data do we really need to overcome our prior belief? Note, it takes a long time to fit these models, so, try a strategy of spacing out the 3-4 sample sizes, and then zoom in on an interesting region.
+
+```{r Q-5.4-Prior,setup, message=FALSE, warning=FALSE, error=FALSE, eval=TRUE, include=TRUE}
+knitr::opts_chunk$set(echo = FALSE)
+# knitr::opts_chunk$set(echo = TRUE)
+quail.data.n<-quail.data
+quail_lm_bayes_prior <-brm(Culmen ~ Tarsus, family = gaussian(link = "identity"),
+                       data = quail.data.n, prior = c(prior(normal(.4, .01), class=b),                                                           c(prior(normal(.4, .01), class=sigma))))
+
+quail.data.n<-quail.data[1:10,]
+quail_lm_bayes_prior.a <-brm(Culmen ~ Tarsus, family = gaussian(link = "identity"),
+                        data = quail.data.n, prior = c(prior(normal(.4, .01), class=b),                                                           c(prior(normal(.4, .01), class=sigma))))
+
+
+quail.data.n<-quail.data[1:25,]
+quail_lm_bayes_prior.b <-brm(Culmen ~ Tarsus, family = gaussian(link = "identity"),
+                         data = quail.data.n, prior = c(prior(normal(.4, .01), class=b),                                                           c(prior(normal(.4, .01), class=sigma))))
+
+quail.data.n<-quail.data[1:50,]
+quail_lm_bayes_prior.c <-brm(Culmen ~ Tarsus, family = gaussian(link = "identity"),
+                        data = quail.data.n, prior = c(prior(normal(.4, .01), class=b),                                                           c(prior(normal(.4, .01), class=sigma))))
+quail.data.n<-quail.data[1:100,]
+quail_lm_bayes_prior.d <-brm(Culmen ~ Tarsus, family = gaussian(link = "identity"),
+                        data = quail.data.n, prior = c(prior(normal(.4, .01), class=b),                                                           c(prior(normal(.4, .01), class=sigma))))
+```
+
+
+## 5.4.a Overcoming The Strong Prior with the Quail Dataset
+
+```{r Q-5.4.a-Prior.output, error = FALSE, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+quail_lm_bayes_prior
+summary(quail_lm_bayes_prior)
+
+```
+
+## 5.4.b Confidence Interval contains prior at n=10
+
+```{r Q-5.4.b-Prior.output, error = FALSE, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+quail_lm_bayes_prior.a
+summary(quail_lm_bayes_prior.a)
+
+```
+
+
+## 5.4.c Confidence Interval stops containing .4 after contains prior at n=100
+
+```{r Q-5.4.c-Prior.output, error = FALSE, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+quail_lm_bayes_prior.b
+quail_lm_bayes_prior.c
+quail_lm_bayes_prior.d
+summary(quail_lm_bayes_prior.b)
+summary(quail_lm_bayes_prior.c)
+summary(quail_lm_bayes_prior.d)
+
+```
+
+## 5.4 The Power of the Prior
+> It takes a sample size of approximately n $\approx$ 100 to overcome the influence of the prior such that the slope=0.4 with a standard deviation=0.01 (the prior) is no longer included in 95% Confidence Interval

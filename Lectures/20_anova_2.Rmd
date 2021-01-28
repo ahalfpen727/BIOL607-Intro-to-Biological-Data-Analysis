@@ -1,0 +1,584 @@
+---
+title:
+output:
+  revealjs::revealjs_presentation:
+    reveal_options:
+      slideNumber: true
+      previewLinks: true
+    theme: white
+    center: false
+    transition: fade
+    self_contained: false
+    lib_dir: libs
+    css: style.css
+---
+
+## {data-background="images/19/urchin_diet_expt.jpg"}
+<br>
+<!-- review this slide for continuity and some re-ordering in posthocs. That section is a bit of a mess Also Bayes needs more detail. And likelihood tables are ugly. Broom?-->
+<h1 style="background-color:white; font-size:68pt">After the ANOVA</h1>
+
+```{r prep, echo=FALSE, cache=FALSE, message=FALSE, warning=FALSE}
+library(knitr)
+opts_chunk$set(fig.height=4.5, comment=NA, 
+               warning=FALSE, message=FALSE, 
+               dev="jpeg", echo=FALSE)
+library(tidyr)
+library(broom)
+library(ggplot2)
+library(multcomp)
+library(car)
+library(brms)
+library(emmeans)
+library(dplyr)
+library(tidybayes)
+library(purrr)
+```
+
+## Outline
+https://etherpad.wikimedia.org/p/607-anova
+<br><br>
+<div style="font-size:34pt; text-align:left">
+1. What can we ask of ANOVA?
+\
+2. Looking at treatment means  
+\
+3. Tests of differences of means
+</div>
+
+
+
+## Categorical Predictors: Gene Expression and Mental Disorders
+
+![image](./images/19/neuron_label.jpeg){width="30.00000%"}
+![image](./images/19/myelin.jpeg){width="40.00000%"}\
+```{r load_brains}
+brainGene <- read.csv("./data/19/15q06DisordersAndGeneExpression.csv") %>%
+  mutate(group = forcats::fct_relevel(group, c("control", "schizo", "bipolar")))
+```
+
+## The data
+```{r boxplot}
+ggplot(brainGene, aes(x=group, y=PLP1.expression, fill = group)) +
+  geom_boxplot() +
+  scale_fill_discrete(guide=FALSE)+
+  theme_bw(base_size=17)
+```
+
+
+## Comparison of Means
+```{r meansplot}
+ggplot(brainGene, aes(x=group, y=PLP1.expression, color = group)) +
+#  geom_boxplot() +
+  stat_summary() +
+  scale_color_discrete(guide=FALSE) +
+  theme_bw(base_size=17)
+```
+
+
+## Means Model
+$$\large y_{ij} = \alpha_{i} + \epsilon_{ij}, \qquad \epsilon_{ij} \sim N(0, \sigma^{2} )$$
+\
+<div style="text-align:left">
+<li> Different mean for each group  
+\
+<li> Focus is on specificity of a categorical predictor
+</div>
+
+
+## Questions we could ask
+
+1.  Does your model explain variation in the data?  
+\
+2.  Are your coefficients different from 0?  
+\
+3.  How much variation is retained by the model?  
+\
+4.  How confident can you be in model predictions?  
+\
+5. Are groups different from each other
+
+## Questions we could ask
+
+1.  <font color="red">Does your model explain variation in the data?</font>  
+\
+2.  Are your coefficients different from 0?  
+\
+3.  How much variation is retained by the model?  
+\
+4.  How confident can you be in model predictions?  
+\
+5. Are groups different from each other
+
+## Testing the Model
+
+Ho = The model predicts no variation in the data.  
+\
+\
+\
+Ha = The model predicts variation in the data.
+
+
+## F-Tests
+<div style = "text-align:left">
+F = Mean Square Variability Explained by Model / Mean Square Error<br>
+<br>
+DF for Numerator = k-1  
+DF for Denominator = n-k<br>
+k = number of groups, n = sample size
+</div>
+
+
+## ANOVA
+
+```{r brainGene_anova}
+brain_lm <- lm(PLP1.expression ~ group, data=brainGene)
+knitr::kable(anova(lm(PLP1.expression ~ group, data=brainGene)))
+```
+
+## Fitting an ANOVA model with Likelihood
+```{r like_anova_mod, echo=TRUE}
+brain_lik <- glm(PLP1.expression ~ group,
+                 family=gaussian(),
+                 data = brainGene)
+```
+
+## $\chi^2$ LR Test and ANOVA
+<br><br>
+```{r like_anova}
+knitr::kable(Anova(brain_lik), digits=5)
+```
+
+\
+\
+This asks how much does the deviance change when we remove a suite of predictors from the model?
+
+## BANOVA
+```{r tidy_residuals}
+
+tidy_residuals <- function(model){
+  UseMethod("tidy_residuals")
+}
+
+tidy_residuals.brmsfit <- function(model){
+  res <- residuals(model, summary=FALSE)
+  props <- summary(model)
+  nchains <- props$chains
+  iter <- props$iter - props$warmup
+  
+  start <- seq(1, nrow(res), nrow(res)/nchains)
+  
+  chains <- map(start, ~as.mcmc(res[.x:(.x+iter-1),])) %>%
+    coda::as.mcmc.list()
+  
+  tidy_draws(chains)
+  
+}
+
+gather_residuals <- function(model){
+  tidy_residuals(model) %>% 
+    gather(.variable, .value, -.chain, -.iteration, -.draw)
+}
+
+spread_residuals <- function(model){
+  tidy_residuals(model)
+}
+```
+
+```{r echo=TRUE, results = "hide"}
+brain_brm <- brm(PLP1.expression ~ group, 
+                 family = gaussian(link = "identity"),
+                 data=brainGene,
+                 file = "brain_brm.Rds")
+```
+
+```{r em_bayes}
+brain_em <- emmeans(brain_brm, ~group)
+
+group_sd <- gather_emmeans_draws(brain_em) %>%
+  group_by(.draw) %>%
+  summarize(`SD from Groups` = sd(.value)) %>%
+  ungroup()
+
+res_sd <- gather_residuals(brain_brm) %>%
+  group_by(.chain, .iteration) %>%
+  summarize(`SD from Residuals` = sd(.value))
+
+sd_frame <- bind_cols(group_sd, res_sd)
+sd_frame_clean <- bind_cols(group_sd, res_sd) %>%
+  select(-.iteration, -.chain, -.draw)
+```
+
+## BANOVA: Compare the relative magnitudes of variability due to Treatments
+```{r}
+
+broom::tidyMCMC(sd_frame_clean, conf.int = TRUE, conf.method = "HPDinterval") %>%
+  knitr::kable("html") %>% kableExtra::kable_styling() 
+
+```
+
+<p align = "left">Or via Percentages:</p>
+
+```{r}
+
+broom::tidyMCMC(100 * sd_frame_clean/rowSums(sd_frame_clean), estimate.method = "median",
+         conf.int = TRUE, conf.method = "HPDinterval") %>% 
+  knitr::kable("html") %>% kableExtra::kable_styling() 
+```
+
+## What if Treatment is relatively unimportant?
+```{r trt_meh_banova}
+test_df <- data.frame(group = c(rep("A", 5), rep("B", 5), rep("C", 5)),
+                      value = rnorm(30))
+
+
+test_brm <- brm(value ~ group, data = test_df, file = "test_brm.Rd")
+
+group_sd_null <- gather_emmeans_draws(emmeans(test_brm, ~group)) %>%
+  group_by(.draw) %>%
+  dplyr::summarize(group_sd = sd(.value)) %>%
+  ungroup()
+
+res_sd_null <- gather_residuals(test_brm) %>%
+  group_by(.chain, .iteration) %>%
+  dplyr::summarize(res_sd = sd(.value))
+
+sd_frame_null <- bind_cols(group_sd_null, res_sd_null) %>%
+  select(-.iteration, -.chain, -.draw)
+
+
+broom::tidyMCMC(sd_frame_null, conf.int = TRUE, conf.method = "HPDinterval") %>%
+  knitr::kable("html") %>% kableExtra::kable_styling() 
+
+broom::tidyMCMC(100 * sd_frame_null/rowSums(sd_frame_null), estimate.method = "median",
+                conf.int = TRUE, conf.method = "HPDinterval") %>%
+  knitr::kable("html") %>% kableExtra::kable_styling() 
+```
+
+## What if Treatment is relatively unimportant?
+```{r}
+ggplot(sd_frame_null %>%
+         gather(sd_type, value, group_sd, res_sd),
+       aes(x = value, y = sd_type)) +
+  geom_halfeyeh()
+
+```
+
+## Questions we could ask
+
+1.  Does your model explain variation in the data?  
+\
+2.  Are your coefficients different from 0?  
+\
+3.  How much variation is retained by the model?  
+\
+4.  How confident can you be in model predictions?  
+\
+5. Are groups different from each other
+
+
+## Questions we could ask
+
+1.  Does your model explain variation in the data?  
+\
+2.  <font color="red">Are your coefficients different from 0?</font>  
+\
+3.  How much variation is retained by the model?  
+\
+4.  How confident can you be in model predictions?  
+\
+5. <font color="red">Are groups different from each other</font>  
+
+## Outline
+https://etherpad.wikimedia.org/p/607-anova
+<br><br>
+<div style="font-size:34pt; text-align:left">
+1. What can we ask of ANOVA?  
+\
+2. <font color = "red"> Looking at treatment means</font>  
+\
+3. Tests of differences of means
+</div>
+
+
+
+## ANOVA, F, and T-Tests
+
+F-Tests | T-Tests
+------------------|------------------
+Tests if data generating process different than error | Tests if parameter is different from 0
+
+Essentially comparing a variation explained by a model with versus without a data generating process included.
+
+
+
+## The Coefficients
+
+```{r lm_summary}
+knitr::kable(coef(summary(brain_lm)))
+```
+
+<span class="fragment">Treatment contrasts - set one group as a baseline<br>Useful with a control</span>
+
+
+
+## Default “Treatment” Contrasts
+
+```{r brainGene_contrasts}
+contrasts(brainGene$group)
+```
+
+## Actual Group Means Compared to 0
+
+```{r brainGene_noint}
+brain_em <- emmeans(brain_lm, ~group)
+knitr::kable(contrast(brain_em))
+
+```
+
+## But which groups are different from each other?
+```{r meansplot}
+```
+
+<span class="fragment">Many T-tests....mutiple comparisons!</span>
+
+## Outline
+https://etherpad.wikimedia.org/p/607-anova
+<br><br>
+<div style="font-size:34pt; text-align:left">
+1. What can we ask of ANOVA?  
+\
+2. Looking at treatment means  
+\
+3. <font color = "red">Tests of differences of means</font>
+</div>
+
+
+## The Problem of Multiple Comparisons
+```{r anim_mult_test, cache=TRUE, message=FALSE, warning=FALSE, errors=FALSE}
+library(animation)
+set.seed(2002)
+sim_df <- data.frame(trial=1:100, x=rnorm(100*5)) %>%
+  group_by(trial) %>%
+  summarise(mean_x = mean(x), 
+            ci_x = 1.96*sd(x)/sqrt(5), 
+            p = pt(mean_x/(sd(x)/sqrt(5)), 4)) %>%
+  ungroup()
+invisible(saveGIF({
+  for(i in 1:100){
+  print(ggplot(data=sim_df[1:i,], aes(x=trial, y=p)) +
+    geom_point() +
+    xlim(c(0,100)) + ylim(c(0,1)) + theme_classic(base_size=14) +
+    geom_hline(yintercept=0.05, lwd=1, lty=2, color="red"))
+  }
+}, movie.name="multcomp.gif", interval=0.3))
+```
+<img src="./multcomp.gif">
+
+
+## Solutions to Multiple Comparisons and Family-wise Error Rate?
+<div style="text-align:left">
+> 1. Ignore it - a test is a test
+>     + *a priori contrasts*
+>     + Least Squares Difference test  
+\
+\
+> 2. Lower your $\alpha$ given m = # of comparisons
+>     + Bonferroni $\alpha/m$
+>     + False Discovery Rate $k\alpha/m$ where k is rank of test  
+\ 
+\
+>3. Other multiple comparinson correction
+>     + Tukey's Honestly Significant Difference
+
+</div>
+
+## ANOVA is an Omnibus Test
+
+Remember your Null:\
+$$H_{0} = \mu_{1} = \mu{2} = \mu{3} = ...$$\
+\
+This had nothing to do with specific comparisons of means.
+
+
+
+## A priori contrasts
+
+Specific sets of <span>*a* priori</span> null hypotheses:
+$$\mu_{1} = \mu{2}$$\
+$$\mu_{1} = \mu{3} = ...$$\
+\
+Use t-tests.
+
+
+
+## A priori contrasts
+
+```{r contrast1, warning=FALSE, message=FALSE, echo=FALSE}
+options(digits=3)
+
+contrast::contrast(brain_lm, list(group="control"), 
+         list(group="schizo"))
+```
+
+
+
+## A priori contrasts
+
+```{r contrast2, echo=FALSE}
+options(digits=3)
+
+contrast::contrast(brain_lm, list(group="control"), 
+         list(group=c("schizo", "bipolar")),
+         cnames = c("Control v. Schizo", "Control v. Bipolar"))
+``` 
+
+Note: can only do k-1 before thinking about FWER, as each takes 1df
+
+
+## Orthogonal A priori contrasts
+
+Sometimes you want to test very specific hypotheses about the structure
+of your groups 
+```{r ortho1, echo=FALSE, message=FALSE, warning=TRUE}
+
+contrast_mat <- matrix(c(1, -0.5, -0.5,
+                 0,   1,     -1), nrow=2, byrow=T)
+colnames(contrast_mat) <- levels(brainGene$group)
+rownames(contrast_mat) <- c("Control v. Disorders", "Bipolar v. Schizo")
+contrast_mat
+
+``` 
+
+Note: can only do k-1, as each takes 1df
+
+## Orthogonal A priori contrasts with Grouping
+
+```{r contrast_test}
+options(digits=3)
+bg_orthogonal <- glht(brain_lm, linfct=contrast_mat, 
+                  test=adjusted("none"))
+#
+summary(bg_orthogonal)
+```
+
+
+
+## Post hoc contrasts
+
+I want to test all possible comparisons!
+
+
+## No Correction: Least Square Differences
+```{r pairs, echo=FALSE}
+contrast(brain_em, method = "tukey", adjust="none") %>%
+  knitr::kable("html") %>% kableExtra::kable_styling("striped")
+```
+
+## P-Value Adjustments
+<div style="text-align: left">
+Bonferroni : $\alpha_{adj} = \frac{\alpha}{m}$ where m = \# of tests\
+- VERY conservative\
+\
+False Discovery Rate: $\alpha_{adj} = \frac{k\alpha}{m}$\
+- Order your p values from smallest to largest, rank = k,\
+- Adjusts for small v. large p values\
+- Less conservative\
+\
+Other Methods: Sidak, Dunn, Holm, etc.\
+We’re very focused on p here!
+</div>
+
+## Bonferroni Corrections
+```{r bonf, echo=FALSE}
+contrast(brain_em, method = "tukey", adjust="bonferroni") %>%
+  knitr::kable("html") %>% kableExtra::kable_styling("striped")
+```
+p = m * p
+
+## FDR
+```{r fdr, echo=FALSE}
+contrast(brain_em, method = "tukey", adjust="fdr") %>%
+  knitr::kable("html") %>% kableExtra::kable_styling("striped")
+```
+p = $\frac{m}{k}$ * p
+
+## Other Methods Use Critical Values
+
+-   Tukey’s Honestly Significant Difference
+
+-   Dunnet’s Test for Comparison to Controls
+
+-   Ryan’s Q (sliding range)
+
+-   etc...
+
+
+## Tukey's Honestly Significant Difference
+```{r tukey, echo=FALSE}
+contrast(brain_em, method = "tukey", adjust="tukey") %>%
+  knitr::kable("html") %>% kableExtra::kable_styling("striped")
+```
+
+
+## Visualizing Comparisons (Tukey)
+```{r tukey-viz, echo=FALSE}
+plot(contrast(brain_em, method = "tukey", adjust="tukey")) +
+  theme_bw(base_size=17) +
+  geom_vline(xintercept = 0, color = "red", lty = 2)
+```
+
+## Dunnett's Comparison to Controls
+```{r dunnett, echo=FALSE}
+contrast(brain_em, method = "dunnett", adjust="dunnett") %>%
+  knitr::kable("html") %>% kableExtra::kable_styling("striped")
+
+plot(contrast(brain_em, method = "dunnett", adjust="dunnett")) +
+  theme_bw(base_size=17) +
+  geom_vline(xintercept = 0, color = "red", lty = 2)
+```
+
+## Likelihood and Posthocs
+```{r tukey_em}
+em_lik <- emmeans(brain_lik, ~group)
+em_lik %>%
+  knitr::kable("html") %>% kableExtra::kable_styling() 
+```
+
+## Posthocs Use Z-tests
+```{r tukey_lik}
+contrast(em_lik, "tukey") %>%
+  knitr::kable("html") %>% kableExtra::kable_styling() 
+```
+
+## Bayes-Style!
+
+```{r bayes_em, echo=FALSE}
+
+brain_brm <- brm(PLP1.expression ~ group, data=brainGene,
+                 file = "brain_brm.Rds")
+
+brain_bayes_em <- emmeans(brain_brm, ~group)
+brain_bayes_em %>%
+  knitr::kable("html") %>% kableExtra::kable_styling() 
+```
+
+## Bayes-Style!
+```{r bayes_tukey, echo=FALSE}
+
+library(tidybayes)
+gather_emmeans_draws(contrast(brain_bayes_em, "tukey")) %>%
+  ggplot(aes(x = .value, y = contrast, fill = contrast)) +
+  geom_halfeyeh() +
+  geom_vline(xintercept = 0, color = 'red', lty = 2)
+
+```
+
+## Final Notes of Caution
+
+-   Often you DO have a priori contrasts in mind
+
+-   If you reject Ho with ANOVA, differences between groups exist
+
+-   Consider Type I v. Type II error before correcting
+

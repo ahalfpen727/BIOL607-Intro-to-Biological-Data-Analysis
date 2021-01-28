@@ -1,0 +1,541 @@
+\documentclass[ignorenonframetext,]{beamer}
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{caption label separator}{: }
+\setbeamercolor{caption name}{fg=normal text.fg}
+\beamertemplatenavigationsymbolsempty
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+\usetheme[]{CambridgeUS}
+\usecolortheme{wolverine}
+\usefonttheme{serif}
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\newif\ifbibliography
+\hypersetup{
+            pdftitle={BIOL-607 Biological Data Analysis Homework 4: Hypothesis Testing},
+            pdfauthor={Andrew Judell-Halfpenny},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+
+% Prevent slide breaks in the middle of a paragraph:
+\widowpenalties 1 10000
+\raggedbottom
+
+\AtBeginPart{
+  \let\insertpartnumber\relax
+  \let\partname\relax
+  \frame{\partpage}
+}
+\AtBeginSection{
+  \ifbibliography
+  \else
+    \let\insertsectionnumber\relax
+    \let\sectionname\relax
+    \frame{\sectionpage}
+  \fi
+}
+\AtBeginSubsection{
+  \let\insertsubsectionnumber\relax
+  \let\subsectionname\relax
+  \frame{\subsectionpage}
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+
+\title{BIOL-607 Biological Data Analysis Homework 4: Hypothesis Testing}
+\author{Andrew Judell-Halfpenny}
+\date{October 6, 2018}
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}[fragile]
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{#1. load libraries}
+\KeywordTok{library}\NormalTok{(devtools);}\KeywordTok{library}\NormalTok{(revealjs);}\KeywordTok{library}\NormalTok{(ggvis);}\KeywordTok{library}\NormalTok{(phangorn)}
+\KeywordTok{library}\NormalTok{(ggtree);}\KeywordTok{library}\NormalTok{(treeio);}\KeywordTok{library}\NormalTok{(gganimate);}\KeywordTok{library}\NormalTok{(forcats)}
+\KeywordTok{library}\NormalTok{(tidyr);}\KeywordTok{library}\NormalTok{(tidygraph);}\KeywordTok{library}\NormalTok{(lubridate);}\KeywordTok{library}\NormalTok{(ggplot2)}
+\KeywordTok{library}\NormalTok{(animation);}\KeywordTok{library}\NormalTok{(readr);}\KeywordTok{library}\NormalTok{(abd);}\KeywordTok{library}\NormalTok{(dplyr);}\KeywordTok{library}\NormalTok{(magrittr)}
+\end{Highlighting}
+\end{Shaded}
+
+\end{frame}
+
+\begin{frame}{Part 1-W\&S Chapter 6 questions 15, 21, 29}
+
+\end{frame}
+
+\begin{frame}{15) For the following alternative hypotheses, give the
+appropriate null hypothesis.}
+
+\begin{block}{a) Ha = Pygmy mammoths and continental mammoths differ in
+their mean femur lengths.}
+
+\begin{quote}
+Ho = Mean femur lengths for Pygmy mammoths and continental mammoths
+equal.
+\end{quote}
+
+\end{block}
+
+\begin{block}{b) Ha = Patients who take phentermine and topira-mate lose
+weight at a different rate than control patients without these drugs.}
+
+\begin{quote}
+Ho = Patients who take phentermine and topira-mate lose weight at a the
+same rate as control patients without these drugs.
+\end{quote}
+
+\end{block}
+
+\begin{block}{c) Ha = Patients who take phentermine and topiramate have
+different proportions of their babies born with cleft palates than do
+patients not taking these drugs.}
+
+\begin{quote}
+Ho = Patients who take phentermine and topiramate the same proportions
+of their babies born with cleft palates than do patients not taking
+these drugs.
+\end{quote}
+
+\end{block}
+
+\begin{block}{d) Ha = Shoppers on average buy different amounts of candy
+when Christmas music is playing in the shop compared to when the usual
+type of music is playing.}
+
+\begin{quote}
+Ho =Shoppers on average buy the same amount of candy when Christmas
+music is playing in the shop compared to when the usual type of music is
+playin
+\end{quote}
+
+\end{block}
+
+\begin{block}{e) Ha = Male white-collared manakins (a tropical bird)
+dance more often when females are present than when they are absent.}
+
+\begin{quote}
+Ho = Male white-collared manakins (a tropical bird) dance exactly as
+often when females are present as when they are absent.
+\end{quote}
+
+\end{block}
+
+\begin{block}{21) Imagine that two researchers independently carry out
+clinical trials to test the same null hypothesis, that COX-2 selective
+inhibitors (which are used to treat arthritis) have no effect on the
+risk of cardiac arrest. They use the same population for their study,
+but one experimenter uses a sample size of 60 participants, whereas the
+other uses a sample size of 100. Assume that all other aspects of the
+studies, including significance levels, are the same between the two
+studies.}
+
+\end{block}
+
+\end{frame}
+
+\begin{frame}
+
+\begin{block}{21.a) Which study has the higher probability of a Type II
+error, the 60-participant study or the 100-participant study?}
+
+\begin{quote}
+The 60-participant study has a greater probability of producing a Type
+II error than the 100-participant study. This is proportiion of
+participants chosen from random sample from the 60 participant study
+that produce a result that leads to rejection of a false null hypothesis
+is greater than the proportion in the 100 participant study.
+\end{quote}
+
+\end{block}
+
+\begin{block}{b) Which study has higher power?}
+
+\begin{quote}
+The 100-participant study has greater power because of its reduced
+likelihood of a Type II error.
+\end{quote}
+
+\end{block}
+
+\begin{block}{c) Which study has the higher probability of a Type I
+error?}
+
+\begin{quote}
+The study with 100 patients has a higher probability of a Typer I error
+(false positive)
+\end{quote}
+
+\end{block}
+
+\begin{block}{d) Should the tests be one-tailed or two-tailed? Explain.}
+
+\begin{quote}
+In each one of these statistical tests the null hypothesis is that there
+is no difference (up or down) between the two populations and therefor
+requires a two-tailed test.
+\end{quote}
+
+\end{block}
+
+\end{frame}
+
+\begin{frame}[fragile]{29) A team of researchers conducted 100
+independent hypothesis tests using a significance level of α = 0.05.}
+
+\begin{block}{a) If all 100 null hypotheses were true, what is the
+probability that the researchers would reject none of them?}
+
+\begin{quote}
+At an alpha level of 0.05, the probability of 100 out of 100 true null
+hypotheses can be calculated from the discrete binomial distribution
+function with success defined as a type I error, and a rejection of the
+null hypothesis. 0.59\%, (less than 1\&)
+\end{quote}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pbnn<-}\KeywordTok{dbinom}\NormalTok{(}\DecValTok{0}\NormalTok{, }\DecValTok{100}\NormalTok{, }\FloatTok{0.05}\NormalTok{)}
+\NormalTok{pbnmp<-pbnn }\OperatorTok{*}\StringTok{ }\DecValTok{100}
+\KeywordTok{paste0}\NormalTok{(pbnmp,}\DataTypeTok{sep=}\StringTok{"%"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "0.592052922033403%"
+\end{verbatim}
+
+\end{block}
+
+\begin{block}{b) If all 100 null hypotheses were true, how many of these
+tests on average are expected to reject the null hypothesis?}
+
+\begin{quote}
+Give 100 true null hypotheses, and the previously stated alpha level
+(0.05), 5 tests are expected to produce results that suggest that the
+researchers should reject the null hypothesis.
+\end{quote}
+
+\end{block}
+
+\end{frame}
+
+\begin{frame}{Part 2 W \& S Chapter 7 questions 22}
+
+\end{frame}
+
+\begin{frame}[fragile]{22) In a test of Murphy's law, pieces of toast
+were buttered on one side and then dropped. Murphy's law predicts that
+they will land butter-side down. Out of 9821 slices of toast dropped,
+6101 landed butter-side down. (Believe it or not, these are real
+data!10) \textbar{} a) What is a 95\% confidence interval for the
+probability of a piece of toast landing butter-side down?}
+
+\begin{quote}
+manually calculating the 95\% confidence interval for the proportion of
+toast slices that fall butter side down.
+\end{quote}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{n=}\DecValTok{9821}
+\NormalTok{p.hat=}\DecValTok{6101}\OperatorTok{/}\NormalTok{n}
+\NormalTok{p.hat}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.6212198
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{z=}\FloatTok{1.96}\NormalTok{  ### for 95% condifence interval}
+\NormalTok{se.p.est=((p.hat}\OperatorTok{*}\NormalTok{(}\DecValTok{1}\OperatorTok{-}\NormalTok{p.hat)}\OperatorTok{/}\NormalTok{n)}\OperatorTok{^}\NormalTok{.}\DecValTok{5}\NormalTok{)}
+\NormalTok{se.p<-}\ControlFlowTok{function}\NormalTok{(x)  ((p.hat}\OperatorTok{*}\NormalTok{(}\DecValTok{1}\OperatorTok{-}\NormalTok{p.hat)}\OperatorTok{/}\NormalTok{n)}\OperatorTok{^}\NormalTok{.}\DecValTok{5}\NormalTok{)}
+\CommentTok{# from}
+\NormalTok{p.hat }\OperatorTok{-}\StringTok{ }\NormalTok{(z}\OperatorTok{*}\NormalTok{se.p.est)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.611626
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# to}
+\NormalTok{p.hat }\OperatorTok{+}\StringTok{ }\NormalTok{(z}\OperatorTok{*}\NormalTok{se.p.est)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.6308137
+\end{verbatim}
+
+\begin{quote}
+the binom.test function performs an automated version of the previously
+run code
+\end{quote}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dropped.bread.proportion<-}\KeywordTok{binom.test}\NormalTok{(}\DecValTok{6101}\NormalTok{, }\DataTypeTok{n =} \DecValTok{9821}\NormalTok{)}
+\NormalTok{dropped.bread.proportion}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## 
+## 
+## data:  6101 out of 9821
+## number of successes = 6101, number of trials = 9821, p-value <
+## 2.2e-16
+## alternative hypothesis: true probability of success is not equal to 0.5
+## 95 percent confidence interval:
+##  0.6115404 0.6308273
+## sample estimates:
+## probability of success 
+##              0.6212198
+\end{verbatim}
+
+\begin{block}{b) Using the results of part (a), is it plausible that
+there is a 50:50 chance of the toast landing butter-side down or
+butter-side up?}
+
+\begin{quote}
+Given that the 95\% confidence interval for the proportion of the
+population of butter side down slices of dropped bread is from 0.611626
+to 0.6301837 and doesn't include 0.5, it would be incorrect to
+characterize the chances as 50:50. Using the available data we can
+produce a p-value for for the characterization of the proportion
+estimate as 50:50.
+\end{quote}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# total number of dropped bread slices}
+\NormalTok{n=}\DecValTok{9821}
+\CommentTok{# proportion of dropped bread slices that land butter side down}
+\NormalTok{p.hat=}\DecValTok{6101}\OperatorTok{/}\NormalTok{n}
+\NormalTok{p.hat}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.6212198
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# assuming a 50:50 chance, the nnumber of butter side down slices in 9821 trials}
+\NormalTok{s.not<-n}\OperatorTok{/}\DecValTok{2}
+\KeywordTok{round}\NormalTok{(s.not)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 4910
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{# with proportion 50:50 (obviously)}
+\NormalTok{p.not<-s.not}\OperatorTok{/}\NormalTok{n}
+\NormalTok{p.not}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.5
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fifty.fifty.dropped.bread.prop<-}\KeywordTok{binom.test}\NormalTok{(}\KeywordTok{round}\NormalTok{(s.not), }\DataTypeTok{n =} \DecValTok{9821}\NormalTok{)}
+\NormalTok{fifty.fifty.dropped.bread.prop}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## 
+## 
+## data:  round(s.not) out of 9821
+## number of successes = 4910, number of trials = 9821, p-value = 1
+## alternative hypothesis: true probability of success is not equal to 0.5
+## 95 percent confidence interval:
+##  0.4900107 0.5098875
+## sample estimates:
+## probability of success 
+##              0.4999491
+\end{verbatim}
+
+\begin{quote}
+To produce a p-value for the hypothesis that the proportion of
+butter-down bread slices can be characterized as 50:50 despite a priori
+estimate of \textasciitilde{}0.6116 via sampling, the prop.test function
+can be used with the expected number of butter-down slices for 9821
+trials given probability of 50:50
+\end{quote}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{prop.test}\NormalTok{(}\KeywordTok{round}\NormalTok{(s.not), }\DataTypeTok{n=}\NormalTok{n,}\DataTypeTok{p=}\NormalTok{p.hat,}\DataTypeTok{correct=}\NormalTok{F)        }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+##  1-sample proportions test without continuity correction
+## 
+## data:  round(s.not) out of n
+## X-squared = 613.81, df = 1, p-value < 2.2e-16
+## alternative hypothesis: true p is not equal to 0.6212198
+## 95 percent confidence interval:
+##  0.4900623 0.5098359
+## sample estimates:
+##         p 
+## 0.4999491
+\end{verbatim}
+
+\end{block}
+
+\end{frame}
+
+\begin{frame}{3) From the Lab: A Simulation of Many SDs and Alphas
+\textbar{} Here's the exercise we started in lab. Feel free to look back
+copiously at the lab handout if you're getting stuck. Remember, for each
+step, write-out in comments what you want to do, and then follow behing
+with code. \textbar{} Now, let's assume an average population-wide
+resting heart rate of 80 beats per minute with a standard deviation of 6
+BPM. \textbar{} A given drug speeds people's heart rates up on average
+by 5 BPM. What sample size do we need to achieve a power of 0.8?}
+
+\end{frame}
+
+\begin{frame}{3.1) Start the Simulation}
+
+\begin{quote}
+Make a simulated data frame to look at the effects of multiple sample
+sizes: from 1-20, with 500 simulations per sample size, and also
+multiple SD values, from 3 through 10 (just 3:10, no need for
+non-integer values). Using the crossing function with your intitial data
+frame of just sample sizes and a vector of sd values to start generate
+samples from the appropriate random normal distribution.
+\end{quote}
+
+\end{frame}
+
+\begin{frame}{3.2) Z!}
+
+\begin{quote}
+OK, now that you've done that, calculate the results from z-tests. Plot
+p by sample size, using facet\_wrap for different SD values.
+\end{quote}
+
+\end{frame}
+
+\begin{frame}{3.3) P and Power}
+
+\begin{quote}
+Now plot power for an alpha of 0.05, but use color for different SD
+values. Include our threshold power of 0.8.
+\end{quote}
+
+\end{frame}
+
+\begin{frame}{3.4) Many alphas}
+
+\begin{quote}
+Last, use crossing again to explore changing alphas from 0.01 to 0.1.
+Plot power curves with different alphas as different colors, and use
+faceting to look at different SDs.
+\end{quote}
+
+\end{frame}
+
+\begin{frame}{3.5) What does it all mean? What do you learn about how
+alpha and SD affect power?}
+
+\end{frame}
+
+\begin{frame}{3.6) How do you think that changing the effect size would
+affect power?}
+
+\end{frame}
+
+\begin{frame}{You can just answer this without coding out anything.
+Based on what we've learned so far - what do you think?}
+
+\end{frame}
+
+\end{document}

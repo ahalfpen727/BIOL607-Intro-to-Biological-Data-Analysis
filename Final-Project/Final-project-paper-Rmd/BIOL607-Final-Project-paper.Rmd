@@ -1,0 +1,328 @@
+---
+title: "BIOL691-Final-Project"
+author: "Andrew JH"
+date: "November 29, 2018"
+output: ioslides_presentation
+---
+```{r library-load, message=FALSE, warning=FALSE}
+library(tidyverse);library(broom);library(mnormt)
+library(ggplot2); library(gplots)
+library(stats4);library(stats); library(car)
+library(limma);library(DESeq);library(edgeR)
+library(cummeRbund);library(RColorBrewer)
+library(party); library(rpart);library(nlme)
+library(lmtest);library(multtest);library(nortest)
+library(outliers); library(pastecs)
+library(psych);library(RColorBrewer)
+
+```
+
+## RNA-Seq data from the Center for Personalized Cancer Therapy
+> In an effort to identify biomarkers of disease the genomics core has begun performing comparitive RNA-Seq analyses. This project represents an effort to differentiate benign prostate hyperplasia from prostate cancer and identify causitive features from gene expression data
+
+```{r import-gene-expr-data, message=FALSE, warning=FALSE}
+#knitr::opts_chunk$set(comment = NA, message = FALSE, warnings = FALSE)
+cuff.hg38 <- readCufflinks(dir='/media/drew/easystore/umb_triley/urine1/cuffdiff_results_hg38_default/LUTS-over-CTRL/',genome="hg38",gtfFile='/media/drew/easystore/ReferenceGenomes/UCSC_hg38/genes.gtf', rebuild=T)
+cuff<-cuff.hg38
+cuff
+replicates.info<-cummeRbund::replicates(cuff)
+replicates.info
+samples<-replicates.info$rep_name
+groups<-replicates.info$sample_name
+samples
+groups
+
+conditions<-factor(groups)
+conditions
+under=conditions[1]
+over=conditions[2]
+over;under
+
+genes_exp.df<-diffData(cummeRbund::genes(cuff))
+g.cnt.matrix<-repCountMatrix(cummeRbund::genes(cuff))
+g.fpkm.matrix<-repFpkmMatrix(cummeRbund::genes(cuff))
+str(g.cnt.matrix)
+str(g.fpkm.matrix)
+under.group<-grep(pattern=under, colnames(g.cnt.matrix))
+over.group<-grep(pattern=over, colnames(g.cnt.matrix))
+under.g.cnt.ma<-g.cnt.matrix[under.group]
+over.g.cnt.ma<-g.cnt.matrix[over.group]
+str(over.g.cnt.ma)
+str(under.g.cnt.ma)
+x<-g.cnt.matrix
+```
+
+```{r normalize-gene-expr-data, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(comment = NA, message = FALSE, warnings = FALSE)
+norm.factors <- calcNormFactors(g.cnt.matrix, method = "TMM")
+calcNormFactors
+g.LCPM.ma <- cpm(g.cnt.matrix, log=TRUE, prior.count=1)
+str(g.LCPM.ma)
+## filter genes with at less than 0.5 cpm in at least 9 samples
+keep.exprs <- rowSums(g.LCPM.ma > 2) >= length(groups)/2
+table(keep.exprs)
+# Subset the rows of countdata to keep the more highly expressed genes
+g.f.LCPM.ma <- as.data.frame(g.LCPM.ma[keep.exprs,])
+str(g.f.LCPM.ma)
+
+under.g.f.cnt.ma<-g.f.LCPM.ma[under.group]
+over.g.f.cnt.ma<-g.f.LCPM.ma[over.group]
+o.g.cnt.stats<-describe(t(under.g.f.cnt.ma))
+u.g.cnt.stats<-describe(t(over.g.f.cnt.ma))
+
+# Visualize boxplot of gene expression levels
+boxplot(g.LCPM.ma, ylab="Log2 counts per million", col="blue",
+        pars=list(cex.lab=0.8,cex.axis=0.8), 
+        main="Boxplots of logCPMs\n(Before Filtering)",cex.main=0.8)
+boxplot(g.f.LCPM.ma, ylab="Log2 counts per million", col="blue",
+        pars=list(cex.lab=0.8,cex.axis=0.8), 
+        main="Boxplots of logCPMs\n(After Filtering)",cex.main=0.8)
+# Visualize distribution of gene expression levels
+plotDensities(g.LCPM.ma, legend = FALSE, main = "Log Counts per Million (Before filtering)")
+# Visualize distribution of gene expression levels
+plotDensities(g.f.LCPM.ma, legend = FALSE, main = "Log Counts per Million (After filtering)")
+# visualize coefficient of variation
+fpkmSCVPlot(genes(cuff))
+```
+
+
+```{r edgeR-Diff-Expr}
+# Classic Approach without filtering
+dgeObj <- DGEList(counts=g.cnt.matrix, group=groups)
+dgeObj
+# design matrix
+design <- model.matrix(~0 + groups, data=dgeObj$samples)
+colnames(design) <- levels(conditions)
+design
+# contrast matrix
+contr.matrix <- makeContrasts(lutsVSctrl = CTRL - LUTS,
+                              levels = colnames(design))
+contr.matrix
+disp <- estimateDisp(dgeObj,design)
+plotBCV(disp)
+levels(disp$samples$group)
+et<-exactTest(disp)
+topTags(et)
+o.sig.not.filt <- subset(et$table, (PValue < 0.05))
+o.sig.not.filt
+
+# Classic Approach after filtering
+logcounts <- cpm(dgeObj,log=TRUE,prior.count=1)
+str(logcounts)
+## Identify genes with at least 0.5 cpm in at least 9 samples
+keep.exprs <- rowSums(logcounts > 2) >= length(groups)/2
+table(keep.exprs)
+# Subset the rows of countdata to keep the more highly expressed genes
+g.f.cnt.ma <- g.cnt.matrix[keep.exprs,]
+DGEobj.f=DGEList(g.f.cnt.ma,group=groups)
+f.disp <- estimateDisp(DGEobj.f,design)
+# fisher exact test
+exactTst <- exactTest(f.disp)
+o.sig.after.filt <- subset(exactTst$table, (PValue < 0.05))
+o.sig.after.filt
+
+```
+
+
+
+```{r linear-models}
+
+dgel<- DGEList(counts=g.cnt.matrix, group=factor(groups))
+dge.norm <- calcNormFactors(dgel)
+plotMDS(dge.norm, method="bcv", col=as.numeric(dge.norm$samples$group))
+
+log2.cpm <- voom(dge.norm,design,plot=TRUE)
+log2.cpm
+fit.lm <- lmFit(log2.cpm,design)
+summary(fit.lm)
+fit.bayes <- eBayes(fit.lm)
+f.bayes.dt <- decideTests(fit.bayes)
+summary(f.bayes.dt)
+tfit <- treat(fit.bayes, lfc = 2)
+limma.res=topTable(tfit,coef=2,n=Inf,sort="p")
+limma.res.sig<-subset(limma.res, (limma.res$adj.P.Val < 0.01) & (limma.res$logFC > 2))
+plotMD(tfit, column = 1, status = f.bayes.dt[, 1], main = colnames(tfit)[1],
+        xlim = c(-8, 13))
+plotMD(tfit, column = 2, status = f.bayes.dt[, 2], main = colnames(tfit)[2],
+        xlim = c(-8, 13))
+de.common <- which(f.bayes.dt[, 1] != 0 & f.bayes.dt[, 2] != 0)
+length(de.common)
+ #head(tfit$genes$SYMBOL[de.common], n = 20)
+vennDiagram(f.bayes.dt[, 1:2], circle.col = c("orange", "purple"),main=paste("Venn Diagram of the overlapping gene expression between", over, "and", under))
+
+lm<-lmFit(g.cnt.matrix,design)
+fit.cnt <- eBayes(lmFit(g.cnt.matrix,design))
+ebayes.dt <- decideTests(fit.cnt)
+summary(ebayes.dt)
+tfit <- treat(fit.cnt, lfc = 1)
+limma.res.cnt=topTable(fit.cnt,coef=2,n=Inf,sort="p")
+limma.res.cnt.sig<-subset(limma.res.cnt, (limma.res.cnt$adj.P.Val < 0.01) & (limma.res.cnt$logFC > 2))
+
+# to account for sufficient effect size a minimal log-fold-change can be chosen
+# isntead of using `eBayes`. Testing relative to a threshold
+# dispersion
+dgel<- DGEList(counts=g.f.cnt.ma, group=factor(groups))
+dge.norm <- calcNormFactors(dgel)
+log2.cpm <- voom(dge.norm,design,plot=TRUE)
+fit.lm <- lmFit(log2.cpm,design)
+fit.bayes <- eBayes(fit.lm)
+f.bayes.dt <- decideTests(fit.bayes)
+dgeObj.disp <- estimateDisp(dgeObj,design)
+plotBCV(dgeObj.disp)
+# Fit the linear model
+fit <- glmFit(dgeObj.disp, design)
+glm.lrt <- glmLRT(fit, contrast=contr.matrix) 
+topTags(glm.lrt)
+de2 <- decideTestsDGE(glm.lrt, adjust.method="BH", p.value = 0.05)
+de2tags12 <- rownames(de2)[as.logical(de2)]
+plotSmear(glm.lrt, de.tags=de2tags12)
+# overdispersion
+dispers<-deviance(glm.lrt)/df.residual(glm.lrt)
+over.disp<-dispers[which(dispers > 1)] 
+length(over.disp)
+not.over.disp<-dispers[which(dispers < 1)] 
+length(not.over.disp)
+# Fix overdisperion
+q.fit <- glmFit(dgeObj.disp, design, family="quasipoisson")
+head(coef(q.fit))
+# Conduct likelihood ratio tests for luts vs ctrl and show the top genes:
+lrt.qfit <- glmLRT(q.fit, coef=2, contrast=contr.matrix) 
+sig.qfit.genes<-subset(lrt.qfit$table,(PValue < 0.01))
+
+dispersion0 <- estimateDisp(dgel, design)
+plotBCV(dispersion0)
+glmfit <- glmFit(dispersion0, design)
+lrt <- glmLRT(glmfit, contrast=contr.matrix)
+topTags(lrt)
+sig.lrt.genes<-subset(lrt$table,(PValue < 0.05))
+lrt.de2 <- decideTestsDGE(lrt, adjust.method="BH", p.value = 0.05)
+lrt.de2tags12 <- rownames(lrt.de2)[as.logical(lrt.de2)]
+plotSmear(lrt, de.tags=lrt.de2tags12)
+tp <- topTags(lrt, n=Inf)
+sum(tp$table$PValue < 0.05)
+DE <- tp$table[tp$table$PValue < 0.05,]
+plotSmear(lrt, de.tags=DE, cex = 0.4)
+```
+
+```{r limma-voom}
+keep.cpm <- rowSums(cpm(g.f.cnt.ma)>2) >= (length(groups)/2)
+counts2 <- g.f.cnt.ma[keep.cpm,]
+dgeObj <- DGEList(counts=counts2, group=groups)
+e.disp<-estimateDisp(dgeObj, design)
+exactTst <- exactTest(e.disp)
+exactTst$table
+o.sig <- subset(exactTst$table, (PValue < 0.05))
+o.sig
+z <- estimateGLMTrendedDisp(g.f.cnt.ma,design)
+fite <- glmFit(g.f.cnt.ma,design,dispersion=z)
+lrt <- glmLRT(fite, contrast=contr.matrix)
+dt <- decideTests(lrt)
+o.sig <- subset(lrt$table, (PValue < 0.01))
+o.sig
+sum(p.adjust(lrt$table$PValue,method="BH")<0.01)
+topTags(exactTst)
+# voom - ranked by lods
+y <- voom(counts2,design,plot=FALSE)
+fit <- lmFit(y,design)
+fit <- eBayes(fit)
+dt <- decideTests(fit)
+summary(dt)
+o <- order(fit$lods[,2], decreasing=TRUE)
+sum(p.adjust(fit$p.value[,2],method="BH")<0.1)
+# limma trend - ranked by lods
+y <- cpm(counts2,log=TRUE,prior.count=1)
+fit <- lmFit(y,design,weights=NULL)
+fit <- eBayes(fit,trend=TRUE)
+dt <- decideTests(fit)
+summary(dt)
+# limma notrend - ranked by lods
+fit <- eBayes(fit,trend=FALSE)
+o <- order(fit$lods[,2], decreasing=TRUE)
+# t-test
+t.ord <- fit$coef[,2]/fit$stdev.unscaled[,2]/fit$sigma
+p.ord <- pt(abs(t.ord),df=4,lower.tail=FALSE)*2
+fdr.ord <- p.adjust(p.ord,method="BH")
+o <- order(p.ord)
+sum(fdr.ord<0.1)
+```
+
+## RNA-Seq data from the Center for Personalized Cancer Therapy
+> In an effort to identify biomarkers of disease the genomics core has begun performing comparitive RNA-Seq analyses. This project represents an effort to differentiate benign prostate hyperplasia from prostate cancer and identify causitive features from gene expression data
+
+
+```{r power-analysis-for-linear-reg}
+
+ Power Analaysis for linear regression using the tidyverse
+# Simulating data
+
+#1. get coefficients - either from data, or that you guess
+#put together a set of parameters
+sim_pop_n <- data.frame(
+  intercept = 115.8,
+  slope = 0.00237,
+  resid_sd = 5.68,
+  samp_size = 4:20
+) %>%
+  crossing(resid_sd = 3:5)
+
+#2. set up your sampling for each set of coefficients
+sim_pop_n %>%
+   group_by(intercept, slope, resid_sd, samp_size) %>%
+ # expand(reps = 1:samp_size) %>%
+  ungroup() #%>%
+
+#3. Replicate each 'study' for some number of simulations
+sim_pop_n %>%
+   crossing(sim = 1:100) %>%
+
+#4. Populate with predictors
+  mutate(age.days = runif(n(), 1000, 8500)) %>%
+
+#5. Based on your model populate with responses
+  mutate(length.cm = rnorm(n(), intercept + slope*age.days, resid_sd))
+######
+# Fit a lot of models
+######
+fit_n <- sim_pop_n %>%
+
+  #1. Group by simulation and parameters
+  group_by(sim, slope, intercept, samp_size, resid_sd) %>%
+
+  nest() %>%
+
+  #2. Fit a model to this data
+  mutate(mod = purrr::map(data, ~lm(length.cm ~ age.days, data = .))) %>%
+
+  #3. Extract coefficients and p values
+  mutate(coefs = purrr::map(mod, ~tidy(.))) %>%
+
+  #4. Clean up
+  unnest(coefs) %>%
+  ungroup() %>%
+  filter(term == "age.days")
+
+
+######
+# Look at how power relates to sample size
+######
+pow_n <- fit_n %>%
+  #crossings(alpha = c(0.01, 0.05, 0.1))
+  #1. Group by parameters that vary
+  group_by(samp_size) %>%
+
+  #2. Calcaulate type II error rate
+  summarise(type_2_error = sum(p.value > 0.05)/n()) %>%
+  ungroup() %>%
+
+  #3. Calculate power
+  mutate(power = 1 - type_2_error)
+
+
+#Plot!
+library(ggplot2)
+ggplot(data = pow_n,
+       mapping = aes(x=samp_size, y=power))+
+  geom_point() +
+  geom_line()
+
+```

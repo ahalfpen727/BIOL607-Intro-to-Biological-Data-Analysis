@@ -1,0 +1,1821 @@
+\documentclass[]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\hypersetup{unicode=true,
+            pdftitle={BIOL607: Introduction to Biological Data Analysis Midterm Exam 2018},
+            pdfauthor={Andrew Judell-Halfpenny},
+            pdfborder={0 0 0},
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+
+%%% Change title format to be more compact
+\usepackage{titling}
+
+% Create subtitle command for use in maketitle
+\newcommand{\subtitle}[1]{
+  \posttitle{
+    \begin{center}\large#1\end{center}
+    }
+}
+
+\setlength{\droptitle}{-2em}
+
+  \title{BIOL607: Introduction to Biological Data Analysis Midterm Exam 2018}
+    \pretitle{\vspace{\droptitle}\centering\huge}
+  \posttitle{\par}
+    \author{Andrew Judell-Halfpenny}
+    \preauthor{\centering\large\emph}
+  \postauthor{\par}
+      \predate{\centering\large\emph}
+  \postdate{\par}
+    \date{Due Nov 9th, 5pm.}
+
+
+\begin{document}
+\maketitle
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{#knitr::opts_chunk$set(echo = FALSE)}
+\KeywordTok{library}\NormalTok{(ggplot2);}\KeywordTok{library}\NormalTok{(tidyverse)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## -- Attaching packages ----------------------------------------------------------- tidyverse 1.2.1 --
+\end{verbatim}
+
+\begin{verbatim}
+## v tibble  1.4.2     v purrr   0.2.5
+## v tidyr   0.8.2     v dplyr   0.7.7
+## v readr   1.1.1     v stringr 1.3.1
+## v tibble  1.4.2     v forcats 0.3.0
+\end{verbatim}
+
+\begin{verbatim}
+## -- Conflicts -------------------------------------------------------------- tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(stats4);}\KeywordTok{library}\NormalTok{(MASS);}\KeywordTok{library}\NormalTok{(pwr)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Attaching package: 'MASS'
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:dplyr':
+## 
+##     select
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(profileModel);}\KeywordTok{library}\NormalTok{(modelr)}
+\KeywordTok{library}\NormalTok{(viridis); }\KeywordTok{library}\NormalTok{(bbmle);}\KeywordTok{library}\NormalTok{(broom)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Loading required package: viridisLite
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'bbmle'
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:dplyr':
+## 
+##     slice
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'broom'
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:modelr':
+## 
+##     bootstrap
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(pastecs); }\KeywordTok{library}\NormalTok{(Hmisc); }\KeywordTok{library}\NormalTok{(psych)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Attaching package: 'pastecs'
+\end{verbatim}
+
+\begin{verbatim}
+## The following objects are masked from 'package:dplyr':
+## 
+##     first, last
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:tidyr':
+## 
+##     extract
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: lattice
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: survival
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: Formula
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'Hmisc'
+\end{verbatim}
+
+\begin{verbatim}
+## The following objects are masked from 'package:dplyr':
+## 
+##     src, summarize
+\end{verbatim}
+
+\begin{verbatim}
+## The following objects are masked from 'package:base':
+## 
+##     format.pval, units
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'psych'
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:Hmisc':
+## 
+##     describe
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:modelr':
+## 
+##     heights
+\end{verbatim}
+
+\begin{verbatim}
+## The following objects are masked from 'package:ggplot2':
+## 
+##     %+%, alpha
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(brms);}\KeywordTok{library}\NormalTok{(MCMCpack); }\KeywordTok{library}\NormalTok{(bayesplot)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Loading required package: Rcpp
+\end{verbatim}
+
+\begin{verbatim}
+## Loading 'brms' package (version 2.6.0). Useful instructions
+## can be found by typing help('brms'). A more detailed introduction
+## to the package is available through vignette('brms_overview').
+## Run theme_set(theme_default()) to use the default bayesplot theme.
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'brms'
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:psych':
+## 
+##     cs
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:survival':
+## 
+##     kidney
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:bbmle':
+## 
+##     parnames
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: coda
+\end{verbatim}
+
+\begin{verbatim}
+## ##
+## ## Markov Chain Monte Carlo Package (MCMCpack)
+\end{verbatim}
+
+\begin{verbatim}
+## ## Copyright (C) 2003-2018 Andrew D. Martin, Kevin M. Quinn, and Jong Hee Park
+\end{verbatim}
+
+\begin{verbatim}
+## ##
+## ## Support provided by the U.S. National Science Foundation
+\end{verbatim}
+
+\begin{verbatim}
+## ## (Grants SES-0350646 and SES-0350613)
+## ##
+\end{verbatim}
+
+\begin{verbatim}
+## This is bayesplot version 1.6.0
+\end{verbatim}
+
+\begin{verbatim}
+## - Online documentation and vignettes at mc-stan.org/bayesplot
+\end{verbatim}
+
+\begin{verbatim}
+## - bayesplot theme set to bayesplot::theme_default()
+\end{verbatim}
+
+\begin{verbatim}
+##    * Does _not_ affect other ggplot2 plots
+\end{verbatim}
+
+\begin{verbatim}
+##    * See ?bayesplot_theme_set for details on theme setting
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{library}\NormalTok{(lme4);}\KeywordTok{library}\NormalTok{(brms);}\KeywordTok{library}\NormalTok{(rstan)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Loading required package: Matrix
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'Matrix'
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:tidyr':
+## 
+##     expand
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'lme4'
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:brms':
+## 
+##     ngrps
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: StanHeaders
+\end{verbatim}
+
+\begin{verbatim}
+## rstan (Version 2.18.2, GitRev: 2e1f913d3ca3)
+\end{verbatim}
+
+\begin{verbatim}
+## For execution on a local, multicore CPU with excess RAM we recommend calling
+## options(mc.cores = parallel::detectCores()).
+## To avoid recompilation of unchanged Stan programs, we recommend calling
+## rstan_options(auto_write = TRUE)
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'rstan'
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:coda':
+## 
+##     traceplot
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:psych':
+## 
+##     lookup
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:pastecs':
+## 
+##     extract
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:tidyr':
+## 
+##     extract
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{rstan_options}\NormalTok{(}\DataTypeTok{auto_write=}\OtherTok{TRUE}\NormalTok{)}
+\KeywordTok{options}\NormalTok{(}\DataTypeTok{mc.cores=}\NormalTok{parallel}\OperatorTok{::}\KeywordTok{detectCores}\NormalTok{())}
+\NormalTok{seal.csv<-}\KeywordTok{read_csv}\NormalTok{(}\StringTok{"http://www.zoology.ubc.ca/~whitlock/ABD/teaching/datasets/17/17e8ShrinkingSeals%20Trites%201996.csv"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Parsed with column specification:
+## cols(
+##   age.days = col_integer(),
+##   length.cm = col_integer()
+## )
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{quaildata<-}\KeywordTok{read_csv}\NormalTok{(}\StringTok{"https://datadryad.org/bitstream/handle/10255/dryad.51265/Morphology%20data.csv?sequence=1"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Parsed with column specification:
+## cols(
+##   `Bird #` = col_integer(),
+##   Sex = col_character(),
+##   `Age (days)` = col_integer(),
+##   `Exp. Temp. (degree C)` = col_integer(),
+##   `Mass (g)` = col_double(),
+##   `Tarsus (mm)` = col_double(),
+##   `Culmen (mm)` = col_double(),
+##   `Depth (mm)` = col_double(),
+##   `Width (mm)` = col_double(),
+##   NOTES = col_character()
+## )
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{s.mean=}\FloatTok{3730.246}\NormalTok{; s.sd=}\FloatTok{1293.485}\NormalTok{;s.ages.range =}\KeywordTok{c}\NormalTok{(}\DecValTok{958}\OperatorTok{:}\DecValTok{8353}\NormalTok{)}
+\NormalTok{s.slope=}\FloatTok{0.00237}\NormalTok{;s.intercept=}\FloatTok{115.767}\NormalTok{;s.sigma =}\StringTok{ }\FloatTok{5.6805}
+\end{Highlighting}
+\end{Shaded}
+
+\section{1) Sampling your system (10
+points)}\label{sampling-your-system-10-points}
+
+\begin{quote}
+Each of you has a study system your work in and a question of interest.
+Give an example of one variable that you would sample in order to get a
+sense of its variation in nature. Describe, in detail, how you would
+sample for the population of that variable in order to understand its
+distribution. Questions to consider include, but are not limited to:
+Just what is your sample versus your population? What would your
+sampling design be? Why would you design it that particular way? What
+are potential confounding influences of both sampling technique and
+sample design that you need to be careful to avoid? What statistical
+distribution might the variable take, and why?
+\end{quote}
+
+\section{1. Answer:}\label{answer}
+
+\begin{quote}
+I am interested in sampling the population to identify the features of
+the human genome that are pervasively transcribed/consituitively
+expressed. In order to identify theses features, public repositories
+(GEO-profiles) could be queryied for RNA-Seq data. All available human
+RNA-Seq data would be culled and mapped to the same genome
+(hg38/GRCh38). Gene expression would be quantified in fragments per
+kilobase of transcript per million mapped read (FPKM). For each
+comparative experiment, correlation coeficients would be calculated for
+each gene across all conditions. Only genes with (arbitrarily) high
+correlation (90\%) across both conditions would be added to a librabry
+of pontentially constitiutively expressed genes for that experiment. For
+each comparative experiment, correlation coefficients would be caclcuted
+for each gene to identify consistently expressed features independent of
+condition. The initial library of constituitively expressed genes could
+be culled from hierarchical clustering of the correlation coefficients
+of gene expression across all conditions for several experiments. This
+could also be done with a principal component analysis (PCA) mutli
+dimensional scaling (MDS) analysis of the gene expression across all
+samples from many experiments. Rather than looking at the direction of
+maximal variation, the loadings for the features of minimal variation
+could be used to identify genes with consistenet expression across all
+conditions and all experiments. Genes from new experiments could then be
+added to the library of constituitively expressed features by performing
+ANOVA hypothesis tests. The consitituitively expressed features and the
+distribution of their expression could then be queried to produce a
+canonical control group for RNA-Seq analyses.
+\end{quote}
+
+\begin{center}\rule{0.5\linewidth}{\linethickness}\end{center}
+
+\section{2) Let's get philosophical. (10
+points)}\label{lets-get-philosophical.-10-points}
+
+\begin{quote}
+Are you a frequentist, likelihoodist, or Bayesian? Why? Include in your
+answer why you prefer the inferential tools (e.g.~confidence intervals,
+test statistics, posterior probabilities, etc.) of your chosen worldview
+and why you do not like the ones of the other one. This includes
+defining just what those different tools mean! extra credit for citing
+and discussing outside sources - one point per source/point \# 2.
+Answer: Of the three current statistical philosophies, I prefer
+likelihoodist. The likelihood ratio is a simple tool to identify model
+fit. The metric for significance is the deviance, a modified version of
+the test statistic. The philosophy is an derivative of frequentist
+statistics but lacks the obtuse frequentist language. Likelihood
+consideration of how well data support a given hypothesis provides more
+utility than the frequentist quest for extreme values. Frequentist
+statistics is more familiar to me but the idea of failing to reject a
+null hypothesis is a ridiculous endeavour in mental aeorobics.The
+frequentist p-value and condfidence interval are the most familiar
+statistical tools available. Bayesian statistics is a new and esoteric
+concept for me despite its utility. Bayesian statistics incorporates a
+prior belief into the likelihoodist data generating model and normalizes
+by the marginal probability of all outcomes.
+\end{quote}
+
+\begin{center}\rule{0.5\linewidth}{\linethickness}\end{center}
+
+\section{3) Power (20 points)}\label{power-20-points}
+
+\begin{quote}
+We have a lot of aspects of the sample of data that we collect which can
+alter the power of our linear regressions. Slope, Intercept, Reidual
+variance, Sample Size, Range of X values Choose three of the above
+properties and demonstrate how they alter power of an F-test from a
+linear regression using at least three different alpha levels (more if
+you want!) As a baseline of the parameters, ( Your call what
+distribution to use for seal age simulation) slope = 0.00237,
+intercept=115.767, sigma = 5.6805, range of seal ages = 958 to 8353, or,
+if you prefer, seal ages ∼ N(3730.246, 1293.485).
+\end{quote}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{knitr}\OperatorTok{::}\NormalTok{opts_chunk}\OperatorTok{$}\KeywordTok{set}\NormalTok{(}\DataTypeTok{echo =} \OtherTok{TRUE}\NormalTok{)}
+
+\NormalTok{s.mean=}\FloatTok{3730.246}\NormalTok{; s.sd=}\FloatTok{1293.485}\NormalTok{;s.ages.range =}\KeywordTok{c}\NormalTok{(}\DecValTok{958}\NormalTok{,}\DecValTok{8353}\NormalTok{)}
+\NormalTok{s.slope=}\FloatTok{0.00237}\NormalTok{;s.intercept=}\FloatTok{115.767}\NormalTok{;s.sigma =}\StringTok{ }\FloatTok{5.6805}
+
+\NormalTok{seal.lm<-}\KeywordTok{lm}\NormalTok{(length.cm }\OperatorTok{~}\StringTok{ }\NormalTok{age.days, }\DataTypeTok{data=}\NormalTok{seal.csv)}
+\KeywordTok{summary}\NormalTok{(seal.lm)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = length.cm ~ age.days, data = seal.csv)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -19.8700  -3.8279   0.0304   3.7541  21.6874 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(>|t|)    
+## (Intercept) 1.158e+02  1.764e-01  656.37   <2e-16 ***
+## age.days    2.371e-03  4.467e-05   53.06   <2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 5.681 on 9663 degrees of freedom
+## Multiple R-squared:  0.2256, Adjusted R-squared:  0.2256 
+## F-statistic:  2816 on 1 and 9663 DF,  p-value: < 2.2e-16
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{anova}\NormalTok{(seal.lm)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Analysis of Variance Table
+## 
+## Response: length.cm
+##             Df Sum Sq Mean Sq F value    Pr(>F)    
+## age.days     1  90862   90862  2815.8 < 2.2e-16 ***
+## Residuals 9663 311807      32                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{seal.sim <-}\StringTok{ }\NormalTok{seal.csv }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{filter}\NormalTok{(age.days }\OperatorTok{>=}\StringTok{ }\NormalTok{s.ages.range[}\DecValTok{1}\NormalTok{], age.days }\OperatorTok{<=}\StringTok{ }\NormalTok{s.ages.range[}\DecValTok{2}\NormalTok{]) }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{samp_size=}\DecValTok{1}\OperatorTok{:}\KeywordTok{nrow}\NormalTok{(seal.csv)) }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{se_y =} \KeywordTok{sd}\NormalTok{(age.days)}\OperatorTok{/}\StringTok{ }\KeywordTok{sqrt}\NormalTok{(samp_size)) }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{group_by}\NormalTok{(samp_size) }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{z =}\NormalTok{ (age.days}\OperatorTok{-}\NormalTok{s.mean)}\OperatorTok{/}\NormalTok{se_y) }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{slope =} \KeywordTok{c}\NormalTok{(length.cm}\OperatorTok{/}\NormalTok{age.days)) }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{p =} \DecValTok{2}\OperatorTok{*}\KeywordTok{pnorm}\NormalTok{(}\KeywordTok{abs}\NormalTok{(z), }\DataTypeTok{lower.tail=}\OtherTok{FALSE}\NormalTok{)) }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{add_residuals}\NormalTok{(seal.lm) }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{add_predictions}\NormalTok{(seal.lm) }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{ungroup}\NormalTok{()}
+
+\CommentTok{# Assumptions, lack of correlation}
+\KeywordTok{qplot}\NormalTok{(pred, resid, }\DataTypeTok{data=}\NormalTok{seal.sim) }\OperatorTok{+}
+\StringTok{  }\KeywordTok{stat_smooth}\NormalTok{(}\DataTypeTok{method=}\StringTok{"lm"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Midterm_Andrew_Judell-Halfpenny_files/figure-latex/power-data-prep-1.pdf}
+
+\section{Sample Size Influence on Power of
+F-Test}\label{sample-size-influence-on-power-of-f-test}
+
+\begin{quote}
+The following graphs depict power as a function of sample size at
+several \[\alpha levels (\]\alpha=0.01 ,
+\[\alpha=0.05 , and \]\alpha=0.1 ). Increasing \$\$\alpha essentially
+increases power for similar sample sizes
+\end{quote}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{knitr}\OperatorTok{::}\NormalTok{opts_chunk}\OperatorTok{$}\KeywordTok{set}\NormalTok{(}\DataTypeTok{echo =} \OtherTok{TRUE}\NormalTok{)}
+
+\NormalTok{sample_sizes=}\DecValTok{2}\OperatorTok{:}\KeywordTok{nrow}\NormalTok{(seal.csv)}
+\NormalTok{power_f_test=}\KeywordTok{pwr.f2.test}\NormalTok{(}\DataTypeTok{u=}\NormalTok{sample_sizes,}\DataTypeTok{v=}\NormalTok{sample_sizes, }\DataTypeTok{f2 =} \FloatTok{0.1}\NormalTok{ , }\DataTypeTok{sig.level =} \FloatTok{0.01}\NormalTok{, }\DataTypeTok{power =}\NormalTok{ )}
+\KeywordTok{plot}\NormalTok{(sample_sizes,power_f_test}\OperatorTok{$}\NormalTok{power,}\DataTypeTok{col=}\StringTok{"blue"}\NormalTok{,}
+     \DataTypeTok{ylab=}\StringTok{'statistical power'}\NormalTok{,}\DataTypeTok{xlab=}\StringTok{'sample size'}\NormalTok{, }\DataTypeTok{ylim =} \KeywordTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{,}\DecValTok{1}\NormalTok{),}\DataTypeTok{main=}\StringTok{"Sample size influence on power at alpha=0.01"}\NormalTok{)}
+\KeywordTok{abline}\NormalTok{(}\DataTypeTok{h =} \FloatTok{0.80}\NormalTok{, }\DataTypeTok{lty=}\DecValTok{2}\NormalTok{, }\DataTypeTok{lwd=}\DecValTok{2}\NormalTok{,}\DataTypeTok{col=}\StringTok{'red'}\NormalTok{)}
+\KeywordTok{abline}\NormalTok{( }\DataTypeTok{v =} \DecValTok{1200}\NormalTok{, }\DataTypeTok{col =} \StringTok{"red"}\NormalTok{, }\DataTypeTok{lty =} \DecValTok{3}\NormalTok{)}
+\KeywordTok{text}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{0}\NormalTok{, }\StringTok{"abline( v = 1200 )"}\NormalTok{, }\DataTypeTok{col =} \StringTok{"gray60"}\NormalTok{, }\DataTypeTok{adj =} \KeywordTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{, }\FloatTok{-.1}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Midterm_Andrew_Judell-Halfpenny_files/figure-latex/power-sample-size-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{power_f2_test=}\KeywordTok{pwr.f2.test}\NormalTok{(}\DataTypeTok{u=}\NormalTok{sample_sizes,}\DataTypeTok{v=}\NormalTok{sample_sizes, }\DataTypeTok{f2 =} \FloatTok{0.1}\NormalTok{ , }\DataTypeTok{sig.level =} \FloatTok{0.05}\NormalTok{, }\DataTypeTok{power =}\NormalTok{ )}
+\KeywordTok{plot}\NormalTok{(sample_sizes,power_f2_test}\OperatorTok{$}\NormalTok{power,}\DataTypeTok{col=}\StringTok{"blue"}\NormalTok{,}
+     \DataTypeTok{ylab=}\StringTok{'statistical power'}\NormalTok{,}\DataTypeTok{xlab=}\StringTok{'sample size'}\NormalTok{, }\DataTypeTok{ylim =} \KeywordTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{,}\DecValTok{1}\NormalTok{),}\DataTypeTok{main=}\StringTok{"Sample size influence on power at alpha=0.05"}\NormalTok{)}
+\KeywordTok{abline}\NormalTok{(}\DataTypeTok{h =} \FloatTok{0.80}\NormalTok{, }\DataTypeTok{lty=}\DecValTok{2}\NormalTok{, }\DataTypeTok{lwd=}\DecValTok{2}\NormalTok{,}\DataTypeTok{col=}\StringTok{'red'}\NormalTok{)}
+\KeywordTok{abline}\NormalTok{( }\DataTypeTok{v =} \DecValTok{1200}\NormalTok{, }\DataTypeTok{col =} \StringTok{"red"}\NormalTok{, }\DataTypeTok{lty =} \DecValTok{3}\NormalTok{)}
+\KeywordTok{text}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{0}\NormalTok{, }\StringTok{"abline( v = 1200 )"}\NormalTok{, }\DataTypeTok{col =} \StringTok{"gray60"}\NormalTok{, }\DataTypeTok{adj =} \KeywordTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{, }\FloatTok{-.1}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Midterm_Andrew_Judell-Halfpenny_files/figure-latex/power-sample-size-2.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{power_f2_test=}\KeywordTok{pwr.f2.test}\NormalTok{(}\DataTypeTok{u=}\NormalTok{sample_sizes,}\DataTypeTok{v=}\NormalTok{sample_sizes, }\DataTypeTok{f2 =} \FloatTok{0.1}\NormalTok{ , }\DataTypeTok{sig.level =} \FloatTok{0.1}\NormalTok{, }\DataTypeTok{power =}\NormalTok{ )}
+\KeywordTok{plot}\NormalTok{(sample_sizes,power_f2_test}\OperatorTok{$}\NormalTok{power,}\DataTypeTok{col=}\StringTok{"blue"}\NormalTok{,}
+     \DataTypeTok{ylab=}\StringTok{'statistical power'}\NormalTok{,}\DataTypeTok{xlab=}\StringTok{'sample size'}\NormalTok{, }\DataTypeTok{ylim =} \KeywordTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{,}\DecValTok{1}\NormalTok{),}\DataTypeTok{main=}\StringTok{"Sample size influence on power at alpha=0.1"}\NormalTok{)}
+\KeywordTok{abline}\NormalTok{(}\DataTypeTok{h =} \FloatTok{0.80}\NormalTok{, }\DataTypeTok{lty=}\DecValTok{2}\NormalTok{, }\DataTypeTok{lwd=}\DecValTok{2}\NormalTok{,}\DataTypeTok{col=}\StringTok{'red'}\NormalTok{)}
+\KeywordTok{abline}\NormalTok{( }\DataTypeTok{v =} \DecValTok{1200}\NormalTok{, }\DataTypeTok{col =} \StringTok{"red"}\NormalTok{, }\DataTypeTok{lty =} \DecValTok{3}\NormalTok{)}
+\KeywordTok{text}\NormalTok{(}\DecValTok{1}\NormalTok{,}\DecValTok{0}\NormalTok{, }\StringTok{"abline( v = 1200 )"}\NormalTok{, }\DataTypeTok{col =} \StringTok{"gray60"}\NormalTok{, }\DataTypeTok{adj =} \KeywordTok{c}\NormalTok{(}\DecValTok{0}\NormalTok{, }\FloatTok{-.1}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Midterm_Andrew_Judell-Halfpenny_files/figure-latex/power-sample-size-3.pdf}
+
+\section{Range of X-values Influence on Power of
+F-Test}\label{range-of-x-values-influence-on-power-of-f-test}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{knitr}\OperatorTok{::}\NormalTok{opts_chunk}\OperatorTok{$}\KeywordTok{set}\NormalTok{(}\DataTypeTok{echo =} \OtherTok{TRUE}\NormalTok{)}
+
+\NormalTok{seal.sim.xr.}\FloatTok{1.}\NormalTok{lm<-}\KeywordTok{lm}\NormalTok{(length.cm }\OperatorTok{~}\StringTok{ }\NormalTok{age.days, }\DataTypeTok{data=}\NormalTok{seal.sim)}
+\KeywordTok{summary}\NormalTok{(seal.sim.xr.}\FloatTok{1.}\NormalTok{lm)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = length.cm ~ age.days, data = seal.sim)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -19.8700  -3.8279   0.0304   3.7541  21.6874 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(>|t|)    
+## (Intercept) 1.158e+02  1.764e-01  656.37   <2e-16 ***
+## age.days    2.371e-03  4.467e-05   53.06   <2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 5.681 on 9663 degrees of freedom
+## Multiple R-squared:  0.2256, Adjusted R-squared:  0.2256 
+## F-statistic:  2816 on 1 and 9663 DF,  p-value: < 2.2e-16
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{anova}\NormalTok{(seal.sim.xr.}\FloatTok{1.}\NormalTok{lm)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Analysis of Variance Table
+## 
+## Response: length.cm
+##             Df Sum Sq Mean Sq F value    Pr(>F)    
+## age.days     1  90862   90862  2815.8 < 2.2e-16 ***
+## Residuals 9663 311807      32                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{var}\NormalTok{(seal.sim}\OperatorTok{$}\NormalTok{age.days)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 1673103
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{seal.sim }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{power =} \DecValTok{1}\OperatorTok{-}\KeywordTok{sum}\NormalTok{(p}\OperatorTok{>}\FloatTok{0.01}\NormalTok{)}\OperatorTok{/}\KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{    }\KeywordTok{ungroup}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 1 x 1
+##   power
+##   <dbl>
+## 1 0.978
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{seal.sim }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{power =} \DecValTok{1}\OperatorTok{-}\KeywordTok{sum}\NormalTok{(p}\OperatorTok{>}\FloatTok{0.05}\NormalTok{)}\OperatorTok{/}\KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{   }\KeywordTok{ungroup}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 1 x 1
+##   power
+##   <dbl>
+## 1 0.986
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{seal.sim }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{power =} \DecValTok{1}\OperatorTok{-}\KeywordTok{sum}\NormalTok{(p}\OperatorTok{>}\FloatTok{0.1}\NormalTok{)}\OperatorTok{/}\KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{   }\KeywordTok{ungroup}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 1 x 1
+##   power
+##   <dbl>
+## 1 0.990
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{seal.sim <-}\KeywordTok{subset}\NormalTok{(seal.sim, seal.sim}\OperatorTok{$}\NormalTok{age.days }\OperatorTok{>=}\StringTok{ }\DecValTok{2000} \OperatorTok{&}\StringTok{ }\NormalTok{seal.sim}\OperatorTok{$}\NormalTok{age.days }\OperatorTok{<=}\StringTok{ }\DecValTok{6000}\NormalTok{)}
+\KeywordTok{var}\NormalTok{(seal.sim}\OperatorTok{$}\NormalTok{age.days)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 1147934
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{seal.sim }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{power =} \DecValTok{1}\OperatorTok{-}\KeywordTok{sum}\NormalTok{(p}\OperatorTok{>}\FloatTok{0.01}\NormalTok{)}\OperatorTok{/}\KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{    }\KeywordTok{ungroup}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 1 x 1
+##   power
+##   <dbl>
+## 1 0.976
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{seal.sim }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{power =} \DecValTok{1}\OperatorTok{-}\KeywordTok{sum}\NormalTok{(p}\OperatorTok{>}\FloatTok{0.05}\NormalTok{)}\OperatorTok{/}\KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{   }\KeywordTok{ungroup}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 1 x 1
+##   power
+##   <dbl>
+## 1 0.984
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{seal.sim }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{power =} \DecValTok{1}\OperatorTok{-}\KeywordTok{sum}\NormalTok{(p}\OperatorTok{>}\FloatTok{0.1}\NormalTok{)}\OperatorTok{/}\KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{   }\KeywordTok{ungroup}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 1 x 1
+##   power
+##   <dbl>
+## 1 0.989
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{seal.sim <-}\KeywordTok{subset}\NormalTok{(seal.sim, seal.sim}\OperatorTok{$}\NormalTok{age.days }\OperatorTok{>=}\StringTok{ }\DecValTok{2500} \OperatorTok{&}\StringTok{ }\NormalTok{seal.sim}\OperatorTok{$}\NormalTok{age.days }\OperatorTok{<=}\StringTok{ }\DecValTok{5500}\NormalTok{)}
+\KeywordTok{var}\NormalTok{(seal.sim}\OperatorTok{$}\NormalTok{age.days)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 704632.6
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{seal.sim }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{power =} \DecValTok{1}\OperatorTok{-}\KeywordTok{sum}\NormalTok{(p}\OperatorTok{>}\FloatTok{0.01}\NormalTok{)}\OperatorTok{/}\KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{    }\KeywordTok{ungroup}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 1 x 1
+##   power
+##   <dbl>
+## 1 0.969
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{seal.sim }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{power =} \DecValTok{1}\OperatorTok{-}\KeywordTok{sum}\NormalTok{(p}\OperatorTok{>}\FloatTok{0.05}\NormalTok{)}\OperatorTok{/}\KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{   }\KeywordTok{ungroup}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 1 x 1
+##   power
+##   <dbl>
+## 1 0.980
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{seal.sim }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{power =} \DecValTok{1}\OperatorTok{-}\KeywordTok{sum}\NormalTok{(p}\OperatorTok{>}\FloatTok{0.1}\NormalTok{)}\OperatorTok{/}\KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{   }\KeywordTok{ungroup}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 1 x 1
+##   power
+##   <dbl>
+## 1 0.986
+\end{verbatim}
+
+\begin{quote}
+Minimizing the range of X-values in a way that also reduced that
+variance of the X-values still lessened the Power of an F-Test in a
+similar fashion to a reduction in sample size
+\end{quote}
+
+\section{Influence of Slope on Power of
+F-Test}\label{influence-of-slope-on-power-of-f-test}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{knitr}\OperatorTok{::}\NormalTok{opts_chunk}\OperatorTok{$}\KeywordTok{set}\NormalTok{(}\DataTypeTok{echo =} \OtherTok{TRUE}\NormalTok{)}
+
+\NormalTok{seal.sim <-}\StringTok{ }\NormalTok{seal.csv }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{filter}\NormalTok{(age.days }\OperatorTok{>=}\StringTok{ }\NormalTok{s.ages.range[}\DecValTok{1}\NormalTok{], age.days }\OperatorTok{<=}\StringTok{ }\NormalTok{s.ages.range[}\DecValTok{2}\NormalTok{]) }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{samp_size=}\DecValTok{1}\OperatorTok{:}\KeywordTok{nrow}\NormalTok{(seal.csv)) }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{se_y =} \KeywordTok{sd}\NormalTok{(age.days)}\OperatorTok{/}\StringTok{ }\KeywordTok{sqrt}\NormalTok{(samp_size)) }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{group_by}\NormalTok{(samp_size) }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{z =}\NormalTok{ (age.days}\OperatorTok{-}\NormalTok{s.mean)}\OperatorTok{/}\NormalTok{se_y) }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{slope =} \KeywordTok{c}\NormalTok{(length.cm}\OperatorTok{/}\NormalTok{age.days)) }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{p =} \DecValTok{2}\OperatorTok{*}\KeywordTok{pnorm}\NormalTok{(}\KeywordTok{abs}\NormalTok{(z), }\DataTypeTok{lower.tail=}\OtherTok{FALSE}\NormalTok{)) }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{add_residuals}\NormalTok{(seal.lm) }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{add_predictions}\NormalTok{(seal.lm) }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{ungroup}\NormalTok{()}
+
+\KeywordTok{max}\NormalTok{(seal.sim}\OperatorTok{$}\NormalTok{slope)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.1200418
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{min}\NormalTok{(seal.sim}\OperatorTok{$}\NormalTok{slope)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.01589304
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{s.slope}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.00237
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{seal.sim.slope<-seal.sim }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{filter}\NormalTok{(slope }\OperatorTok{<=}\StringTok{ }\NormalTok{s.slope) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{ungroup}\NormalTok{()}
+
+\NormalTok{seal.sim.slope<-seal.sim }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{filter}\NormalTok{(slope }\OperatorTok{>=}\StringTok{ }\FloatTok{0.03}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{ungroup}\NormalTok{()}
+
+\NormalTok{seal.sim.slope }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{power =} \DecValTok{1}\OperatorTok{-}\KeywordTok{sum}\NormalTok{(p}\OperatorTok{>}\FloatTok{0.01}\NormalTok{)}\OperatorTok{/}\KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{    }\KeywordTok{ungroup}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 1 x 1
+##   power
+##   <dbl>
+## 1 0.968
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{seal.sim.slope }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{power =} \DecValTok{1}\OperatorTok{-}\KeywordTok{sum}\NormalTok{(p}\OperatorTok{>}\FloatTok{0.05}\NormalTok{)}\OperatorTok{/}\KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{   }\KeywordTok{ungroup}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 1 x 1
+##   power
+##   <dbl>
+## 1 0.979
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{seal.sim.slope }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{power =} \DecValTok{1}\OperatorTok{-}\KeywordTok{sum}\NormalTok{(p}\OperatorTok{>}\FloatTok{0.1}\NormalTok{)}\OperatorTok{/}\KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{   }\KeywordTok{ungroup}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 1 x 1
+##   power
+##   <dbl>
+## 1 0.985
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{seal.sim.slope<-seal.sim }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{filter}\NormalTok{(slope }\OperatorTok{>=}\StringTok{ }\FloatTok{0.05}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{ungroup}\NormalTok{()}
+\NormalTok{seal.sim.slope }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{power =} \DecValTok{1}\OperatorTok{-}\KeywordTok{sum}\NormalTok{(p}\OperatorTok{>}\FloatTok{0.01}\NormalTok{)}\OperatorTok{/}\KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{    }\KeywordTok{ungroup}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 1 x 1
+##   power
+##   <dbl>
+## 1 0.999
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{seal.sim.slope }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{power =} \DecValTok{1}\OperatorTok{-}\KeywordTok{sum}\NormalTok{(p}\OperatorTok{>}\FloatTok{0.05}\NormalTok{)}\OperatorTok{/}\KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{   }\KeywordTok{ungroup}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 1 x 1
+##   power
+##   <dbl>
+## 1 0.999
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{seal.sim.slope }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{power =} \DecValTok{1}\OperatorTok{-}\KeywordTok{sum}\NormalTok{(p}\OperatorTok{>}\FloatTok{0.1}\NormalTok{)}\OperatorTok{/}\KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{   }\KeywordTok{ungroup}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 1 x 1
+##   power
+##   <dbl>
+## 1     1
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{seal.sim.slope<-}\StringTok{ }\NormalTok{seal.sim }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{filter}\NormalTok{(slope }\OperatorTok{<=}\StringTok{ }\FloatTok{0.075}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{ungroup}\NormalTok{()}
+\NormalTok{seal.sim.slope }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{power =} \DecValTok{1}\OperatorTok{-}\KeywordTok{sum}\NormalTok{(p}\OperatorTok{>}\FloatTok{0.01}\NormalTok{)}\OperatorTok{/}\KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{    }\KeywordTok{ungroup}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 1 x 1
+##   power
+##   <dbl>
+## 1 0.978
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{seal.sim.slope }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{power =} \DecValTok{1}\OperatorTok{-}\KeywordTok{sum}\NormalTok{(p}\OperatorTok{>}\FloatTok{0.05}\NormalTok{)}\OperatorTok{/}\KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{   }\KeywordTok{ungroup}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 1 x 1
+##   power
+##   <dbl>
+## 1 0.986
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{seal.sim.slope }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{power =} \DecValTok{1}\OperatorTok{-}\KeywordTok{sum}\NormalTok{(p}\OperatorTok{>}\FloatTok{0.1}\NormalTok{)}\OperatorTok{/}\KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{   }\KeywordTok{ungroup}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 1 x 1
+##   power
+##   <dbl>
+## 1 0.990
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{seal.sim.slope<-}\StringTok{ }\NormalTok{seal.sim }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{filter}\NormalTok{(slope }\OperatorTok{<=}\StringTok{ }\FloatTok{0.1}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{ungroup}\NormalTok{()}
+\NormalTok{seal.sim.slope }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{power =} \DecValTok{1}\OperatorTok{-}\KeywordTok{sum}\NormalTok{(p}\OperatorTok{>}\FloatTok{0.01}\NormalTok{)}\OperatorTok{/}\KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{    }\KeywordTok{ungroup}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 1 x 1
+##   power
+##   <dbl>
+## 1 0.978
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{seal.sim.slope }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{power =} \DecValTok{1}\OperatorTok{-}\KeywordTok{sum}\NormalTok{(p}\OperatorTok{>}\FloatTok{0.05}\NormalTok{)}\OperatorTok{/}\KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{   }\KeywordTok{ungroup}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 1 x 1
+##   power
+##   <dbl>
+## 1 0.986
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{seal.sim.slope }\OperatorTok{%>%}
+\StringTok{   }\KeywordTok{summarise}\NormalTok{(}\DataTypeTok{power =} \DecValTok{1}\OperatorTok{-}\KeywordTok{sum}\NormalTok{(p}\OperatorTok{>}\FloatTok{0.1}\NormalTok{)}\OperatorTok{/}\KeywordTok{n}\NormalTok{()) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{   }\KeywordTok{ungroup}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 1 x 1
+##   power
+##   <dbl>
+## 1 0.990
+\end{verbatim}
+
+\begin{quote}
+There werent any instantaneous slopes less than the stated value of the
+slope. Therefor the effect of slope could only be judged by
+incrementally increasing the slope beyond the stated value. Measuring
+power of f-test as a function of an increasing slope had a parabolic
+relationship. Power increased with increased slope until a maximum was
+reached at a slope of 0.05 centimeters/day. As slope increased above
+0.05 centimeters/day power began to decrease.
+\end{quote}
+
+\section{Extra credit 1 - test whether the distribution of ages alters
+power: 3
+points}\label{extra-credit-1---test-whether-the-distribution-of-ages-alters-power-3-points}
+
+\subsection{Extra Credit 2 Choose just one of the above elements to
+vary. Using likelihood to fit models, repeat your power analysis for a
+chi-square likelihood ratio test. You can use glm(), bbmle or some other
+means of fitting and obtaining a LRT at your discretion. 5
+points.}\label{extra-credit-2-choose-just-one-of-the-above-elements-to-vary.-using-likelihood-to-fit-models-repeat-your-power-analysis-for-a-chi-square-likelihood-ratio-test.-you-can-use-glm-bbmle-or-some-other-means-of-fitting-and-obtaining-a-lrt-at-your-discretion.-5-points.}
+
+\section{4) Bayes Theorem}\label{bayes-theorem}
+
+\begin{quote}
+I've referenced the following figure a few times. I'd like you to
+demonstrate your understanding of Bayes Theorem by hand showing what the
+probability of the sun exploding is given the data. Assume that your
+prior probability that the sun explodes is p(Sun Explodes) = 0.0001. The
+rest of the information you need is in the cartoon!
+\end{quote}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{knitr}\OperatorTok{::}\NormalTok{opts_chunk}\OperatorTok{$}\KeywordTok{set}\NormalTok{(}\DataTypeTok{echo =} \OtherTok{TRUE}\NormalTok{)}
+
+\KeywordTok{tibble}\NormalTok{(}\DataTypeTok{pr_not_sixes =} \DecValTok{11}\OperatorTok{/}\DecValTok{12}\NormalTok{,}
+       \DataTypeTok{pr_dbl_sixes =} \DecValTok{1}\OperatorTok{/}\DecValTok{12}\NormalTok{,}
+       \DataTypeTok{pr_Sun_Explodes =} \FloatTok{.0001}\NormalTok{) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{marginal =}\NormalTok{ pr_not_sixes }\OperatorTok{*}\StringTok{ }\NormalTok{pr_Sun_Explodes }\OperatorTok{+}\StringTok{ }\NormalTok{pr_dbl_sixes }\OperatorTok{*}\StringTok{ }\NormalTok{(}\DecValTok{1} \OperatorTok{-}\StringTok{ }\NormalTok{pr_Sun_Explodes)) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{pr_sun_boom =}\NormalTok{ pr_not_sixes }\OperatorTok{*}\StringTok{ }\NormalTok{pr_Sun_Explodes }\OperatorTok{/}\StringTok{ }\NormalTok{marginal) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{pr_not_boom =}\NormalTok{ pr_dbl_sixes }\OperatorTok{*}\StringTok{ }\NormalTok{(}\DecValTok{1}\OperatorTok{-}\NormalTok{pr_Sun_Explodes) }\OperatorTok{/}\StringTok{ }\NormalTok{marginal) }\OperatorTok{%>%}\StringTok{ }
+\StringTok{  }\KeywordTok{glimpse}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Observations: 1
+## Variables: 6
+## $ pr_not_sixes    <dbl> 0.9166667
+## $ pr_dbl_sixes    <dbl> 0.08333333
+## $ pr_Sun_Explodes <dbl> 1e-04
+## $ marginal        <dbl> 0.08341667
+## $ pr_sun_boom     <dbl> 0.001098901
+## $ pr_not_boom     <dbl> 0.9989011
+\end{verbatim}
+
+\section{5) Quailing at the Prospect of Linear
+Models}\label{quailing-at-the-prospect-of-linear-models}
+
+\begin{quote}
+I'd like us to walk through the three different `engines' that we have
+learned about to fit linear models. To motivate this, we'll look at
+Burness et al.'s 2012 study ``Post-hatch heat warms adult beaks:
+irreversible physiological plasticity in Japanese quail
+\url{http://rspb.royalsocietypublishing.org/content/280/1767/20131436.short}
+the data for which they have made available at Data Dryad at
+\url{http://datadryad.org/resource/doi:10.5061/dryad.gs661}. We'll be
+looking at the morphology data.
+\end{quote}
+
+\section{5.1 Three fits (10 points)}\label{three-fits-10-points}
+
+\begin{quote}
+To begin with, I'd like you to fit the relationship that describes how
+Tarsus (leg) length predicts upper beak (Culmen) length. Fit this
+relationship using least squares, likelihood, and Bayesian techniques.
+For each fit, demonstrate that the necessary assumptions have been met.
+Note, functions used to fit with likelihood and Bayes may or may not
+behave well when fed NAs. So look out for those errors.
+\end{quote}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{knitr}\OperatorTok{::}\NormalTok{opts_chunk}\OperatorTok{$}\KeywordTok{set}\NormalTok{(}\DataTypeTok{echo =} \OtherTok{TRUE}\NormalTok{)}
+
+\NormalTok{quaildata<-}\KeywordTok{read_csv}\NormalTok{(}\StringTok{"https://datadryad.org/bitstream/handle/10255/dryad.51265/Morphology%20data.csv?sequence=1"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Parsed with column specification:
+## cols(
+##   `Bird #` = col_integer(),
+##   Sex = col_character(),
+##   `Age (days)` = col_integer(),
+##   `Exp. Temp. (degree C)` = col_integer(),
+##   `Mass (g)` = col_double(),
+##   `Tarsus (mm)` = col_double(),
+##   `Culmen (mm)` = col_double(),
+##   `Depth (mm)` = col_double(),
+##   `Width (mm)` = col_double(),
+##   NOTES = col_character()
+## )
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{quail.lm <-}\StringTok{ }\KeywordTok{lm}\NormalTok{(quaildata}\OperatorTok{$}\StringTok{`}\DataTypeTok{Culmen (mm)}\StringTok{`} \OperatorTok{~}\StringTok{ }\NormalTok{quaildata}\OperatorTok{$}\StringTok{`}\DataTypeTok{Tarsus (mm)}\StringTok{`}\NormalTok{, }\DataTypeTok{data =}\NormalTok{ quaildata)}
+\CommentTok{#assumptions}
+\KeywordTok{plot}\NormalTok{(quail.lm, }\DataTypeTok{which=}\DecValTok{1}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Midterm_Andrew_Judell-Halfpenny_files/figure-latex/question-5.1-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{plot}\NormalTok{(quail.lm, }\DataTypeTok{which=}\DecValTok{2}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Midterm_Andrew_Judell-Halfpenny_files/figure-latex/question-5.1-2.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{quail.mle <-}\StringTok{ }\KeywordTok{glm}\NormalTok{(quaildata}\OperatorTok{$}\StringTok{`}\DataTypeTok{Culmen (mm)}\StringTok{`} \OperatorTok{~}\StringTok{ }\NormalTok{quaildata}\OperatorTok{$}\StringTok{`}\DataTypeTok{Tarsus (mm)}\StringTok{`}\NormalTok{,}
+                \DataTypeTok{family =} \KeywordTok{gaussian}\NormalTok{(}\DataTypeTok{link =} \StringTok{"identity"}\NormalTok{),}
+                \DataTypeTok{data =}\NormalTok{ quaildata)}
+
+\KeywordTok{plot}\NormalTok{(quail.mle, }\DataTypeTok{which=}\DecValTok{1}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Midterm_Andrew_Judell-Halfpenny_files/figure-latex/question-5.1-3.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{plot}\NormalTok{(quail.mle, }\DataTypeTok{which=}\DecValTok{2}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Midterm_Andrew_Judell-Halfpenny_files/figure-latex/question-5.1-4.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{quail.prof <-}\StringTok{ }\KeywordTok{profileModel}\NormalTok{(quail.mle,}
+                     \DataTypeTok{objective =} \StringTok{"ordinaryDeviance"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Profiling for parameter (Intercept) ... Done
+## Profiling for parameter quaildata$`Tarsus (mm)` ... Done
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{plot}\NormalTok{(quail.prof)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Midterm_Andrew_Judell-Halfpenny_files/figure-latex/question-5.1-5.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{quail.data<-}\KeywordTok{as.data.frame}\NormalTok{(}\KeywordTok{cbind}\NormalTok{(}\DataTypeTok{Culmen=}\NormalTok{quaildata}\OperatorTok{$}\StringTok{`}\DataTypeTok{Culmen (mm)}\StringTok{`}\NormalTok{,}\DataTypeTok{Tarsus=}\NormalTok{quaildata}\OperatorTok{$}\StringTok{`}\DataTypeTok{Tarsus (mm)}\StringTok{`}\NormalTok{))}
+\NormalTok{quail.data<-}\KeywordTok{na.omit}\NormalTok{(quail.data)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Midterm_Andrew_Judell-Halfpenny_files/figure-latex/question-5.1.3-1.pdf}
+\includegraphics{Midterm_Andrew_Judell-Halfpenny_files/figure-latex/question-5.1.3-2.pdf}
+
+\begin{verbatim}
+##                  prior     class   coef group resp dpar nlpar bound
+## 1                              b                                   
+## 2                              b Tarsus                            
+## 3 student_t(3, 12, 10) Intercept                                   
+## 4  student_t(3, 0, 10)     sigma
+\end{verbatim}
+
+\begin{verbatim}
+##   b_Intercept  b_Tarsus    sigma      lp__ chain iter
+## 1 -0.16895147 0.3766854 1.227381 -1256.218     1 1001
+## 2 -0.20414484 0.3771976 1.276628 -1256.523     1 1002
+## 3 -0.09085523 0.3693485 1.207801 -1258.936     1 1003
+## 4 -0.15080430 0.3783011 1.228581 -1259.319     1 1004
+## 5 -0.08855971 0.3732551 1.221575 -1255.633     1 1005
+## 6 -0.13726647 0.3747978 1.221534 -1255.676     1 1006
+\end{verbatim}
+
+\includegraphics{Midterm_Andrew_Judell-Halfpenny_files/figure-latex/question-5.1.3-3.pdf}
+
+\section{5.2 Three interpretations (10
+points)}\label{three-interpretations-10-points}
+
+\begin{quote}
+OK, now that we have fits, take a look! Do the coefficients and their
+associated measures of error in their estimation match? How would we
+interpret the results from these different analyses differently? Or
+would we? Note, confint works on lm objects as well.
+\end{quote}
+
+\section{5.3 Everyday I'm Profilin' (10
+points)}\label{everyday-im-profilin-10-points}
+
+\begin{quote}
+For your likelihood fit, are your profiles well behaved? For just the
+slope, use grid sampling to create a profile. You'll need to write
+functions for this, and use the results from your glm() fit to provide
+the reasonable bounds of what you should be profiling over (3SE should
+do). Is it well behaved? Plot the profile and give the 80\% and 95\% CI.
+Verify your results with profileModel.
+\end{quote}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{quallm<-}\KeywordTok{summary}\NormalTok{(quail.lm)}
+\NormalTok{quallm}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:
+## lm(formula = quaildata$`Culmen (mm)` ~ quaildata$`Tarsus (mm)`, 
+##     data = quaildata)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -4.4081 -0.7029 -0.0328  0.7263  3.5970 
+## 
+## Coefficients:
+##                          Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)             -0.098707   0.215450  -0.458    0.647    
+## quaildata$`Tarsus (mm)`  0.372927   0.006646  56.116   <2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 1.238 on 764 degrees of freedom
+##   (114 observations deleted due to missingness)
+## Multiple R-squared:  0.8048, Adjusted R-squared:  0.8045 
+## F-statistic:  3149 on 1 and 764 DF,  p-value: < 2.2e-16
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{res.sd<-quallm}\OperatorTok{$}\NormalTok{sigma;res.sd}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 1.238383
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{m.est=quallm}\OperatorTok{$}\NormalTok{coefficients[}\DecValTok{2}\NormalTok{,}\DecValTok{1}\NormalTok{];m.est}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.3729268
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{m.sterr=quallm}\OperatorTok{$}\NormalTok{coefficients[}\DecValTok{2}\NormalTok{,}\DecValTok{2}\NormalTok{];m.sterr}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.006645654
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{b.est=quallm}\OperatorTok{$}\NormalTok{coefficients[}\DecValTok{1}\NormalTok{,}\DecValTok{1}\NormalTok{];b.est}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] -0.09870712
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{b.sterr=quallm}\OperatorTok{$}\NormalTok{coefficients[}\DecValTok{1}\NormalTok{,}\DecValTok{2}\NormalTok{];b.sterr}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 0.2154496
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{#approx.mod <- glmer(formula = quail.data$Tarsus ~ quail.data$Culmen,}
+ \CommentTok{#                   data=quail.data, family=binomial(link="logit"))}
+
+
+\NormalTok{quail_dist <-}\StringTok{ }\KeywordTok{crossing}\NormalTok{(}\DataTypeTok{b =} \KeywordTok{seq}\NormalTok{(b.est}\DecValTok{-3}\OperatorTok{*}\NormalTok{b.sterr, b.est}\OperatorTok{+}\DecValTok{3}\OperatorTok{*}\NormalTok{b.sterr, b.sterr),}
+                      \DataTypeTok{m =} \KeywordTok{seq}\NormalTok{(m.est}\DecValTok{-3}\OperatorTok{*}\NormalTok{m.sterr, m.est}\OperatorTok{+}\DecValTok{3}\OperatorTok{*}\NormalTok{m.sterr, m.sterr),}
+                      \DataTypeTok{residual.sd =} \KeywordTok{seq}\NormalTok{(res.sd}\OperatorTok{/}\DecValTok{2}\NormalTok{,res.sd}\OperatorTok{*}\DecValTok{2}\NormalTok{, }\FloatTok{.05}\NormalTok{)) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{rowwise}\NormalTok{() }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{mutate}\NormalTok{(}\DataTypeTok{log_lik =} \KeywordTok{sum}\NormalTok{(}\KeywordTok{dnorm}\NormalTok{(quail.data}\OperatorTok{$}\NormalTok{Tarsus, }\DataTypeTok{mean =}\NormalTok{ m, }\DataTypeTok{sd =}\NormalTok{ residual.sd, }\DataTypeTok{log=}\OtherTok{TRUE}\NormalTok{))) }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{ungroup}\NormalTok{()}
+
+\NormalTok{quail_dist }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(log_lik }\OperatorTok{==}\StringTok{ }\KeywordTok{max}\NormalTok{(log_lik))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 7 x 4
+##         b     m residual.sd log_lik
+##     <dbl> <dbl>       <dbl>   <dbl>
+## 1 -0.745  0.393        2.47 -65865.
+## 2 -0.530  0.393        2.47 -65865.
+## 3 -0.314  0.393        2.47 -65865.
+## 4 -0.0987 0.393        2.47 -65865.
+## 5  0.117  0.393        2.47 -65865.
+## 6  0.332  0.393        2.47 -65865.
+## 7  0.548  0.393        2.47 -65865.
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{quail_sd_profile<-quail_dist }\OperatorTok{%>%}
+\StringTok{  }\KeywordTok{filter}\NormalTok{(log_lik }\OperatorTok{>}\StringTok{ }\KeywordTok{max}\NormalTok{(log_lik) }\OperatorTok{-}\StringTok{ }\FloatTok{1.92}\NormalTok{) }\OperatorTok{%>%}
+\StringTok{    }\KeywordTok{filter}\NormalTok{(}\KeywordTok{row_number}\NormalTok{()}\OperatorTok{==}\DecValTok{1} \OperatorTok{|}\StringTok{ }\KeywordTok{row_number}\NormalTok{()}\OperatorTok{==}\KeywordTok{n}\NormalTok{())}
+
+
+\NormalTok{fitted <-}\StringTok{ }\KeywordTok{predict}\NormalTok{(quail.mle)}
+\NormalTok{res <-}\StringTok{ }\KeywordTok{residuals}\NormalTok{(quail.mle)}
+\KeywordTok{qplot}\NormalTok{(fitted, res)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Midterm_Andrew_Judell-Halfpenny_files/figure-latex/question.-5.3-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{quail.profile <-}\StringTok{ }\KeywordTok{profileModel}\NormalTok{(quail.mle,}
+                     \DataTypeTok{objective =} \StringTok{"ordinaryDeviance"}\NormalTok{,}
+                     \DataTypeTok{quantile =} \KeywordTok{qchisq}\NormalTok{(}\FloatTok{0.95}\NormalTok{, }\DecValTok{1}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Preliminary iteration .. Done
+## 
+## Profiling for parameter (Intercept) ... Done
+## Profiling for parameter quaildata$`Tarsus (mm)` ... Done
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{quail.profile}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## 
+## Call:  profileModel(fitted = quail.mle, quantile = qchisq(0.95, 1),      objective = "ordinaryDeviance") 
+## 
+## Profiled parameters:
+## [1]  (Intercept)              quaildata$`Tarsus (mm)`
+## 
+## Asymptotes:
+## profileModel has not detected any profiles with asymptotes.
+## 
+## Quantile was set to: 3.841459 
+## Grid size: 20 
+## 
+## Agreement of the objective with fitting method glm : TRUE 
+## Values of the objective less than 1e-08 were considered 0 
+## The profile traces are included in the object.
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{plot}\NormalTok{(quail.profile)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Midterm_Andrew_Judell-Halfpenny_files/figure-latex/question.-5.3-2.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{likelihood <-}\StringTok{ }\ControlFlowTok{function}\NormalTok{(m, b, residual.sd)\{}
+\NormalTok{  fitted <-}\StringTok{ }\NormalTok{b }\OperatorTok{+}\StringTok{ }\NormalTok{m }\OperatorTok{*}\StringTok{ }\NormalTok{quail.data}\OperatorTok{$}\NormalTok{Tarsus}
+  \KeywordTok{sum}\NormalTok{(}\KeywordTok{dnorm}\NormalTok{(quail.data}\OperatorTok{$}\NormalTok{Culmen, fitted, residual.sd, }\DataTypeTok{log=}\OtherTok{TRUE}\NormalTok{))\}}
+
+\NormalTok{minimum.likelihood<-}\ControlFlowTok{function}\NormalTok{(m, b, residual.sd) }\DecValTok{-1}\OperatorTok{*}\KeywordTok{likelihood}\NormalTok{(m,b, residual.sd)}
+
+\NormalTok{quail.mle2 <-}\StringTok{ }\KeywordTok{mle2}\NormalTok{(minimum.likelihood, }\DataTypeTok{start =} \KeywordTok{list}\NormalTok{(}\DataTypeTok{m =}\NormalTok{ m.est, }\DataTypeTok{b =}\NormalTok{b.est, }\DataTypeTok{residual.sd =}\NormalTok{res.sd ))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{summary}\NormalTok{(quail.mle2)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Maximum likelihood estimation
+## 
+## Call:
+## mle2(minuslogl = minimum.likelihood, start = list(m = m.est, 
+##     b = b.est, residual.sd = res.sd))
+## 
+## Coefficients:
+##              Estimate Std. Error z value  Pr(z)    
+## m            0.372927   0.006637 56.1891 <2e-16 ***
+## b           -0.098707   0.215169 -0.4587 0.6464    
+## residual.sd  1.236770   0.031598 39.1406 <2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## -2 log L: 2499.363
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{plot}\NormalTok{(}\KeywordTok{profile}\NormalTok{(quail.mle2))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+
+## Warning in dnorm(quail.data$Culmen, fitted, residual.sd, log = TRUE): NaNs
+## produced
+\end{verbatim}
+
+\includegraphics{Midterm_Andrew_Judell-Halfpenny_files/figure-latex/question.-5.3-3.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{prof95 <-}\StringTok{ }\KeywordTok{profileModel}\NormalTok{(quail.mle,}
+                     \DataTypeTok{objective =} \StringTok{"ordinaryDeviance"}\NormalTok{,}
+                     \DataTypeTok{quantile =} \KeywordTok{qchisq}\NormalTok{(}\FloatTok{0.95}\NormalTok{, }\DecValTok{1}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Preliminary iteration .. Done
+## 
+## Profiling for parameter (Intercept) ... Done
+## Profiling for parameter quaildata$`Tarsus (mm)` ... Done
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{plot}\NormalTok{(prof95)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Midterm_Andrew_Judell-Halfpenny_files/figure-latex/question.-5.3-4.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{prof80 <-}\StringTok{ }\KeywordTok{profileModel}\NormalTok{(quail.mle,}
+                     \DataTypeTok{objective =} \StringTok{"ordinaryDeviance"}\NormalTok{,}
+                     \DataTypeTok{quantile =} \KeywordTok{qchisq}\NormalTok{(}\FloatTok{0.8}\NormalTok{, }\DecValTok{1}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Preliminary iteration .. Done
+## 
+## Profiling for parameter (Intercept) ... Done
+## Profiling for parameter quaildata$`Tarsus (mm)` ... Done
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{plot}\NormalTok{(prof80)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Midterm_Andrew_Judell-Halfpenny_files/figure-latex/question.-5.3-5.pdf}
+
+\section{5.4 The Power of the Prior (10
+points)}\label{the-power-of-the-prior-10-points}
+
+\begin{quote}
+This data set is pretty big. After excluding NAs in the variables we're
+interested in, it's over 766 lines of data! Now, a lot of data can
+overhwelm a strong prior. But only to a point. Show first that there is
+enough data here that a prior for the slope with an estimate of 0.4 and
+a sd of 0.01 is overwhelmed by the data by demonstrating that it
+produces similar results to our already fit flat prior. Second, see if a
+very small sample size (n = 10) would at least include 0.4 in it's 95\%
+Credible Interval. Last, demonstrate at what sample size that 95\% CL
+first begins to include 0.4 when we have a strong prior. How much data
+do we really need to overcome our prior belief? Note, it takes a long
+time to fit these models, so, try a strategy of spacing out the 3-4
+sample sizes, and then zoom in on an interesting region.
+\end{quote}
+
+\begin{verbatim}
+##   b_Intercept  b_Tarsus    sigma      lp__ chain iter
+## 1   -11.35940 0.3716594 9.994044 -2963.515     1 1001
+## 2   -10.90027 0.3573845 9.997642 -2964.867     1 1002
+## 3   -10.49476 0.3440124 9.972296 -2962.699     1 1003
+## 4   -10.49252 0.3440027 9.973313 -2962.812     1 1004
+## 5   -11.83156 0.3861837 9.954257 -2963.017     1 1005
+## 6   -10.96092 0.3583912 9.962484 -2962.708     1 1006
+\end{verbatim}
+
+\begin{verbatim}
+## Scale for 'colour' is already present. Adding another scale for
+## 'colour', which will replace the existing scale.
+\end{verbatim}
+
+\includegraphics{Midterm_Andrew_Judell-Halfpenny_files/figure-latex/unnamed-chunk-1-1.pdf}
+\includegraphics{Midterm_Andrew_Judell-Halfpenny_files/figure-latex/unnamed-chunk-1-2.pdf}
+
+\section{6. Extra Credit}\label{extra-credit}
+
+\begin{quote}
+Make an election forecast as discussed at
+\url{https://biol607.github.io/extra.html} - but this isn't just a
+winner prediction. 1 point for the correct winner. 5 points for
+correctly predicting the popular vote and being within 10\% (3\% just
+for trying!). 5 points for predicting the electoral college and geting
+no more than 5 states wrong (3 points just for trying). 5 points for
+predicting the senate races getting no more than 5 states wrong (3
+points just for trying). 1 extra point for each vote percentage within
+your 80\% Confidence/Credible Interval. Ditto for the house races.
+\end{quote}
+
+
+\end{document}

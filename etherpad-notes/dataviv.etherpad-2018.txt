@@ -1,0 +1,80 @@
+Data Visualization     9/17/2018
+
+four principles: clarity, precision- easy to see the answer/meaning?, efficiency (what's the cognitive load) and max ideas with minimal ink 
+gg: grammar of graphics 
+
+colorbrewer.org - variety of color scales - print friendly, colorblind safe, etc 
+
+One cool wind visualization: https://embed.windy.com
+
+
+q-q plots: theoretical vs observed quantiles
+polar coordinate system useful for sinusoidal patterns
+Think about redundant coding for plots (e.g. using color and separate time scale plots)
+
+
+For color choosing:
+    http://flowingdata.com/tag/color/
+    http://colorbrewer2.org/
+    
+    
+9/19/28
+
+Can't import .xlsx file into R - use text or .csv files. **When saving as a .csv, it will only save the worksheet you are currently working on and delete all other worksheets. Therefore, always save raw data file separately before applying any statistical analyses.
+Date formats in excel do not work well in R
+Avoid spaces and periods between words in files (use underscore)
+Data analysis in Excel is not reproducible 
+Text wrangler program - works well with R. Use text editor program while transforming/reorganizing data.
+Camelcase may be a better option than underscores for column headers
+Can use "data validation" in Excel (under data tab) to prevent errors in data entry (quality control). Also can use 'conditional formatting' (under format tab).
+
+
+GITHUB: https://datacarpentry.org/rr-version-control/
+
+
+
+
+
+
+
+f
+Data Visualization     9/17/2018
+
+four principles: clarity, precision- easy to see the answer/meaning?, efficiency (what's the cognitive load) and max ideas with minimal ink 
+gg: grammar of graphics 
+
+colorbrewer.org - variety of color scales - print friendly, colorblind safe, etc 
+
+One cool wind visualization: https://embed.windy.com
+
+
+q-q plots: theoretical vs observed quantiles
+polar coordinate system useful for sinusoidal patterns
+Think about redundant coding for plots (e.g. using color and separate time scale plots)
+
+
+For color choosing:
+    http://flowingdata.com/tag/color/
+    http://colorbrewer2.org/
+    
+    
+9/19/28
+
+Can't import .xlsx file into R - use text or .csv files. **When saving as a .csv, it will only save the worksheet you are currently working on and delete all other worksheets. Therefore, always save raw data file separately before applying any statistical analyses.
+Date formats in excel do not work well in R
+Avoid spaces and periods between words in files (use underscore)
+Data analysis in Excel is not reproducible 
+Text wrangler program - works well with R. Use text editor program while transforming/reorganizing data.
+Camelcase may be a better option than underscores for column headers
+Can use "data validation" in Excel (under data tab) to prevent errors in data entry (quality control). Also can use 'conditional formatting' (under format tab).
+
+
+GITHUB: https://datacarpentry.org/rr-version-control/
+
+
+
+
+
+
+
+

@@ -1,0 +1,140 @@
+---
+title: "igraph-and-heatmap-blocks"
+author: "Andrew JH"
+date: "December 15, 2018"
+output: html_document
+---
+
+```{r}
+library(pvclust);library(Hmisc);
+library(ellipse);library(igraph)
+
+```
+
+
+
+```{r conditions-specific-subnetworks, echo=TRUE, message=FALSE, warning=FALSE}
+
+g.o.c.cnt.cor<-cor(t(g.o.rep.ma), method="pearson")
+over.graph <- graph.adjacency(as.matrix(g.o.c.cnt.cor),
+                              mode="undirected", 
+                              weighted=TRUE, diag=FALSE)
+#Colour negative correlation edges as blue
+E(over.graph)[which(E(over.graph)$weight<0)]$color <- "darkblue"
+#Colour positive correlation edges as red
+E(over.graph)[which(E(over.graph)$weight>0)]$color <- "darkred"
+#Convert edge weights to absolute values
+E(over.graph)$weight <- abs(E(over.graph)$weight)
+#Remove edges below absolute Pearson correlation 0.75
+over.graph <- delete_edges(over.graph, E(over.graph)[which(E(over.graph)$weight<0.75)])
+#Assign names to the graph vertices
+V(over.graph)$name <- V(over.graph)$name
+#Change shape of graph vertices
+V(over.graph)$shape <- "sphere"
+#Change colour of graph vertices
+V(over.graph)$color <- "skyblue"
+#Change colour of vertex frames
+V(over.graph)$vertex.frame.color <- "white"
+#Scale the size of the vertices to be proportional to the level of expression of each gene represented by each vertex
+scale01 <- function(x){(x-min(x))/(max(x)-min(x))}
+vSizes <- (scale01(apply(g.o.rep.ma, 1, mean)) + 1.0) * 10
+#Amplify or decrease the width of the edges
+edgeweights <- E(over.graph)$weight * 2.0
+#Convert the graph adjacency object into a minimum spanning tree based on Prim's algorithm
+mst <- mst(over.graph, algorithm="prim")
+mst
+#Plot the tree object
+plot(mst, layout=layout.fruchterman.reingold, edge.curved=TRUE,
+     vertex.size=vSizes, vertex.label.dist=-0.5, vertex.label.color="black",
+     asp=FALSE, vertex.label.cex=0.6, edge.width=edgeweights, edge.arrow.mode=0,
+     main=sprintf('Network of correlated gene expression in the %s group', under))
+
+mst.communities <- edge.betweenness.community(mst)
+mst.clustering <- make_clusters(mst, membership=mst.communities$membership)
+V(mst)$color <- mst.communities$membership + 1
+
+plot(mst,layout=layout.fruchterman.reingold, edge.curved=TRUE, vertex.size=vSizes,
+   vertex.label.dist=-0.5, vertex.label.color="black",asp=FALSE, vertex.label.cex=0.6,
+   edge.width=edgeweights, edge.arrow.mode=0,
+   main=sprintf('Network of correlated gene expression in the %s group', over))
+
+plot(mst.clustering, mst, layout=layout.fruchterman.reingold, edge.curved=TRUE,
+     vertex.size=vSizes,vertex.label.dist=-0.5, vertex.label.color="black",
+     asp=FALSE, vertex.label.cex=0.6, edge.width=edgeweights, edge.arrow.mode=0,
+   main=sprintf('Network of correlated gene expression in the %s group', over))
+
+########################################################################
+
+g.u.c.cnt.cor<-cor(t(g.u.rep.ma), method="pearson")
+under.graph <- graph.adjacency(as.matrix(g.u.c.cnt.cor),
+                              mode="undirected", 
+                              weighted=TRUE, diag=FALSE)
+#Create a graph adjacency based on correlation distances between genes in  pairwise fashion.
+#Colour negative correlation edges as blue
+E(under.graph)[which(E(under.graph)$weight<0)]$color <- "darkblue"
+#Colour positive correlation edges as red
+E(under.graph)[which(E(under.graph)$weight>0)]$color <- "darkred"
+#Convert edge weights to absolute values
+E(under.graph)$weight <- abs(E(under.graph)$weight)
+#Remove edges below absolute Pearson correlation 0.75
+under.graph <- delete_edges(under.graph, E(under.graph)[which(E(under.graph)$weight<0.75)])
+#Assign names to the graph vertices
+V(under.graph)$name <- V(under.graph)$name
+#Change shape of graph vertices
+V(under.graph)$shape <- "sphere"
+#Change colour of graph vertices
+V(under.graph)$color <- "skyblue"
+#Change colour of vertex frames
+V(under.graph)$vertex.frame.color <- "white"
+#Scale the size of the vertices to be proportional to the level of expression of each gene represented by each vertex
+scale01 <- function(x){(x-min(x))/(max(x)-min(x))}
+vSizes <- (scale01(apply(g.u.rep.ma, 1, mean)) + 1.0) * 10
+#Amplify or decrease the width of the edges
+edgeweights <- E(under.graph)$weight * 2.0
+#Convert the graph adjacency object into a minimum spanning tree based on Prim's algorithm
+mst <- mst(under.graph, algorithm="prim")
+#Plot the tree object
+plot(mst, layout=layout.fruchterman.reingold, edge.curved=TRUE,
+     vertex.size=vSizes, vertex.label.dist=-0.5, vertex.label.color="black",
+     asp=FALSE, vertex.label.cex=0.6, edge.width=edgeweights, edge.arrow.mode=0,
+     main=sprintf('Network of correlated gene expression in the %s group', under))
+
+mst.communities <- edge.betweenness.community(mst, directed=FALSE)
+mst.clustering <- make_clusters(mst, membership=mst.communities$membership)
+V(mst)$color <- mst.communities$membership + 1
+
+plot(mst, layout=layout.fruchterman.reingold, edge.curved=TRUE, vertex.size=vSizes,
+     vertex.label.dist=-0.5, vertex.label.color="black",asp=FALSE,vertex.label.cex=0.6,
+     edge.width=edgeweights, edge.arrow.mode=0,
+     main=sprintf('Network of correlated gene expression in the %s group', under))
+
+plot(mst.clustering, mst, layout=layout.fruchterman.reingold, edge.curved=TRUE,
+     vertex.size=vSizes, vertex.label.dist=-0.5, vertex.label.color="black", asp=FALSE,
+     vertex.label.cex=0.6, edge.width=edgeweights, edge.arrow.mode=0,
+     main=sprintf('Network of correlated gene expression in the %s group', under))
+
+```
+
+
+
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

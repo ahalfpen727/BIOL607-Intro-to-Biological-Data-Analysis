@@ -1,0 +1,200 @@
+---
+title: "Comparing means of more than two groups: R code for Chapter 15 examples"
+author: "Michael Whitlock and Dolph Schluter"
+output: 
+  html_document:
+    toc: yes
+    toc_depth: 3
+---
+
+_Note: This document was converted to R-Markdown from [this page](http://whitlockschluter.zoology.ubc.ca/r-code/rcode15) by M. Drew LaMar.  You can download the R-Markdown [here](https://qubeshub.org/collections/post/1375/download/chap15.Rmd)._
+
+Download the R code on this page as a single file [here](http://whitlockschluter.zoology.ubc.ca/wp-content/rcode/chap15.r)
+
+## New methods
+
+Hover over a function argument for a short description of its meaning.  The variable names are plucked from the examples further below.
+
+**Fixed effects analysis of variance (ANOVA)**:
+
+> <u><a title="The R object that will contain the ANOVA model fit.">circadianAnova</a></u> <- lm(<u><a title="A formula indicating the relationship between the response variable and the explanatory (treatment) variable.">shift ~ treatment</a></u>, <u><a title="The name of the data frame containing the response and explanatory variables.">data = circadian</a></u>)<br \>
+anova(<u><a title="The R object created in the previous step.">circadianAnova</a></u>)
+
+**Unplanned comparisons (Tukey-Kramer tests) using the `multcomp` package**:
+
+> circadianPlanned <- glht(<u><a title="The R object resulting from the initial ANOVA model fit using lm.">circadianAnova</a></u>, linfct = <u><a title="Specification of the planned comparison to be carried out. "knee - control = 0" indicates that the planned comparison is a test that the difference between the means of the "knee" and "control" treatments is zero.">mcp(treatment = c("knee - control = 0"))</a></u>)<br \>
+summary(<u><a title="The planned comparison object created in the previous step.">circadianPlanned</a></u>)
+
+**Kruskal-Wallis test**:
+
+> kruskal.test(<u><a title="A formula indicating the relationship between the response variable and the explanatory (treatment) variable.">shift ~ treatment</a></u>, <u><a title="The name of the data frame containing the response and explanatory variables.">data = circadian</a></u>)
+
+**Other new methods**:
+
+ * Add standard error bars to a strip chart.
+ * $R^{2}$.
+ * Planned comparisons.
+ * Random effects analysis of variance.
+ * Repeatability.
+
+## Example 15.1. [Knees who say night](http://whitlockschluter.zoology.ubc.ca/data/chapter15/chap15e1KneesWhoSayNight.csv)
+
+*__Analysis of variance__, comparing phase shift in the circadian rhythm of melatonin production in participants given alternative light treatments. Also, the nonparametric __Kruskal-Wallis test__. Finally, we use the same data to demonstrate __planned comparisons__ and unplanned comparisons (__Tukey-Kramer tests__).*
+
+Read and inspect the data.
+
+```{r}
+circadian <- read.csv(url("http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter15/chap15e1KneesWhoSayNight.csv"))
+```
+
+**Set the preferred ordering of groups** in tables and graphs.
+
+```{r}
+circadian$treatment <- factor(circadian$treatment, levels = c("control", "knee", "eyes")) 
+```
+
+**Table of descriptive statistics by treatment group** (Table 15.1-1).
+
+```{r}
+meanShift <- tapply(circadian$shift, circadian$treatment, mean)
+sdevShift <- tapply(circadian$shift, circadian$treatment, sd)
+n         <- tapply(circadian$shift, circadian$treatment, length)
+data.frame(mean = meanShift, std.dev = sdevShift, n = n)
+```
+
+**Strip chart** of circadian rhythm shift by treatment, with **standard error bars**. This makes use of the descriptive statistics calculated in an earlier step. The error bars are added as line segments, offset along the x-axis by the amount `adjustAmount`. The means are added using `points`.
+
+```{r}
+stripchart(shift ~ treatment, data = circadian, method = "jitter", vertical = TRUE)
+seShift <- sdevShift / sqrt(n)
+adjustAmount <- 0.15
+segments(c(1,2,3) + adjustAmount, meanShift - seShift, c(1,2,3) + adjustAmount, meanShift + seShift)
+points(meanShift ~ c( c(1,2,3) + adjustAmount ))
+```
+
+Commands for a stripchart with more options are shown here.
+
+```{r}
+par(bty="l")
+adjustAmount <- 0.15
+stripchart(shift ~ treatment, data = circadian, method = "jitter",
+	vertical = TRUE, las = 1, pch = 1, xlab = "Light treatment",
+	ylab = "Shift in circadian rhythm (h)", col = "firebrick", 
+	cex = 1.2, ylim = c(-3, 1))
+segments( c(1,2,3) + adjustAmount, meanShift - seShift, 
+	  c(1,2,3) + adjustAmount, meanShift + seShift )
+points(meanShift ~ c( c(1,2,3) + adjustAmount ), pch = 16, col = "firebrick")
+```
+
+**Fixed effects ANOVA table** (Table 15.1-2). This is done in two steps. The first step involves fitting the ANOVA model to the data using `lm` ("lm" stands for "linear model", of which ANOVA is one type). Then we use the command `anova` to assemble the ANOVA table.
+
+```{r}
+circadianAnova <- lm(shift ~ treatment, data = circadian)
+anova(circadianAnova)
+```
+
+**$R^{2}$** indicating the fraction of variation in the response variable "explained" by treatment. This is again done in two steps. The first step calculates a bunch of useful quantities from the ANOVA model object previously created with a `lm` command. The second step shows the $R^2$ value.
+
+```{r}
+circadianAnovaSummary <- summary(circadianAnova)
+circadianAnovaSummary$r.squared
+```
+
+**Kruskal-Wallis test**, a nonparametric method to compare more than two groups. The method is not needed for the circadian rhythm data, because assumptions of ANOVA are met, but we include it here to demonstrate the method. The formula is the same as that used with `lm`.
+
+```{r}
+kruskal.test(shift ~ treatment, data = circadian)
+```
+
+**Planned and unplanned comparisons between means.** A planned comparison is one planned during the design of the study, before the data were collected. To use the method you need a good justification to focus on a specific comparison of two treatments. Only a small number of planned comparisons are allowed. If you don't have a good prior justification for a specific comparison, use unplanned comparison instead. Unplanned comparisons typically involve testing differences between all pairs of means, and methods provide needed protection against rising Type I errors that would otherwise result from multiple testing. 
+
+If you haven't already done so, you'll need to install the `multicomp` package (this needs to be done just once per computer).
+
+```{r, message=FALSE, warning=FALSE}
+if (!require("multcomp")) {install.packages("multcomp", dependencies = TRUE, repos="http://cran.rstudio.com/")}
+library(multcomp)
+```
+
+**Planned comparison** between "control" and "knee" treatments. Begin by loading the `multicomp` package. The commands shown will give the 95% confidence interval and the planned $t$-test of a difference between the treatment means.
+
+```{r}
+circadianPlanned <- glht(circadianAnova, linfct = mcp(treatment = c("knee - control = 0")))
+confint(circadianPlanned)
+summary(circadianPlanned)
+```
+
+**Unplanned comparisons (Tukey-Kramer tests)** between all pairs of means. The raw data for the "Wood-wide web" example (Example 15.4) are not available, so we have used the circadian rhythm data to demonstrate the R method here instead. The output table will say "t" but it is actually "q" as we describe in the book.
+
+```{r}
+library(multcomp)
+circadianTukey <- glht(circadianAnova, linfct = mcp(treatment = "Tukey"))
+summary(circadianTukey)
+```
+
+------
+
+## Example 15.6. [Walking stick limbs](http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter15/chap15e6WalkingStickFemurs.csv)
+
+*__Random effects ANOVA to estimate variance components__ and calculate __repeatability__ of measurements of femur length in walking stick insects.*
+
+Read and inspect data. Data are in "long" format. Femur length is one column, with another variable indicating specimen identity. Each specimen was measured twice and therefore takes up two rows.
+
+```{r}
+walkingstick <- read.csv(url("http://www.zoology.ubc.ca/~schluter/WhitlockSchluter/wp-content/data/chapter15/chap15e6WalkingStickFemurs.csv"))
+head(walkingstick)
+```
+
+**Descriptive statistics for each specimen**, which we need to produce the strip chart. `tapply` is used to gets the mean, smallest measurement, largest measurement, and specimen id of each specimen.
+
+```{r}
+meanFemur <- tapply(walkingstick$femurLength, walkingstick$specimen, mean)
+minFemur <- tapply(walkingstick$femurLength, walkingstick$specimen, min)
+maxFemur <- tapply(walkingstick$femurLength, walkingstick$specimen, max)
+specimen <- tapply(walkingstick$specimen, walkingstick$specimen, unique)
+```
+
+**Stripchart**, with line segments connecting the two measurements.
+
+```{r}
+stripchart(femurLength ~ specimen, data = walkingstick, vertical = TRUE, xlab = "Specimen")
+segments(specimen, minFemur, specimen, maxFemur)
+```
+
+Here are commands for a prettier figure in which specimens are ordered along the x-axis by mean femur length (Figure 15.6-1).
+
+```{r}
+par(bty="l") 
+stripchart(minFemur[order(meanFemur, specimen)] ~ c(1:length(specimen)),
+	vertical = TRUE, xaxt = "n", pch = 16, col = "firebrick", las = 1,
+	cex = 1.2, ylim = range(c(minFemur, maxFemur)), ylab = "Femur length (mm)",
+	xlab = "Individual walking sticks")
+stripchart(maxFemur[order(meanFemur, specimen)] ~ c(1:length(specimen)),
+	vertical = TRUE, add = TRUE, pch = 16, col = "firebrick", las = 1, cex = 1.2)
+segments(c(1:length(specimen)), minFemur[order(meanFemur, specimen)], 
+	 c(1:length(specimen)), maxFemur[order(meanFemur, specimen)])
+```
+
+**Fit the random effects ANOVA** using `lme`. The random effects ANOVA function requires two formulas, rather than just one. The first formula (beginning with `fixed =`) is for the fixed effect. The walking stick insect example doesn't include a fixed-effect variable, so we just provide a symbol for a constant in the formula (`~ 1`), representing the grand mean. The second formula (beginning with `random =`) is for the random effect. In this example, the individual specimens are the random groups, and the second formula indicates this (the `~ 1` in the formula below indicates that each specimen has its own mean). You will need to load the `nlme` library to begin.
+
+```{r}
+library(nlme)
+walkingstickAnova <- lme(fixed = femurLength ~ 1, random = ~ 1|specimen, data = walkingstick)
+```
+
+Obtain the **variance components for the random effects** using `VarCorr`. The output includes the standard deviation and variance for both components of random variation in the random effects model for this example. The first is the variance among the specimen means. This is the variance among groups, and is confusingly labeled "Intercept" in the output. The second component is the variance among measurements made on the same individuals. This is the within group variance, also known as the error mean square, and is labeled "Residual" in the output.
+
+```{r}
+walkingstickVarcomp <- VarCorr(walkingstickAnova)
+walkingstickVarcomp
+```
+
+Calculate the **repeatability** of the walking stick femur measurements using the estimates of the variance components.
+
+```{r}
+varAmong  <- as.numeric( walkingstickVarcomp[1,1] )
+varWithin <- as.numeric( walkingstickVarcomp[2,1] )
+repeatability <- varAmong / (varAmong + varWithin)
+repeatability
+```
+
+Note that `lme` doesn't test the significance of the random effects (whether the specimen means are significantly different from one another), since the method basically assumes the presence of variance among random means. As a result, there is no ANOVA table for random effects. 

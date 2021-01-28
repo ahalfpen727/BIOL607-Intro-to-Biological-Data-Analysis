@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>The Tailor RNA-Seq Pipeline: a Tool for De Novo Disease Biomarker Identification</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Andrew Judell-Halfpenny" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/default-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, top, The Tailor RNA-Seq Pipeline: a Tool for *De Novo* Disease Biomarker Identification, title-slide
+
+# The Tailor RNA-Seq Pipeline: a Tool for <em>De Novo</em> Disease Biomarker Identification
+### Andrew Judell-Halfpenny
+### BIOL607 Fall 2018: Final Project Slides
+
+---
+
+
+
+
+name: helix
+class: inverse, bottom
+background-image: ![](/home/drew/Downloads/BIOL607-Introduction-to-Biological-Data-Analysis/Final-Project/img/cores-genomics.png)
+background-size: contain
+layout: true
+
+---
+
+# 
+.center[
+ Background Related to Personalized Medicine and NGS Technology
+]
+High-Throughput Sequencing is one of the most promising tools available to researchers united by the common-goals of personalized medicine. But identifying clinically informative features from the massive sequence libraries (~1-2 Tb) produced during one experiment necessitates the use of a high-performance computing cluster (HPCC) and represents a bottleneck that creates a skills gap in the personalized medicine pipeline. 
+
+.bottom[.center[
+![HPCC](/home/drew/Downloads/BIOL607-Introduction-to-Biological-Data-Analysis/Final-Project/img/hpc-workflow.png)
+]]
+---
+name: helix
+# 
+.center[
+Introduction to the Tailor Pipeline
+]
+
+&gt;- The Tailor RNA-Seq Pipeline was developed to perform the comparative genomic analyses designed by UMass Boston’s Center for Personalized Cancer Therapy (CPCT) and Genomics Core.
+&gt;- Tailor's workflow facilitates biomarker discovery from RNA-Seq libraries produced by Illumina's Sequencing-by-Synthesis (SBS) protocol.
+
+.bottom[.center[
+![SBS](/home/drew/Downloads/BIOL607-Introduction-to-Biological-Data-Analysis/Final-Project/img/illumina_workflow.png)
+]]
+
+---
+name: helix
+
+# 
+.center[
+Tailor Simplifies and Extends the Tophat-Cufflinks Workflow
+]
+
+&gt;- Tailor performs several sequence library preparation steps before performing the Tophat-Cufflinks-Cuffmerge-Cuffquant-Cuffdiff differential expression workflow.
+&gt;- Tailor produces visuallly digestible summations of the salient feautures and differential gene expression accross two or more condtions.
+
+.bottom[.center[
+![Tophat-Cufflinks-Tool-Suite](/home/drew/Downloads/BIOL607-Introduction-to-Biological-Data-Analysis/Final-Project/img/tophat-workflow.png)
+]]
+---
+name: helix
+
+
+Tailor Provides Several Pre-Configured Workflows with Varying Levels of *De Novo* Discovery
+
+
+&gt;- Tailor provides a default analysis that quantifies gene expression against a reference annotation and does not perform any feature discovery.
+&gt;- Tailor's provides a *De Novo* isoform discovery workflow that identifies novel features that overlap the gene models included in a reference annotation and genome sequence.
+
+.bottom[.center[
+![Tailor's Workflows](/home/drew/Downloads/BIOL607-Introduction-to-Biological-Data-Analysis/Final-Project/img/Tailors-workflows.png)
+]]
+---
+name: helix
+
+# 
+.center[
+Tailor Identifies Biomarkers from the Significantly Differential Expression Across Two or More Conditions
+]
+
+- Tailor quantifies expression accross 6 feature levels of gene expression. 
+- Simple expression levels include Genes, Isoforms, Coding Sequences (CDS) and Transcripts (TSS) - Differential transcription (promoter-use) and translation (splicing) are more abstract
+- Differential loadings are quantified for genes with variable numbers of exons and more than one transcription start sites.
+
+.bottom[.center[
+![Differential Expression and Differential Loading](/home/drew/Downloads/BIOL607-Introduction-to-Biological-Data-Analysis/Final-Project/img/transcriptional-vs-translational-load.png)
+]]
+
+---
+name: helix
+
+# 
+.center[
+Comparison of Tailor to Other Commonly Used Software Packages fro Differential Expression Anlysis
+]
+
+To determine the accuracy of Tailor's biomarker predictions, a secondary analysis of data recently processed by Tailor was performed with *EdgeR* and *Limma*, two commonly used Bioconductor packages for differential expression analysis.  Gene expression data from a comparison of samples produced by a control group and samples produced by lower urinary tract syndrome sympotomatic males was extracted from Tailor's SQL database backend using *CummeRbund* a *Bioconductor* package for visualization of statistical analysis of RNA-Seq data.
+
+
+```r
+cuff.hg38 &lt;- readCufflinks(dir='/home/drew/umb_triley/urine1/cuffdiff_results_hg38_default/LUTS-over-CTRL/',genome="hg38",gtfFile='/home/drew/umb_triley/Reference-Genomes-and-Gene-Sets/Reference-Genomes/Human/UCSC_hg38/genes.gtf', rebuild=F)
+cuff&lt;-cuff.hg38
+replicates.info&lt;-cummeRbund::replicates(cuff)
+groups&lt;-replicates.info$sample_name
+samples&lt;-replicates.info$rep_name
+conditions&lt;-as.factor(groups)
+under=groups[1]
+over=groups[((length(groups)/2)+1)]
+```
+
+---
+
+name: helix
+
+# 
+.center[
+Preparing a Design Matrix for Analysis of Gene Expression with Linear Models
+]
+
+
+```r
+# design matrix
+design &lt;- model.matrix(~0 + groups, data=replicates.info)
+colnames(design) &lt;- levels(conditions)
+row.names(design) &lt;- samples
+design
+```
+
+```
+##        CTRL LUTS
+## CTRL_0    1    0
+## CTRL_1    1    0
+## CTRL_2    1    0
+## CTRL_3    1    0
+## CTRL_4    1    0
+## CTRL_5    1    0
+## CTRL_6    1    0
+## CTRL_7    1    0
+## CTRL_8    1    0
+## LUTS_0    0    1
+## LUTS_1    0    1
+## LUTS_2    0    1
+## LUTS_3    0    1
+## LUTS_4    0    1
+## LUTS_5    0    1
+## LUTS_6    0    1
+## LUTS_7    0    1
+## LUTS_8    0    1
+## attr(,"assign")
+## [1] 1 1
+## attr(,"contrasts")
+## attr(,"contrasts")$groups
+## [1] "contr.treatment"
+```
+
+```r
+# contrast matrix
+contr.matrix &lt;- makeContrasts(lutsVSctrl = CTRL - LUTS,
+                              levels = colnames(design))
+# gene expr data
+g.cnt.matrix&lt;-repCountMatrix(cummeRbund::genes(cuff))
+# factors for conditions
+under.group&lt;-grep(pattern=under, colnames(g.cnt.matrix))
+over.group&lt;-grep(pattern=over, colnames(g.cnt.matrix))
+## filter the data enough to perform Shapiro-Wilk normality test
+keep.cpm &lt;- rowSums(cpm(g.cnt.matrix) &gt; 1) &gt;= (length(groups)/2)
+table(keep.cpm)
+```
+
+```
+## keep.cpm
+## FALSE  TRUE 
+## 15338 11034
+```
+
+```r
+g.f.cnt.data &lt;- g.cnt.matrix[keep.cpm,]
+```
+
+---
+
+name: helix
+
+# 
+.center[
+Employing the Negative Binomial Model for Gene Expression Values
+]
+
+After filtering low expression genes, *EdgeR* was used to employ a negative binomial model for the gene expression data with empirical bayes estimation of the gene-wise dispersion. Over half of the genes can be characterized as over-dispersed beyond the expectations of a poisson model and an obvious mean-variance realtionship is evident in the plot.
+
+
+```r
+# a minimal log-fold-change can be chosen isntead of using `eBayes`
+dgeObj&lt;- DGEList(counts=g.f.cnt.data, group=factor(groups))
+dge.norm &lt;- calcNormFactors(dgeObj)
+voooom&lt;-voom(dge.norm, plot=TRUE)
+```
+
+![](BIOL607-Final-Project.slides_files/figure-html/negative-binomial-1.png)&lt;!-- --&gt;
+
+```r
+dgeObj.disp &lt;- estimateDisp(dgeObj, design)
+plotBCV(dgeObj.disp,"Squared Coefficient of Variation Across Log Expression Values")
+```
+
+![](BIOL607-Final-Project.slides_files/figure-html/negative-binomial-2.png)&lt;!-- --&gt;
+
+```r
+glmfit &lt;- glmFit(dgeObj.disp, design, dispersion=dgeObj.disp$common.dispersion)
+glmfit
+```
+
+```
+## An object of class "DGEGLM"
+## $coefficients
+##              CTRL       LUTS
+## A2M     -8.232225  -8.598750
+## A2ML1   -7.802717  -7.422664
+## A4GALT -10.273763 -10.972266
+## AAAS   -11.512674 -10.511073
+## AACS   -10.520660 -11.502360
+## 11029 more rows ...
+## 
+## $fitted.values
+##           CTRL_0    CTRL_1    CTRL_2    CTRL_3    CTRL_4    CTRL_5
+## A2M    3120.6845 3261.9551 4843.7899 2971.8310 3043.7381 3221.5887
+## A2ML1  4794.9945 5012.0597 7442.5805 4566.2781 4676.7648 4950.0358
+## A4GALT  405.0586  423.3953  628.7143  385.7377  395.0711  418.1558
+## AAAS    117.2669  122.5754  182.0165  111.6734  114.3754  121.0586
+## AACS    316.4164  330.7403  491.1277  301.3237  308.6146  326.6474
+##           CTRL_6    CTRL_7    CTRL_8    LUTS_0    LUTS_1    LUTS_2
+## A2M    4031.7916 2998.8849 3148.1576 2060.3241 2309.7651 2706.4020
+## A2ML1  6194.9288 4607.8470 4837.2075 6679.1137 7487.7462 8773.5550
+## A4GALT  523.3185  389.2493  408.6246  191.8292  215.0538  251.9832
+## AAAS    151.5038  112.6900  118.2992  304.2962  341.1370  399.7176
+## AACS    408.7966  304.0668  319.2020  112.8577  126.5212  148.2477
+##           LUTS_3    LUTS_4    LUTS_5    LUTS_6    LUTS_7     LUTS_8
+## A2M    2483.7788 2898.0341 2016.7394 2951.7100 1983.4919  3428.3529
+## A2ML1  8051.8600 9394.7840 6537.8220 9568.7892 6430.0409 11113.9599
+## A4GALT  231.2556  269.8254  187.7712  274.8229  184.6757   319.2014
+## AAAS    366.8377  428.0205  297.8591  435.9480  292.9486   506.3450
+## AACS    136.0531  158.7447  110.4703  161.6848  108.6491   187.7938
+## 11029 more rows ...
+## 
+## $deviance
+##      A2M    A2ML1   A4GALT     AAAS     AACS 
+## 18.98457 19.70766 30.75902 39.89699 36.33578 
+## 11029 more elements ...
+## 
+## $method
+## [1] "oneway"
+## 
+## $counts
+##           CTRL_0    CTRL_1  CTRL_2    CTRL_3    CTRL_4      CTRL_5  CTRL_6
+## A2M    1528.8200 2628.8500    0.00 1822.8100 9870.7400 1050.920000 1473.34
+## A2ML1  3952.9400 5311.6900 1301.72  922.8150 2542.8100    0.896693 6893.44
+## A4GALT  257.2970   77.1335 2186.10  148.7320  108.2250    0.000000 1475.29
+## AAAS      0.0000  230.6990    0.00   52.3943  378.7890  217.000000    0.00
+## AACS     53.8528   49.0849    0.00  319.4360   93.2478    0.896693 2778.21
+##          CTRL_7      CTRL_8      LUTS_0   LUTS_1      LUTS_2     LUTS_3
+## A2M    3078.100  6705.21000 3796.590000 1052.940  1021.80000   703.5980
+## A2ML1  9095.570 15035.40000 1015.710000 3345.380 10230.90000 12265.6000
+## A4GALT  318.700   166.19000    0.586436  151.499     1.43713    19.9602
+## AAAS    153.884    21.42000  446.278000    0.000  1744.67000     0.0000
+## AACS    156.407     1.47724  424.580000  264.719     2.87425     0.0000
+##           LUTS_4    LUTS_5      LUTS_6    LUTS_7     LUTS_8
+## A2M     1268.010 7780.5200     3.48224 2403.1800 1825.75000
+## A2ML1  17945.300  415.4590 29502.90000 4206.9000    5.48275
+## A4GALT     0.000   74.1285  1645.70000  330.1840    9.13791
+## AAAS     573.886  223.4470    45.26910  285.3040    0.00000
+## AACS       0.000  208.3670    91.93100   40.6051   56.65510
+## 11029 more rows ...
+## 
+## $unshrunk.coefficients
+##             CTRL       LUTS
+## A2M     -8.23226  -8.598801
+## A2ML1   -7.80274  -7.422679
+## A4GALT -10.27404 -10.972814
+## AAAS   -11.51362 -10.511418
+## AACS   -10.52101 -11.503292
+## 11029 more rows ...
+## 
+## $df.residual
+## [1] 16 16 16 16 16
+## 11029 more elements ...
+## 
+## $design
+##        CTRL LUTS
+## CTRL_0    1    0
+## CTRL_1    1    0
+## CTRL_2    1    0
+## CTRL_3    1    0
+## CTRL_4    1    0
+## 13 more rows ...
+## 
+## $offset
+##          [,1]     [,2]     [,3]     [,4]    [,5]     [,6]     [,7]
+## [1,] 16.27807 16.32234 16.71771 16.22919 16.2531 16.30989 16.53423
+##          [,8]     [,9]    [,10]   [,11]    [,12]    [,13]    [,14]
+## [1,] 16.23826 16.28683 16.22942 16.3437 16.50218 16.41634 16.57059
+##         [,15]    [,16]    [,17]    [,18]
+## [1,] 16.20804 16.58894 16.19142 16.73864
+## attr(,"class")
+## [1] "CompressedMatrix"
+## attr(,"Dims")
+## [1]  5 18
+## attr(,"repeat.row")
+## [1] TRUE
+## attr(,"repeat.col")
+## [1] FALSE
+## 11029 more rows ...
+## 
+## $dispersion
+## [1] 2.197885
+## 
+## $prior.count
+## [1] 0.125
+## 
+## $samples
+##        group lib.size norm.factors
+## CTRL_0  CTRL 11734780            1
+## CTRL_1  CTRL 12266003            1
+## CTRL_2  CTRL 18214212            1
+## CTRL_3  CTRL 11175043            1
+## CTRL_4  CTRL 11445437            1
+## 13 more rows ...
+## 
+## $prior.df
+## [1] 10.58552
+## 
+## $AveLogCPM
+## [1] 7.815583 8.975077 4.699921 4.229592 4.223601
+## 11029 more elements ...
+```
+
+```r
+glm.lrt &lt;- glmLRT(glmfit, contrast=contr.matrix)
+# overdispersion
+dispers&lt;-deviance(glm.lrt)/df.residual(glm.lrt)
+over.disp&lt;-dispers[which(dispers &gt; 1)] 
+length(over.disp)
+```
+
+```
+## [1] 6383
+```
+
+```r
+not.over.disp&lt;-dispers[which(dispers &lt; 1)] 
+length(not.over.disp)
+```
+
+```
+## [1] 4651
+```
+
+
+---
+
+name: helix
+
+# 
+.center[
+Using a Quasipoisson Generalized Linear Model and a Likelihood Ratio Test to Identify Differential Expression
+]
+
+ A quasipoisson model was used ameliorate the overdispersion and to fit a glm to each gene that models the control groups expression values as the predictor vairable of the lower urinary tract syndrome group as the response variable. A likelihood ratio test was employed to identify the significant differential expression across the conditions and produced a biomarker set of 279 genes.
+
+
+```r
+# Fix overdisperion
+q.fit &lt;- glmFit(dgeObj.disp, design, dispersion=dgeObj.disp$common.dispersion, family="quasipoisson")
+head(coef(q.fit))
+```
+
+```
+##              CTRL       LUTS
+## A2M     -8.232225  -8.598750
+## A2ML1   -7.802717  -7.422664
+## A4GALT -10.273763 -10.972266
+## AAAS   -11.512674 -10.511073
+## AACS   -10.520660 -11.502360
+## AAGAB   -9.714343 -10.110015
+```
+
+```r
+# Conduct likelihood ratio tests for luts vs ctrl and show the top genes:
+lrt.qfit &lt;- glmLRT(q.fit, coef=2, contrast=contr.matrix) 
+t.lrt&lt;-topTags(lrt.qfit, n=Inf)
+table(t.lrt$table$PValue &lt; 0.05)
+```
+
+```
+## 
+## FALSE  TRUE 
+## 10673   361
+```
+
+```r
+sig.qfit.genes&lt;-subset(lrt.qfit$table,(PValue &lt; 0.05))
+de2 &lt;- decideTestsDGE(glm.lrt, adjust.method="BH", p.value = 0.05)
+```
+
+---
+
+
+.center[
+THE END
+]
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"countIncrementalSlides": true
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

@@ -1,0 +1,278 @@
+---
+title: "An Example R Markdown"
+author: "James H. Steiger"
+date: "Wednesday, August 27, 2014"
+output: html_document
+---
+
+# Introduction
+
+This is an R Markdown document. By studying the document source code file, compiling it, and observing the result, side-by-side with the source, you'll learn a lot about the R Markdown and LaTeX mathematical typesetting language, and you'll be able to produce nice-looking documents with R input and output neatly formatted.
+
+Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button in RStudio, a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+summary(cars)
+```
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+plot(cars)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+# Key Formatting Constructs
+
+The key formatting constructs are discussed at <http://rmarkdown.rstudio.com/authoring_basics.html>. You can see above how I constructed main section headings. Now I'm going to create a series of sections using secondary headings.
+
+## Emphasis
+
+This is *italic*. This is **bold**.
+
+## Superscripts
+
+This is y^2^.
+
+## Lists
+
+### Unordered
+
+* Item 1
+* Item 2
+    + Item 2a
+    + Item 2b
+    
+### Ordered
+
+1. Item 1
+2. Item 2
+3. Item 3
+    + Item 3a
+    + Item 3b
+
+## Block Quotes
+
+A friend once said:
+
+> It's always better to give
+> than to receive.
+
+## Displaying Blocks of Code Without Evaluating
+
+In some situations, you want to display R code but not evaluate it. Here is an example of how you format.
+
+```
+This text is displayed verbatim / preformatted
+```
+
+## Displaying R Code Inline in a Sentence
+
+Sometimes, you need to include an R name or command inline in a sentence. Here is how your format it.  
+
+The `sqrt` function computes the square root of a number.
+
+## Evaluating and Inserting R Code in a Sentence
+
+Sometimes, you want a result without showing the user that you used R to get it.
+Here is an example.
+
+The mean of the numbers 2,3,4 is `r mean(c(2,3,4))`.
+
+There are lots of ways you can exploit this capability.  You can do more advanced calculations in a hidden code block, assign the results to variables, and then simply use the variable names to insert the results in a sentence.
+
+In the following example, I compute the sum of the integers from 2 to 19 in a hidden code block. Then I display the result inline.
+
+```{r,echo=FALSE}
+x <- 2:19
+answer <- sum(x)
+```
+The sum of the integers from 2 to 19 is `r answer`.
+
+# Typesetting Equations
+
+## Inline vs. Display Material
+
+Equations can be formatted *inline* or as *displayed formulas*.  In the latter case, they are centered and set off from the main text.  In the former case, the mathematical material occurs smoothly in the line of text.
+
+In order to fit neatly in a line, summation expressions (and similar constructs) are formatted slightly differently in their inline and display versions.  
+
+Inline mathematical material is set off by the use of single dollar-sign characters. Consequently, if you wish to use a dollar sign (for example, to indicate currency), you need to preface it with a back-slash.  The following examples, followed by their typeset versions, should make this clear
+
+``` 
+This summation expression $\sum_{i=1}^n X_i$ appears inline.
+```
+
+This summation expression $\sum_{i=1}^n X_i$ appears inline.
+
+```
+This summation expression is in display form.
+
+$$\sum_{i=1}^n X_i$$
+```
+This summation expression is in display form.
+
+$$\sum_{i=1}^n X_i$$
+
+
+## Some LaTeX Basics
+
+In this section, we show you some rudiments of the LaTeX typesetting language.
+
+### Subscripts and Superscripts
+To indicate a subscript, use the underscore `_` character. To indicate a superscript, use a single caret character `^`.  Note: this can be confusing, because the R Markdown language delimits superscripts with two carets. In LaTeX equations, a single caret indicates the superscript. 
+
+If the subscript or superscript has just one character, there is no need to delimit with braces. However, if there is more than one character, braces must be used.  
+
+The following examples illustrate:
+
+```
+$$X_i$$
+$$X_{i}$$
+```
+$$X_i$$
+$$X_{i}$$
+
+Notice that in the above case, braces were not actually needed.
+
+In this next example, however, failure to use braces creates an error, as LaTeX sets only the first character as a subscript
+
+```
+$$X_{i,j}$$
+$$X_i,j$$
+```
+
+$$X_{i,j}$$
+$$X_i,j$$
+
+Here is an expression that uses both subscripts and superscripts
+
+```
+$$X^2_{i,j}$$
+```
+
+$$X^2_{i,j}$$
+
+### Square Roots
+
+We indicate a square root using the `\sqrt` operator.
+
+```
+$$\sqrt{b^2 - 4ac}$$
+```
+
+$$\sqrt{b^2 - 4ac}$$
+
+### Fractions
+
+Displayed fractions are typeset using the `\frac` operator.
+
+$$\chi, \beta,  \gamma, \Gamma$$
+
+```
+$$\frac{4z^3}{16}$$
+```
+$$\frac{4z^3}{16}$$
+
+### Summation Expressions
+
+These are indicated with the `\sum' operator, followed by a subscript for the material appearing below the summation sign, and a superscript for any material appearing above the summation sign.
+
+Here is an example.
+
+```
+$$\sum_{i=1}^{n} X^3_i$$
+```
+$$\sum_{i=1}^{n} X^3_i$$
+
+
+### Self-Sizing Parentheses
+
+In LaTeX, you can create parentheses, brackets, and braces which size themselves automatically to contain large expressions. You do this using the `\left` and `\right` operators.  Here is an example
+
+```
+$$\sum_{i=1}^{n}\left( \frac{X_i}{Y_i} \right)$$
+```
+
+$$\sum_{i=1}^{n}\left( \frac{X_i}{Y_i} \right)$$
+
+### Greek Letters
+
+Many statistical expressions use Greek letters. Much of the Greek alphabet is implemented in LaTeX, as indicated in the LaTeX cheat sheet available at the course website.  There are both upper and lower case versions available for some letters.
+
+```
+$$\alpha, \beta,  \gamma, \Gamma$$
+```
+
+$$\alpha, \beta,  \gamma, \Gamma$$
+
+### Special Symbols
+
+All common mathematical symbols are implemented, and you can find a listing on the LaTeX cheat sheet.
+
+Some examples. (Notice that, in the third example, I use the tilde character for a forced space. Generally LaTeX does spacing for you automatically, and unless you use the tilde character, R will ignore your attempts to add spaces.)
+
+```
+$$a \pm b$$
+$$x \ge 15$$
+$$a_i \ge 0~~~\forall i$$
+```
+
+$$a \pm b$$
+$$x \ge 15$$
+$$a_i \ge 0~~~\forall i$$
+
+### Special Functions
+
+LaTeX typesets special functions in a different font from mathematical variables. These functions, such as $\sin$, $\cos$, etc. are indicated in LaTeX with a backslash. Here is an example that also illustrates how to typeset an integral.
+
+```
+$$\int_0^{2\pi} \sin x~dx$$
+```
+$$\int_0^{2\pi} \sin x~dx$$
+
+### Matrices
+
+Matrics are presented in the `array` environment. One begins with the statement
+`\begin{array}` and ends with the statement `\end{array}`. Following the opening statement, a format code is used to indicate the formatting of each column. In the example below, we use the code `{rrr}` to indicate that each column is right justified. Each row is then entered, with cells separated by the `&` symbol, and each line (except the last) terminated by `\\`.
+
+```
+$$\begin{array}
+{rrr}
+1 & 2 & 3 \\
+4 & 5 & 6 \\
+7 & 8 & 9
+\end{array}
+$$
+```
+$$\begin{array}
+{rrr}
+1 & 2 & 3 \\
+4 & 5 & 6 \\
+7 & 8 & 9
+\end{array}
+$$
+
+In math textbooks, matrices are often surrounded by brackets, and are assigned to a boldface letter.  Here is an example
+
+```
+$$\mathbf{X} = \left[\begin{array}
+{rrr}
+1 & 2 & 3 \\
+4 & 5 & 6 \\
+7 & 8 & 9
+\end{array}\right]
+$$
+```
+
+$$\mathbf{X} = \left[\begin{array}
+{rrr}
+1 & 2 & 3 \\
+4 & 5 & 6 \\
+7 & 8 & 9
+\end{array}\right]
+$$
+

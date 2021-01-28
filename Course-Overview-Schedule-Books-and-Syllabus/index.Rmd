@@ -1,0 +1,28 @@
+---
+title: "Biol 607: Intro to Computational Data Analysis for Biology"
+---
+
+```{r demoplot, fig.align='center', echo=FALSE, fig.height=4, fig.width=6}
+library(ggplot2)
+ggplot(data=iris, aes(x=Petal.Length, y=Petal.Width, color=Species)) +
+  geom_point() +
+  theme_bw(base_size=14) +
+  stat_smooth(method="lm")
+```
+
+**Instructor:** Jarrett Byrnes, PhD.
+
+**Email:** jarrett.byrnes@umb.edu
+
+**Weekly Schedule:** Monday & Wednesday 2:30-4:00, Lab Friday 10-12:30pm in the Wheatley Biology Conference Room
+
+**Office Hours:** Prof. Byrnes will hold office hours Thursday from 2-4:30 or by appointment. 3130 in the ISC.
+
+**Source for this Website:** https://github.com/biol607/biol607.github.io/
+&nbsp;  
+&nbsp;  
+&nbsp;  
+
+## Course News:  
+
+2018-10-26: The midterm exam [has been posted!](./exam_2018/exam_2018.html)

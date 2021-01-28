@@ -1,0 +1,126 @@
+---
+title: "Homework 2"
+author: "Jarrett Byrnes"
+date: "September 29, 2015"
+output: html_document
+---
+
+```{r plot1, warning=FALSE}
+library(gapminder)
+library(ggplot2)
+library(dplyr)
+
+#Plot 1 - gpgPercap by lifeExp using color and shape for continent
+gl_plot <- ggplot(data=gapminder,
+       mapping=aes(x=gdpPercap, y=lifeExp, 
+                   color=continent, shape=continent)) +
+  geom_point()
+
+gl_plot
+```
+
+```{r plot2}
+#Plot 2 - log the x axis on log 10
+gl_plot_log <- gl_plot + scale_x_log10()
+gl_plot_log
+```
+
+```{r plot3}
+#plot 3 - Add a linear model fit, but for all of the data
+#so ungroup it for the stat_smooth argument
+gl_plot_log + stat_smooth(method="lm", fill=NA, mapping=aes(group=NA))
+```
+
+```{r plot4}
+#plot 4 - make a density plot faceted by year and different
+# curves for different continents
+
+lifeExpPlot <- ggplot(data=gapminder,
+       mapping=aes(x=lifeExp, fill=continent))
+       
+#Add the stat_density       
+lifeExpPlot +
+  stat_density(alpha=0.8, position="dodge", color="black") +
+  facet_wrap(~year)
+``` 
+
+```{r plot5}
+#Add a boxplot for Plot 5
+ggplot(data=gapminder,
+       mapping=aes(x=continent, y=lifeExp, color=continent)) +
+       geom_boxplot() +
+       facet_wrap(~year)
+```
+
+```{r plot6}
+
+lifeExpPlot2 <- ggplot(data=gapminder,
+       mapping=aes(x=lifeExp, fill=continent))
+
+lifeExpPlot2+
+  stat_density(alpha=0.8, position="dodge", color="black")
+       
+```
+
+
+```{r plot7}
+ggplot(data=gapminder %>% filter(continent=="Asia"),
+       mapping=aes(x=lifeExp)) +
+  stat_density(alpha=0.8, position="dodge", color="black", fill="green") +
+  geom_vline(x=mean((gapminder %>% filter(continent=="Asia"))[["lifeExp"]]))
+       
+```
+
+
+```{r plot8}
+##Part a
+lifeExpSummary <- gapminder %>% group_by(continent) %>%
+  summarise(lifeExp = mean(lifeExp))
+
+lifeExpSummary
+
+## part b
+
+lifeExpPlot + 
+  stat_density(alpha=0.8, position="dodge", color="black") +
+  geom_vline(data=lifeExpSummary, mapping=aes(xintercept=lifeExp, group=continent)) +
+  facet_wrap(~continent) 
+```
+
+```{r troubleshooting}
+#Original code
+
+hw_gapminder <- read.csv('./hw_gapminder.csv')
+#mean_lifeExp <- mean(hw_gapminder$lifeExpe)
+
+#small_set <- hw_gapminder[c(1, 2, 3, 4, 1300:1304), ('country', 'continent', 'year')]
+
+#mean_gdp <- mean(hw_gapminder$gdpPercap)
+
+#max_country <- hw_gapminder$country[which(hw_gapminder$lifeExp = #max(hw_gapminder$lifeExp))]
+
+#some fixing
+
+#Mean lifeExp
+#fix it
+mean_lifeExp <- mean(hw_gapminder$lifeExp)
+mean_lifeExp
+
+#Small set
+#oops! Bad code before was missing a c
+small_set <- hw_gapminder[c(1, 2, 3, 4, 1300:1304), c('country', 'continent', 'year')]
+
+small_set
+
+#mean_gdp
+which(is.na(hw_gapminder$gdpPercap)) #oops!  NAs
+
+mean_gdp <- mean(hw_gapminder$gdpPercap, na.rm=T)
+mean_gdp
+
+#max_country
+#fixed ==
+max_country <- hw_gapminder$country[which(hw_gapminder$lifeExp == max(hw_gapminder$lifeExp))]
+
+max_country
+```

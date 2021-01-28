@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Course Overview</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/lumen.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet"
+      href="site_libs/highlight/default.css"
+      type="text/css" />
+<script src="site_libs/highlight/highlight.js"></script>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 54px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+
+.section h2 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+.section h3 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+.section h4 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+.section h5 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+.section h6 {
+  padding-top: 59px;
+  margin-top: -59px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script src="site_libs/navigation-1.0/tabsets.js"></script>
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html"></a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="overview.html">Overview</a>
+</li>
+<li>
+  <a href="schedule.html">Schedule</a>
+</li>
+<li>
+  <a href="error.html">R Errors</a>
+</li>
+<li>
+  <a href="texts.html">Texts</a>
+</li>
+<li>
+  <a href="final.html">Final Project</a>
+</li>
+<li>
+  <a href="extra.html">Extra Credit</a>
+</li>
+<li>
+  <a href="biol607_syllabus_2016.doc">Syllabus</a>
+</li>
+<li>
+  <a href="resources.html">Resources</a>
+</li>
+<li>
+  <a href="http://byrneslab.net/resources/boston-area-data-science-groups/">Local Meetups</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Course Overview</h1>
+
+</div>
+
+
+<p><strong>Overview:</strong> This course will cover the basic statistical knowledge necessary for a graduate student to design, execute, and analyze a basic research project. The course aims to have students focus on thinking about the biological processes that they are studying in their research and how to translate them into statistical models. The course will take a hands-on computational approach, teaching students the statistical programming language R. In addition to teaching the fundamentals of data analysis, we will emphasize several key concepts of efficient computer programming that students can use in a variety of other areas outside of data analysis.</p>
+<p>We will emphasize the underlying principle behind modern statistical analysis – that nearly every biological system can be described with a simple series of linear or nonlinear relationships created by a data generating process with variation in data generated some meaningful error generating process. Additionally, we will emphasize thinking about whole biological systems, causality, and the limits of inference that can be drawn from observational versus experimental studies.</p>
+<p>The course will build through a series of topics. We will begin by thinking about the basics how we sample populations and how we describe those samples. We will move on to the fundamentals of frequentist hypothesis testing as a jumping off point for deriving inference from a sample of data. We will focus this understanding on simple linear data generating processes with a normal, or Gaussian, error generating process. We will use this framework to explore Likelihoodist and Bayesian modes of drawing inference from data and discuss when each approach might be right for a given problem. With this firm footing, we will move on to examine the analysis of manipulative experiments, complex multi-causal models, and nonlinear data generating processes with non-normal error generating processes.</p>
+<p>Along the way, we will stress ideas of how to deal with modern complex data sets, efficient computation, and try to consider deeply the philosophical nature that underpins modern statistical inference in biology.</p>
+<p><strong>Objectives:</strong></p>
+<ol style="list-style-type: decimal">
+<li>To learn how to think about your study system and research question of interest in a systematic way in order to design an efficient sampling and experimental research program.<br />
+</li>
+<li>To understand how to analyze collected data to derive the most information possible about your research questions.<br />
+</li>
+<li>Provide the grounding needed to effectively collaborate with statistical experts.<br />
+</li>
+<li>Allow students to feel sufficiently comfortable with the basic principles of statistical analysis so that they can learn and implement techniques outside of the purview of this course.</li>
+</ol>
+<p><strong>Prerequisites:</strong> I will assume a basic knowledge of algebra. Undergraduate courses in probability theory and computer science are useful, but not required.</p>
+<p><strong>Content and teaching approach:</strong> The course will be a mixture of lecture and hands-on data analysis lab. Students will be expected to have a computer available during the course so that they can follow examples and attempt in-class problems.</p>
+<p><strong>Grading:</strong> Your grade will be determined by a combination of weekly homework, a course blog, and a midterm exam, and a final paper. Homework will consist of a problem set and will be worth 40% of your course grade. In-class quizzes will comprise 10%. The midterm exam will be take-home and worth 20%. The final paper will be worth 30%. Additionally, there will be multiple opportunities for extra credit along the way.</p>
+<p><strong>Homework:</strong> All homework done using R should be turned in as an RMarkdown document (<a href="http://rmarkdown.rstudio.com/" class="uri">http://rmarkdown.rstudio.com/</a>). I will conduct a short tutorial in class. I’ll provide a directory structure to make sure you write a document that I can compile and edit. Note – all slides will be written using RMarkdown, and code will be made available as an example. Please turn your homework in with the following filename format: <code>lastname_#.Rmd</code></p>
+<p><strong>Code of Conduct and Academic Integrity:</strong> It is the expressed policy of the University that every aspect of academic life–not only formal coursework situations, but all relationships and interactions connected to the educational process–shall be conducted in an absolutely and uncompromisingly honest manner. The University presupposes that any submission of work for academic credit is the student’s own and is in compliance with University policies, including its policies on appropriate citation and plagiarism. These policies are spelled out in the Code of Student Conduct. Students are required to adhere to the Code of Student Conduct, including requirements for academic honesty, as delineated in the University of Massachusetts Boston Graduate Catalogue and relevant program student handbook(s). <a href="http://www.umb.edu/life_on_campus/policies/code" class="uri">http://www.umb.edu/life_on_campus/policies/code</a> You are encouraged to visit and review the UMass website on Correct Citation and Avoiding Plagiarism: <a href="http://umb.libguides.com/citations" class="uri">http://umb.libguides.com/citations</a></p>
+<p><strong>Accommodations:</strong> The University of Massachusetts Boston is committed to providing reasonable academic accommodations for all students with disabilities. This syllabus is available in alternate format upon request. If you have a disability and feel you will need accommodations in this course, please contact the Ross Center for Disability Services, Campus Center, Upper Level, Room 211 at 617.287.7430. <a href="http://www.umb.edu/academics/vpass/disability/" class="uri">http://www.umb.edu/academics/vpass/disability/</a> After registration with the Ross Center, a student should present and discuss the accommodations with the professor. Although a student can request accommodations at any time, we recommend that students inform the professor of the need for accommodations by the end of the Drop/Add period to ensure that accommodations are available for the entirety of the course.</p>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+$(document).ready(function () {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+});
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

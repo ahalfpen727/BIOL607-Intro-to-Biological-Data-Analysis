@@ -1,0 +1,375 @@
+---
+title: 'BIOL-607 Biological Data Analysis Homework 05: $\chi^2$  and T tests'
+author: "Andrew Judell-Halfpenny"
+date: "September 27, 2018"
+output: html_document
+---
+<font color=“red”> 62/78 +3git didnt do all the work </font>
+# Environment Prepration
+
+```{r library-install, echo=TRUE}
+#devtools::install_github("thomasp85/patchwork")
+#install.packages("revealjs")
+#devtools::install_github(gganimate)
+#devtools::install_github(treeio)
+```
+
+# Environment Initialization
+   
+```{r library-load, message=FALSE}
+library(devtools);library(readr)
+library(tidyverse);library(tidygraph)
+library(dplyr);library(lubridate)
+library(knitr);library(rmarkdown)
+library(ggplot2);library(abd)
+library(lattice);library(patchwork)
+```
+
+---
+
+# Part 1-W&S $\chi^2$ questions
+## W & S - Chapter 8 Questions 12 and 24
+
+---
+
+
+# 12) The white “Spirit” black bear (or Kermode), Ursus americanus kermodei, differs from the ordinary black bear by a single amino acid change in the melanocortin 1 receptor gene10 (MC1R). In this population, the gene has two forms (or alleles): the “white “ allele b and the “black” allele B. The trait is recessive: white bears have two copies of the white allele of this gene (bb), whereas a bear is black if it has one or two copies of the black allele (Bb or BB). Both color morphs and all three genotypes are found together in the bear population of the northwest coast of British Columbia. If possessing the white allele has no effect on growth, survival, reproductive success, or mating patterns of individual bears, then the frequency of individuals with 0, 1, or 2 copies of the white allele (b) in the population will follow a binomial distribution. To investigate, Hedrick and Ritland (2011) sampled and genotyped 87 bears from the northwest coast: 42 were BB, 24 were Bb, and 21 were bb. Assume that this is a random sample of bears.
+
+## 12.a) Calculate the fraction of b alleles in the population (remember, each bear has two copies of the gene).
+
+```{r 12.a}
+
+bear.genes<-read.csv("http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter08/chap08q12SpiritBearGenetics.csv")
+genotype<-factor(table(bear.genes$genotype))
+genotype
+BB.dom<-bear.genes[bear.genes$genotype=="BB",]
+bb.rec<-bear.genes[bear.genes$genotype=="bb",]
+Bb.het<-bear.genes[bear.genes$genotype=="Bb",]
+bbs<-length(bb.rec)
+Bbs<-length(Bb.het)
+BBs<-length(BB.dom)
+b.fraction<-((bbs*2)+(Bbs))/(2*(bbs+Bbs+BBs))
+b.fraction
+```
+<font color=“red”> FIrst- thanks for doing the online .csv pull. I wish everyone would! 
+
+Since it says "population" it means what fraction of the bear population has b alleles [1] 0.5172414 -2
+
+</font>
+
+## 12.b) With your estimate of the fraction of b alleles, and assuming a binomial distribution, calculate the expected frequency of bears with 0, 1, and 2 copies.
+
+```{r 12.b}
+total.len<-length(bear.genes$genotype)
+total.len
+# Expected number of bears with 2 b alleles
+bb.exp<-(b.fraction^2)*total.len
+bb.exp
+# Expected number of bears with 1 b alleles
+Bb.exp<-2*b.fraction*(1-b.fraction)*total.len
+Bb.exp
+# Expected number of bears with 0 b alleles
+BB.exp<-((1-b.fraction)^2)*total.len
+BB.exp
+# sanity check
+bb.exp + Bb.exp + BB.exp
+```
+
+<font color=“red”> frequency is a % 
+
+bears <- bears %>%
+  mutate(expected = dbinom(c(0,1,2), size = 2, prob = b)) 
+  
+  -1 </font>
+
+## 12.c) Compare the observed and expected frequencies in a graph. Describe how they differ.
+
+```{r 12.c}
+expectations<-c(bb.exp, Bb.exp, BB.exp)
+observations<-c(bbs, Bbs, BBs)
+genotype<-c("bb","Bb","BB")
+allelles<-data.frame(cbind(observations,expectations),row.names=genotype)
+par(mfrow = c(2, 2))
+barplot(expectations,names.arg =genotype, col="yellow", main="Expected",ylim = c(0,60))
+barplot(observations, names.arg =genotype, col="blue", main="Observed",ylim = c(0,60))
+par(mfrow = c(1, 1))
+
+```
+
+> 12.c) Answer: The expected frequency of heterozygotes is the greatest value of the three genotypes but the homozygous dominant genotype is the highest frequency observed genotype.  This suggest that there may be some type of evolutionary pressure influencing the distribution of the "b"" and "B" alleles.
+
+---
+
+# 24) Seedlings of the parasitic plant Cuscuta pentagona (dodder) hunt by directing growth preferentially toward nearby host plants. Lacking eyes, or even a nervous system, how do they detect their victims? To investigate the possibility that the parasite detects volatile chemicals produced by host plants, Runyon et al. (2006) placed individual dodder seedlings into a vial of water at the center of a circular paper disc. A chamber containing volatile extracts from tomato (a host plant) in solvent was placed at one edge of the disc, whereas a control chamber containing only solvent was placed at the opposite end. The researchers divided the disc onto equal-area quadrats to record in which direction the seedlings grew. Of 30 dodder plants tested, 17 seedlings grew toward the volatiles, 2 grew away (toward the solvent), 7 grew toward the left side, and 4 grew toward the right side.
+
+##  24.a) Graph the relative frequency distribution for these results. What type of graph is ideal?
+
+```{r 24.a}
+seed.growth<-read.csv("http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter08/chap08q24DodderGrowth.csv")
+directionOfGrowth<-table(seed.growth$directionOfGrowth)
+away <- sum(seed.growth$directionOfGrowth=='away from volatile')/nrow(seed.growth)
+toward <- sum(seed.growth$directionOfGrowth=='toward volatile')/nrow(seed.growth)
+right <- sum(seed.growth$directionOfGrowth=='right')/nrow(seed.growth)
+left <- sum(seed.growth$directionOfGrowth=='left')/nrow(seed.growth)
+# Sanity check
+sum(away, toward, right, left)
+freq<-c(away, toward, right, left)
+dir<-c("away", "toward", "right", "left")
+expected.val<-as.data.frame(freq,row.names=dir)
+expected.val              
+barplot(freq, ylim=c(0,1), names.arg=dir, main="Frquency of Proximity of Parasitic Growth in Relation to Volatiles", col="purple")
+
+```
+
+## 24.b) What are the relative frequencies expected if the parasite is unable to detect the plant volatiles or any other cues present? Add these expected relative frequencies to your graph in part (a).
+
+```{r 24.b}
+# Total number of directions
+num.of.dirs<-nrow(expected.val)
+lacking.detection<-nrow(seed.growth)/num.of.dirs
+away.ld <- lacking.detection/nrow(seed.growth)
+toward.ld <-lacking.detection/nrow(seed.growth)
+right.ld <- lacking.detection/nrow(seed.growth)
+left.ld <-lacking.detection/nrow(seed.growth)
+sum(away.ld, toward.ld, right.ld, left.ld)
+freqs<-c(away,away.ld, toward,toward.ld, right,right.ld, left,  left.ld)
+dirs<-c("away","away.ld", "toward","toward.ld", "right", "right.ld", "left","left.ld")
+expected.vals<-as.data.frame(freqs,row.names=dirs)
+expected.vals              
+barplot(freqs, ylim=c(0,1), names.arg=dirs, main="Frquency of Proximity of Parasitic Growth in Relation to Volatiles", col=c("green", "blue"),legend.text=c("observed","unable to detect plant volatiles"))
+```
+
+## 24.c) Using these data, calculate the fraction of seedlings that grow toward the volatiles. What does this fraction estimate?
+
+```{r 24.c}
+# expected number of seedlings growing in each direction given H~0~
+lacking.detection<-nrow(seed.growth)/num.of.dirs
+lacking.detection
+# total number of seedlings
+n=30 
+# expected proportion of seedlings growing towards volatiles given H~0~
+phat.toward.ld <-lacking.detection/nrow(seed.growth)
+phat.toward.ld 
+
+```
+<font color=“red”> good except supposed to be freq
+  
+  -1 </font>
+> 24.c) Answer: This estimate represents the proportion of seedlings that would arbitrarily grow in each of the four directions given H~0~ since each direction would be equally probable given seedlings with a lack of ability to detect volatiles (i.e. their optimal growing environment).
+   H~0~ The seedlings are unable to detect volatiles.
+   H~a~ The seedlings are able to detect volatiles.
+
+## 24.d) Provide a standard error for your estimate. What does this standard error represent?
+
+```{r 24.d}
+# std.err
+n=30 # total numberl of seedlings
+se.p.est=((phat.toward.ld*(1-phat.toward.ld)/n)^.5) 
+se.p.est
+```
+<font color=“red”> good except supposed to be freq
+  
+  -1 </font>
+
+> 24.d) Answer: This standard error value represents the potential error in this estimate in relation to its proportion to the sample size.
+
+## 24.e) Calculate the range of most-plausible values for the fraction of dodder seedlings that grow toward the volatiles under these experimental conditions. Does it include or exclude the fraction expected if the parasite is unable to detect plant volatiles or other cues present?
+
+```{r 24.e}
+z=.95
+p.hatl=(phat.toward.ld  - (z*se.p.est)) * n
+p.hath=(phat.toward.ld  + (z*se.p.est)) * n
+paste0(p.hatl,sep=" to ", p.hath)
+```
+
+> 24.e) Answer: The 95% confidence interval of the proportion of seedlings growing towards the volatiles under the assumption that the seedlings cannot detect volatiles is between  ~5.25 to ~9.75 seedlings.  This includes the estimate of 7.5 given this hypothesis.  However, the observed number of seedlings growing towards the volatiles far exceeds this value suggesting that this hypothesis should be rejected and the alternate hypothesis that the seedlings can detect volatiles should be contemplated and tested.
+   
+---
+
+# Part 1-W&S $\chi^2$ questions
+## W & S  Chapter 9 Questions 16 and 27
+
+---
+
+# 16) In animals without paternal care, the number of offspring sired by a male increases as the number of females he mates with increases. This fact has driven the evolution of multiple matings in the males of many species. It is less obvious why females mate multiple times, because it would seem that the number of offspring that a female has would be limited by her resources and not by the number of her mates, as long as she has at least one mate. To look for advantages of multiple mating, a study of the Gunnison’s prairie dog followed females to find out how many times they mated (Hoogland 1998). They then followed the same females to discover whether they gave birth later. The results are compiled in the following table:
+> 16) Did the number of times that a female mated affect her probability of giving birth?
+
+## 16.a) Calculate expected frequencies for a contingency test.
+
+```{r 16.a}
+pdogmating<-read.csv("http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter09/chap09q16PrairieDogMultipleMating.csv")
+table(pdogmating$matingFrequency, pdogmating$gaveBirth)
+
+mated<-c(1, 2, 3,	4,	5)
+yesbirth<-c(81,85, 61,17, 5)
+nobirth<-c(6,8,0,0,0)
+pdog.ma<-as.matrix(rbind(mated, yesbirth, nobirth))
+colnames(pdog.ma)=c("one.mate","two.mate","three.mate","four.mate","five.mate")
+pdog.ma
+
+# Total number of births
+yessum<-sum(yesbirth)
+yessum
+# Total number of birth-failures
+nosum<-sum(nobirth)
+nosum
+# Total number of birtsh and birth-failures
+allsum= yessum + nosum
+allsum
+# Total number of birtsh and birth-failures per number of mates
+totalpermate<-colSums(pdog.ma)
+totalpermate
+# Probability for each number of matings 
+prob.permate<-totalpermate/allsum
+prob.permate
+# Probability of giving birth
+probyes<-yessum/allsum
+probyes
+# Probability of not giving birth
+probno<-nosum/allsum
+probno
+# Probability of giving birth for each number of matings
+prob.permate * probyes
+efreq.ybirth<-c(prob.permate * probyes * allsum)
+efreq.ybirth
+# Probability of not giving birth for each number of matings
+prob.permate * probno
+efreq.nbirth<-c(prob.permate * probno * allsum)
+efreq.nbirth
+
+```
+
+
+## 16.b) Examine the expected frequencies. Do they meet the assumptions of the χ2 contingency test? If not, what steps could you take to meet the assumptions and make a test?
+
+> 16.b) Answer: The data does not meet the assumptions of the $\chi^2$ contingency test because greater than 20% of the cells have an expected frequency of less than five. Combining the categories of three-matings through five-matings or considering only data for between one and three matings would meet the assumptions of the $\chi^2$ contingency test. Additionaly, the Fisher exact test could be performed with the data as-is.
+
+## 16.c) An appropriate test shows that the number of mates of the female prairie dogs is associated with giving birth. Does this mean that mating with more males increases the probability of giving birth? Can you think of an alternative explanation?
+
+> 16.c) Answer: Correlation between the variables does not prove causation.  Additionally the sample sizes for each of the mating frequencies is not equal accross the samples therefor the statistical power is very low at higher mating frequencies.  There isnt enough data to make a definitive statement about mating frequency and the birth success-rate.
+        
+---
+
+# 27) It is common wisdom that death of a spouse can lead to health deterioration of the partner left behind. Is common wisdom right or wrong in this case? To investigate, Maddison and Viola (1968) measured the degree of health deterioration of 132 widows in the Boston area, all of whose husbands had died at the age of 45–60 within a fixed six-month period before the study. A total of 28 of the 132 widows had experienced a marked deterioration in health, 47 had seen a moderate deterioration, and 57 had seen no deterioration in health. Of 98 control women with similar characteristics who had not lost their husbands, 7 saw a marked deterioration in health over the same time period, 31 experienced a moderate deterioration of health, and 60 saw no deterioration. Test whether the pattern of health deterioration was different between the two groups of women. Give the P-value as precisely as possible from the statistical tables, and interpret your result in words.
+
+```{r 27}
+widowhealth<-read.csv(url("http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter09/chap09q27WidowHealth.csv"))
+health<-table(widowhealth$health_deterioration, widowhealth$widowed)
+health
+chisq.test(health)
+paste("The p-value is" , chisq.test(health)$p.value)
+```
+
+> 24) Answer:
+>- H~0~ spousal death does not influence the health of the widow.
+>- H~a~ spousal death influences the health of the widow.
+>- This test compared the health deterioration of women who had not lost their husbands to the observed frequencies of health deterioration of widows. The data from the women who had not lost their husbands served as the canonical null model. The $\chi^2$ test of the relative frequencies between the two groups produced a p-value well below the standard alpha level. This test result suggests that null hypothesis should be rejected i.e. that null model is not an adequate fit for the observed health deterioration of widows. This allows for the possibility of the alternate hypothesis, that spousal death influences the health of the surviving widow.
+
+---
+
+# Part 2 - W & S T-test questions
+## W & S -  Chapter 11 Question 21 
+
+---
+
+# 21)Hurricanes Katrina and Rita caused the flooding of large parts of New Orleans, leaving behind large amounts of new sediment. Before the hurricanes, the soils in New Orleans were known to have high concentrations of lead, which is a dangerous environmental toxin. Forty-six sites had been monitored before the hurricanes for soil lead content, as measured in $\frac{mg}{kg}$, and the soil from each of these sites was measured again after the hurricanes (Zahran et al. 2010). The data given below show the log of the ratio of the soil lead content after the hurricanes and the soil lead content before the hurricanes—we’ll call this variable the “change in soil lead.” (Therefore, numbers less than zero show a reduction in soil lead content after the hurricanes, and numbers greater than zero show increases.) This log ratio has an approximately normal distribution.
+## 24.a) Draw a graph of the data, following recommended principles of good graph design (Chapter 2). What trend is suggested?
+    
+```{r part-II-24.a}
+lead<-read.csv("http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter11/chap11q21SoilLeadAndHurricanes.csv")
+ggplot(data = lead,mapping = aes(x= Site, y=log(lead$Soil_lead_After_Katrina/lead$Soil_lead_Before_Katrina), breaks=c(1))) + geom_line(color="green") + geom_point(color="blue")
+```
+> 24.a) Answer: There doesn't seem to be any discernable trend, there are many sites with increases lead content after Katrina and and many sites with decreases in lead content after Katrina.
+
+## 24.b) Determine the most-plausible range of values for the mean change in soil lead. Describe in words what the nature of that change is. Is an increase in soil lead consistent with the data? Is a decrease in soil lead consistent?
+
+```{r part-II-24.b}
+t.test(lead$LogRatio)
+```
+
+> 24.b) Answer: The most plausible range of values for the mean change in soil lead content is the 95% confidence interval which is between log fold change of between -0.4457902 and -0.1029055.  These values suggest that there is a consistent decrease in soil lead content and it would be incorrect to describe the tren as an increase.
+
+## 24.c)  Test whether mean soil lead changed after the hurricanes.
+
+```{r part-II-24.c}
+t.test(x=lead$Soil_lead_Before_Katrina, y=lead$Soil_lead_After_Katrina)
+
+```
+
+> 24.c) The two sample t-test estimated the mean lead content before Katrina to be ~ 331.74 $\frac{mg}{kg}$ and the mean lead content after Katrina to be ~ 206.85 $\frac{mg}{kg}$. The 95% confidence interval for the difference in the means is between 3.06 $\frac{mg}{kg}$ and 246.72 $\frac{mg}{kg}$.  The t-test of this data set produced a p-value of 0.04467 which is below the standard alpha level.  The results of this test suggest that the null hypothesis, H~0~ there is no difference in mean lead content before and after Katrina, can be rejected in favor of the alternative hypothesis, H~a~ there is a difference in the mead lead content after Katrina.
+
+---
+
+# Part 2 - W & S T-test questions
+## W & S - Chapter 12  Questions 20, 26, and 30
+
+---
+
+# 20) Researchers studying the number of electric fish species living in various parts of the Amazon basin were interested in whether the presence of tributaries affected the local number of electric fish species in the main rivers (Fernandes et al. 2004). They counted the number of electric fish species above and below the entrance point of a major tributary at 12 different river locations. Here’s what they found:
+
+# 20.a) What is the mean difference in the number of species between areas upstream and downstream of a tributary? What is the 95% confidence interval of this mean difference?
+> t~0.05(2),11~ = 2.20
+> The t-statistic for a two tailed t-test with an alpha of 0.05 and 11 degrees of freedom = 2.20
+
+```{r part-II-20.a}
+fishSpecies<-read.csv("http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter12/chap12q20ElectricFish.csv")
+fishSpecies
+# sample size
+n<-length(fishSpecies$speciesUpstream)
+n
+# degrees of freedom
+df<-length(fishSpecies$speciesUpstream)
+df
+# mean of upstream
+mean.diff<-mean(fishSpecies$speciesUpstream- fishSpecies$speciesDownstream)
+mean.diff
+# standard deviation of the differences in number of species
+sd.diff<-sd(fishSpecies$speciesUpstream - fishSpecies$speciesDownstream)
+sd.diff
+# standard error of the differences in number of species
+se.diff<-sd.diff/sqrt(n)
+se.diff
+# $\t~0.05(2),11~$ = 2.20
+t=2.20
+lowerend<-mean.diff - (se.diff * t)
+upperend<-mean.diff + (se.diff * t)
+```
+
+> 20.a) Answer: 
+
+```{r part-II-20.a-Answer}}
+paste0("The mean difference between the number of species downstream and the number of species upstream is ", mean.diff)
+paste0("The 95% confidence interval is from ", lowerend, " to ", upperend)
+```
+
+# 20.b) Test the hypothesis that the tributaries have no effect on the number of species of electric fish.
+
+```{r part-II-20.b}
+t.test(fishSpecies$speciesUpstream, fishSpecies$speciesDownstream)
+t.test(fishSpecies$speciesUpstream, fishSpecies$speciesDownstream)$p.value
+```
+> 20.b) Answer: the two sample t-test of the number of species downstream compared to the number of species upstream produced a p-value that suggests that tributary has no effect on the number of species of electric fish 
+
+# 20.c) State the assumptions that you had to make to complete parts (a) and (b).
+> 20.c) Answer: There are two assumptions required for paired t-test. The sampling units are assumed to be randomly sampled from the population. The paired differences are assumed to have a normal distribution in the population.
+
+## 26) Hyenas, famously, laugh. (The technical term used by hyena biologists is “giggle.”) Mathevon et al. 2010) investigated the information content of hyena giggles. In one analysis, they compared the giggles of pairs of hyenas, in which one member of each pair was the more dominant and the other socially subordinate. They measured the spectral variability of the hyena giggles using the coefficient of variation (CV) of sound spectrum features. Do dominant and subordinate individuals differ in the means of giggle spectral CV?
+
+```{r part-II-26}
+CVsound<-read.csv("http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter12/chap12q26HyenaGiggles.csv")
+t.test(CVsound$dominantIndividualGiggleVariation, CVsound$subordinateIndividualGiggleVariation)
+t.test(CVsound$dominantIndividualGiggleVariation, CVsound$subordinateIndividualGiggleVariation)$p.value
+```
+> 26) Answer: The two sample t-test of variability of the coefficient of variation of hyena giggles produced a p-value just slightly greater than the standard alpha level which suggests that there is no difference between the mean of the CV of giggle sound features between dominant and subordinate hyenas.  However, the p-value is only slightly greater than the alpha level which suggests that a larger sample size could produce a more definitive answer.
+
+
+# 30) Spot the flaw. There are two types of males in bluegill sunfish. Parental males guard small territories, where they mate with females and take care of the eggs and young. Cuckolder males do not have territories or take care of young. Instead, they sneak in and release sperm when a parental male is spawning with a female, thereby fertilizing a portion of the eggs. A choice experiment was carried out on juvenile sunfish to test whether offspring from the two types of eggs (fertilized by parental male vs. fertilized by cuckolder male) are able to distinguish kin (siblings) from non-kin using odor cues. The researchers used a two-sample method to test the null hypothesis that fish are unable to discriminate between kin and non-kin. This null hypothesis was not rejected for offspring from parental males. However, the same null hypothesis was rejected for offspring from cuckolder males. The researchers concluded that offspring of cuckolder males are more able to discriminate kin from non-kin than are offspring of parental males. What is wrong with this conclusion? What analysis should have been conducted?
+> 30) Answer: The conclusions made by the researchers disreguard the general language of hypothesis testing.  A rejection of the null hypothesis doesnt not make the alternative hypothesis.  Rejection of the null just allows for the possibility of the alternate. There is insufficient evidence to conclude that the fish can detect kin from non-kin.
+
+
+
+
+
+
+
+<font color=“red”> No 3.1 - 3.5. -15 </font>

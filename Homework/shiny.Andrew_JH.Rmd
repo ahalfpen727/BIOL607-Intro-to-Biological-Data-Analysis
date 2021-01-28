@@ -1,0 +1,226 @@
+---
+title: "Untitled"
+author: "Andrew JH"
+date: "September 28, 2018"
+output: ioslides_presentation
+runtime: shiny
+---
+
+```{r initialize, include=FALSE}
+library(ggplot2)
+library(rvg)
+library(ggridges)
+library(ggiraph)
+devtools::install_github("clauswilke/ggforce")
+
+mytheme_main <- theme( panel.background = element_blank(), 
+  panel.grid.major = element_line(colour = "#dddddd"), 
+  axis.ticks = element_line(colour = "#dddddd") )
+
+mytheme_map <- theme(
+  panel.background = element_blank(), axis.title.x = element_blank(),
+  axis.text = element_blank(), axis.line.x = element_blank(),
+  axis.line.y = element_blank(), axis.title.y = element_blank(),
+  axis.ticks.x = element_blank(), axis.ticks.y = element_blank() )
+
+dataset$tooltip <- row.names(dataset)
+
+# geom_point_interactive example
+gg_point_1 <- ggplot(dataset, aes(x = disp, y = qsec, 
+        color = wt, tooltip = tooltip ) ) + 
+    geom_point_interactive(size=3)
+
+# htmlwidget call
+ggiraph(code = {print(gg_point_1 + mytheme_main)}, width = 7, height = 6)
+
+16182022100200300400dispqsec2345wt
+
+```
+
+## Shiny Presentation
+
+This R Markdown presentation is made interactive using Shiny. The viewers of the presentation can change the assumptions underlying what's presented and see the results immediately. 
+
+To learn more, see [Interactive Documents](http://rmarkdown.rstudio.com/authoring_shiny.html).
+
+## Interactive Plot
+
+```{r eruptions}
+inputPanel(
+  selectInput("n_breaks", label = "Number of bins:",
+              choices = c(10, 20, 35, 50), selected = 20),
+  
+  sliderInput("bw_adjust", label = "Bandwidth adjustment:",
+              min = 0.2, max = 2, value = 1, step = 0.2)
+)
+
+renderPlot({
+  hist(faithful$eruptions, probability = TRUE, breaks = as.numeric(input$n_breaks),
+       xlab = "Duration (minutes)", main = "Geyser eruption duration")
+  
+  dens <- density(faithful$eruptions, adjust = input$bw_adjust)
+  lines(dens, col = "blue")
+})
+```
+
+```{r setup, include=FALSE}
+library("shiny")
+library("flexdashboard")
+```
+```{r}
+library("ggplot2")
+
+## Teaching package from: www.ncl.ac.uk/maths/rcourse/details.html
+## install.packages("nclRshiny", repos="http://rcourses.github.io/drat/")
+
+## Subset of the ggplot2movies data set
+data(movies, package="nclRshiny")
+top_movies = movies[order(-movies$rating), 
+                    c("title", "year", "budget", "rating", "Romance", "Action", "Animation"), ]
+colnames(top_movies) = c("Title", "Year", "Budget", "Rating","Romance", "Action", "Animation")
+theme_set(theme_bw())
+```
+
+Selections {.sidebar}
+===============================
+
+Select the movie genre to display
+
+```{r}
+## The shiny part
+selectInput("movie_type", label = "Movie genre", 
+            c("Romance", "Action", "Animation"))
+```
+
+Tables
+===================================== 
+
+Column {.tabset .tabset-fade}
+-------------------------------------
+### Top 10 movies (static table)
+
+
+```{r}
+## Exercise for the reader!: 
+## t_m is calculated twice, bad....
+## Use reactive to avoid duplication
+renderTable({
+  t_m = top_movies[top_movies[input$movie_type]==1,]
+  t_m[1:10, 1:4]
+})
+```
+
+### Top 10 movies (dynamic table)
+
+```{r}
+DT::renderDataTable({
+  t_m = top_movies[top_movies[input$movie_type]==1,]
+  DT::datatable(t_m[,1:4], rownames = FALSE)
+})
+```
+
+Base graphics 
+===================================== 
+
+### Rating vs Length
+
+```{r}
+renderPlot({
+  an = movies[movies[input$movie_type]==1,]
+  nclRshiny::setnicepar() 
+  plot(an$rating, an$length, ylab="Length", xlab="Rating", 
+       pch=21, bg="steelblue", ylim=c(0, max(an$length)), 
+       xlim=c(1, 10), main=paste0(input$movie_type, " movies"))
+  grid()
+})
+```
+
+### Movie Length
+
+```{r}
+renderPlot({
+  an = movies[movies[input$movie_type]==1,]
+  nclRshiny::setnicepar()
+  hist(an$length, breaks="fd", col="steelblue", xlab="Movie Length", 
+       main="Histogram of movie length", xlim=c(0, max(an$length)))
+  grid()
+})
+```
+
+htmlwidget and value boxes
+===================================== 
+
+Column 1 {data-width=200}
+------------------------------------
+### Length vs rating
+
+This example makes use of `plotly` and `ggplot2`. There is also a `valuebox` showing the number
+of terrible movies.
+
+```{r}
+library(plotly)
+renderPlotly({
+  an = movies[movies[input$movie_type]==1,]
+  g = ggplot(an, aes(length, rating)) + 
+    geom_point(size=0.5, aes(text=paste("Film: ", title))) + 
+    xlab("Length") + ylab("Rating") + 
+    ylim(c(0, 10)) 
+  ggplotly(g)
+})
+```
+
+### Value boxes
+
+```{r}
+renderValueBox({
+  an = movies[movies[input$movie_type]==1,]
+  valueBox(sum(an$rating <3), icon = "ion-videocamera", 
+           caption="Movies Rated less than 3", color="red")
+})
+```
+
+Column 2 {data-width=300}
+-------------------------------------
+
+### Movie ratings over number
+
+This example makes use of the `dygraphs` R package. The dygraphs
+package provides rich facilities for charting time-series data 
+in R. 
+
+```{r}
+library(dygraphs)
+renderDygraph({
+  years = movies[movies$year > 1929 & movies[input$movie_type]==1,]
+  rat_by_year = tapply(years$rating, years$year, mean)
+  
+  x = ts(as.vector(rat_by_year), start=1930)
+  y = cbind(Rating=x)
+  dygraph(y, main = "Ratings over the years", 
+          ylab = "Ratings", group="Ratings") %>% 
+    dyRangeSelector() %>%
+    dyOptions(stepPlot = TRUE) %>%
+    dySeries("V1", label = "Rating")
+})
+```
+
+### Number of movies made
+
+```{r}
+library(dygraphs)
+renderDygraph({
+  years = movies[movies$year > 1929 & movies[input$movie_type]==1,]
+  num_by_year = tapply(years$rating, years$year, sum)
+  ## Create ts object
+  x = ts(as.vector(num_by_year), start=1930)
+  y = cbind(Rating=x)
+  
+  ## Plot code
+  dygraph(y, main = "Number of movies over the years", 
+          ylab = "No. of movies",group="Ratings") %>% 
+    dyRangeSelector() %>%
+    dyOptions(stepPlot = TRUE) %>%
+    dySeries("V1", label = "No. of Movies made")
+})
+```
+

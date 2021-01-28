@@ -1,0 +1,123 @@
+---
+title: "BIOL607-Lecture-11-29-18 Cross Validation"
+author: "Andrew JH"
+date: "November 28, 2018"
+output: html_document
+---
+Information Theory book
+Burnham and Anderson - poison dart frogs
+
+# Cross Validation
+ We want to model but dont know where to start because mad models are not null
+
+ Deviance=-2 log likelihood
+
+# AIC 
+is essentially a tailor series and is great for forcasting but may produce promiscuity when many parameters exist
+AIC=Deviance + 2K
+
+# BIC
+BIC = ln(n)k − 2ln(L^).  # L hat
+
+where
+L hat = the maximized value of the likelihood function of the model M, i.e. L ^ = p ( x | θ ^ , M ) where θ are the parameter values that maximize the likelihood function;
+
+x = the observed data;
+
+n = the number of data points in x,the number of observations, or equivalently, the sample size;
+
+k = the number of parameters estimated by the model. For example, in multiple linear regression, the estimated parameters are the intercept, the q slope parameters, and the constant variance of the errors; thus, k = q + 2
+
+# You can also embed plots, for example:
+# `echo = FALSE` prevents printing of the R code
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+library(MPV)
+data(p9.10)
+
+full.lm <- lm(y ~ ., data=p9.10)
+
+## DATA description
+# help(p9.10)
+
+# The 'p9.10' data frame has 31 observations on the rut depth of
+# asphalt pavements prepared under different conditions.
+
+# Usage:
+
+# data(p9.10)
+
+# Format:
+
+# This data frame contains the following columns:
+
+# y change in rut depth/million wheel passes (log scale)
+
+# x1 viscosity (log scale)
+
+# x2 percentage of asphalt in surface course
+
+# x3 percentage of asphalt in base course
+
+# x4 indicator
+
+# x5 percentage of fines in surface course
+
+# x6 percentage of voids in surface course
+
+
+# This is the library with the leaps function
+
+# install.packages('leaps')
+
+library(leaps)
+
+# Leaps takes a design matrix as argument: throw away the intercept
+# column or leaps will complain
+
+X <- model.matrix(full.lm)[,-1]
+
+# Look at R^2
+
+# R^2 -- all subsets
+
+r2.leaps <- leaps(X, p9.10$y, nbest=3, method='r2')
+plot(r2.leaps$size, r2.leaps$r2, pch=23, bg='blue', cex=2)
+best.model.r2 <- r2.leaps$which[which((r2.leaps$r2 == max(r2.leaps$r2))),]
+print(best.model.r2)
+
+
+# Adjusted R^2 -- all subsets
+
+adjr2.leaps <- leaps(X, p9.10$y, nbest=3, method='adjr2')
+plot(adjr2.leaps$size, adjr2.leaps$adjr2, pch=23, bg='blue', cex=2)
+best.model.adjr2 <- adjr2.leaps$which[which((adjr2.leaps$adjr2 == max(adjr2.leaps$adjr2))),]
+print(best.model.adjr2)
+
+
+# Cp -- all subsets
+
+Cp.leaps <- leaps(X, p9.10$y, nbest=3, method='Cp')
+plot(Cp.leaps$size, Cp.leaps$Cp, pch=23, bg='blue', cex=2)
+best.model.Cp <- Cp.leaps$which[which((Cp.leaps$Cp == min(Cp.leaps$Cp))),]
+print(best.model.Cp)
+
+
+# Use stepwise search, both direction, starting at full model
+
+full.step.both <- step(full.lm, direction='both')
+print(summary(full.step.both))
+
+# Backward
+
+full.step.backward <- step(full.lm, direction='backward')
+print(summary(full.step.backward))
+
+# Forward
+# Need an "upper" model
+
+lowest.step.forward <- step(lm(y ~ 1, data=p9.10), list(upper=full.lm), direction='forward')
+print(summary(lowest.step.forward))
+
+```

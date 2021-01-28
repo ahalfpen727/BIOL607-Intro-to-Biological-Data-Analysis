@@ -1,0 +1,194 @@
+---
+title: 'Analyzing proportions: R code for Chapter 7 examples'
+author: "Michael Whitlock and Dolph Schluter"
+output: 
+  html_document:
+    toc: yes
+    toc_depth: 3
+---
+
+_Note: This document was converted to R-Markdown from [this page](http://whitlockschluter.zoology.ubc.ca/r-code/rcode07) by M. Drew LaMar.  You can download the R-Markdown [here](https://qubeshub.org/collections/post/1132/download/chap07.Rmd)._
+
+Download the R code on this page as a single file [here](http://whitlockschluter.zoology.ubc.ca/wp-content/rcode/chap07.r) (make sure to install the "binom" package before running).
+
+```{r, echo=FALSE, message=FALSE}
+# Install required binom package if not present
+if (!require("binom")) { install.packages("binom", dependencies=T, repos="http://cran.rstudio.com/") }
+```
+
+## New methods
+
+Hover over a function argument for a short description of its meaning.  The variable names are plucked from the examples further below.
+
+**Calculate binomial probabilities:**
+
+> dbinom(<u><a title="The number of successes (6 in this example).">6</a></u>, <u><a title="The total number of trials, n.">size = 27</a></u>, <u><a title="The probability of success in any one trial, p.">prob = 0.25</a></u>)
+
+**Binomial test:**
+
+> binom.test(<u><a title="The number of successes (10 in this example).">10</a></u>, <u><a title="The number of trials.">n = 25</a></u>, <u><a title="The null-hypothesized value for the probability of success in any one trial.">p = 0.061</a></u>)
+
+**Install an R package**, the `binom` package to calculate confidence interval for a proportion.
+
+> install.packages(<u><a title="The name of the package, in quotations.">"binom"</a></u>, <u><a title="Instructs R also to install other packages that work with the main package being installed.">dependencies = TRUE</a></u>)
+
+**Agresti-Coull 95% confidence interval for the proportion** using the `binom` package.
+
+> binom.confint(<u><a title="The number of successes (30, in this example).">30</a></u>, <u><a title="The number of trials.">n = 87</a></u>, <u><a title="Instructs the function to use the Agresti-Coull method.">method = "ac"</a></u>)
+
+**Other new methods:**<br \>
+Sampling distribution of a proportion by repeated sampling from a known population.
+
+## Table 7.1-1 and Figure 7.1-1. Binomial distribution with n = 27 and p = 0.25
+
+*__Table and histogram of binomial probabilities.__ Uses the data from Chapter 6 on the genetics of mirror-image flowers.*
+
+**Calculate a binomial probability**, the probability of obtaining $X$ successes in n trials when trials are independent and probability of success $p$ is the same for every trial. The probability of getting exactly 6 left-handed flowers when $n = 27$ and $p = 0.25$ is
+
+```{r}
+dbinom(6, size = 27, prob = 0.25)
+```
+
+**Table of probabilities** for all possible values for the number of left-handed flowers out of 27.
+
+```{r}
+xsuccesses <- 0:27
+probx <- dbinom(xsuccesses, size = 27, prob = 0.25) 
+probTable <- data.frame(xsuccesses, probx)
+probTable
+```
+
+**Histogram of binomial probabilities** for the number of left-handed flowers out of 27. This illustrates the full binomial distribution when $n = 27$ and $p = 0.25$.
+
+```{r, fig.width=4, fig.height=4}
+barplot(height = probx, names.arg = xsuccesses, space = 0, las = 1, ylab = "Probability", xlab = "Number of left-handed flowers")
+```
+
+## Figure 7.1-2. Sampling distribution of a binomial proportion
+
+*__Compare sampling distributions for the proportion__ based on n = 10 and n = 100.*
+
+Take **a large number of random samples** of $n = 10$ from a population having probability of success $p = 0.25.$ Convert to proportions by dividing by the sample size. Do the same for the larger sample size $n = 100$. The following commands use 10,000 random samples.
+
+```{r}
+successes10 <- rbinom(10000, size = 10, prob = 0.25)
+proportion10 <- successes10 / 10
+successes100 <- rbinom(10000, size = 100, prob = 0.25)
+proportion100 <- successes100 / 100
+```
+
+**Plot and visually compare the sampling distributions** of the proportions based on $n = 10$ and $n = 100$. The `par(mfrow = c(2,1))` command sets up a graph window that will plot both graphs arranges in 2 rows and 1 column.
+
+```{r, fig.width=4, fig.height=6}
+par(mfrow = c(2,1))
+hist(proportion10, breaks = 10, right = FALSE, xlim = c(0,1), xlab = "Sample proportion")
+hist(proportion100, breaks = 20, right = FALSE, xlim = c(0,1), xlab = "Sample proportion")
+par(mfrow = c(1,1))
+```
+
+Commands for a fancier plot:
+
+```{r, fig.width=4, fig.height=6}
+oldpar <- par(no.readonly = TRUE) # make backup of default graph settings
+par(mfrow = c(2,1), oma = c(4, 0, 0, 0), mar = c(1, 6, 4, 1)) # adjust margins
+saveHist10 <- hist(proportion10, breaks = 10, right = FALSE, plot = FALSE)
+saveHist10$counts <- saveHist10$counts/sum(saveHist10$counts)
+plot(saveHist10, col = "firebrick", las = 1, cex.lab = 1.2,
+	ylim = c(0,0.3), xlim = c(0,1), ylab = "Relative frequency",
+	xlab = "", main = "")
+text(x = 1, y = 0.25, labels = "n = 10", adj = 1, cex = 1.1)
+saveHist100 <- hist(proportion100, breaks = 40, right = FALSE, plot = FALSE)
+saveHist100$counts <- saveHist100$counts/sum(saveHist100$counts)
+plot(saveHist100, col = "firebrick", las = 1, cex.lab = 1.2, 
+	ylim = c(0,0.1), xlim = c(0,1), ylab = "Relative frequency", 
+	xlab = "", main = "")
+text(x = 1, y = 0.08, labels = "n = 100", adj = 1, cex = 1.1)
+mtext("Proportion of successes", side = 1, outer = TRUE, padj = 2)
+par(oldpar) # Revert to backup graph settings
+```
+
+## Example 7.3. [Sex and the X chromosome](http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter07/chap07e2SexAndX.csv)
+
+*The __binomial test__, used to test whether spermatogenesis genes in the mouse genome occur with unusual frequency on the X chromosome.*
+
+**Read and inspect the data.** Each row in the data file represents a different spermatogenesis gene.
+
+```{r}
+mouseGenes <- read.csv(url("http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter07/chap07e2SexAndX.csv"))
+head(mouseGenes)
+```
+
+**Tabulate the number of spermatogenesis genes** on the X-chromosome and the number not on the X-chromosome.
+
+```{r}
+table(mouseGenes$onX)
+```
+
+**Calculate the binomial probabilities** of all possible outcomes under the null hypothesis (Table 7.2-1). Under the binomial distribution with $n = 25$ and $p = 0.061$, the number of successes can be any integer between 0 and 25. 
+
+```{r}
+xsuccesses <- 0:25
+probx <- dbinom(xsuccesses, size = 25, prob = 0.061)
+data.frame(xsuccesses, probx)
+```
+
+Use these probabilities to **calculate the $P$-value** corresponding to an observed 10 spermatogenesis genes on the X chromosome. Remember to multiply the probability of 10 or more successes by 2 for the two-tailed test result.
+
+```{r}
+2 * sum(probx[xsuccesses >= 10])
+```
+
+For a faster result, try **R's built-in binomial test**. The resulting $P$-value is slightly different from our calculation. In the book, we get the two-tailed probability by multiplying the one-tailed probability by 2. As we say on page 188, computer programs may calculate the probability of extreme results at the "other" tail with a different method. The output of `binom.test` includes a confidence interval for the proportion using the Clopper-Pearson method, which is more conservative than the Agresti-Coull method.
+
+```{r}
+library(binom) # Load the binom package
+binom.test(10, n = 25, p = 0.061)
+```
+
+## Example 7.2. [Radiologists' missing sons](http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter07/chap07e2SexAndX.csv)
+
+*__Standard error and 95% confidence interval for a proportion__ using the Agresti-Coull method for the confidence interval.*
+
+Read and inspect the data.
+
+```{r}
+radiologistKids <- read.csv(url("http://whitlockschluter.zoology.ubc.ca/wp-content/data/chapter07/chap07e3RadiologistOffspringSex.csv"))
+head(radiologistKids)
+```
+
+**Frequency table** of female and male offspring number.
+
+```{r}
+table(radiologistKids$offspringSex)
+```
+
+**Calculate the estimated proportion** of offspring that are male, and the total number of radiologists.
+
+```{r}
+n <- sum(table(radiologistKids$offspringSex))
+n
+pHat <- 30 / n
+pHat
+```
+
+**Standard error of the sample proportion.**
+
+```{r}
+sqrt( (pHat * (1 - pHat))/n )
+```
+
+**Agresti-Coull 95% confidence interval** for the population proportion.
+
+```{r}
+pPrime <- (30 + 2)/(n + 4)
+pPrime
+lower <- pPrime - 1.96 * sqrt( (pPrime * (1 - pPrime))/(n + 4) )
+upper <- pPrime + 1.96 * sqrt( (pPrime * (1 - pPrime))/(n + 4) )
+c(lower = lower, upper = upper)
+```
+
+**Agresti-Coull 95% confidence interval** for the population proportion **using the `binom` package.** To use this package you will need to install it (this needs to be done only once per computer) and load it using the `library` command (this needs to be done once per R session). The confidence interval from the `binom` package will be very slightly different from the one you calculated above because the formula we use takes a slight shortcut.
+
+```{r}
+binom.confint(30, n = 87, method = "ac")
+```

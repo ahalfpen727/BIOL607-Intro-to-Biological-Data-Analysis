@@ -1,0 +1,160 @@
+---
+title: "Homework 07 - Likelihood Homework"
+author: "Andrew Judell-Halfpenny"
+output: html_document
+---
+
+```{r library+data-load}
+library(ggplot2);library(tidyverse)
+library(stats4);library(MASS)
+library(profileModel);library(modelr)
+library(viridis); library(bbmle)
+
+puffer <- read_csv("http://www.zoology.ubc.ca/~whitlock/ABD/teaching/datasets/16/16q11PufferfishMimicry%20Caley%20&%20Schluter%202003.csv")
+seals<-read_csv("http://www.zoology.ubc.ca/~whitlock/ABD/teaching/datasets/17/17e8ShrinkingSeals%20Trites%201996.csv")
+
+parallel::detectCores()
+options(mc.cores = parallel::detectCores())
+
+```
+
+
+# 1. Grid Sampling!
+>Based on Friday's lab, load up the pufferfish data and use grid sampling to find the MLE of the slope, intercept and residual SD of this model. Feel free to eyeball results from an `lm()` fit to get reasonable values. Try not to do this for a grid of more than ~100K points (more if you want!). It's ok to be coarse. Compare to lm.
+
+```{r question1-mle}
+
+puffer.lm <- lm(predators ~ resemblance, data = puffer)
+
+ggplot(data = puffer, aes(y=predators, x=resemblance))+
+   geom_point(col="blue")+
+   ggtitle("Puffer resemblance influence of preditor number with lm")+
+   geom_abline(data=puffer.lm,aes(intercept=puffer.lm$coefficients[1],
+                                  slope=puffer.lm$coefficients[2]))
+
+sd(puffer.lm$residuals)
+
+puffer.lm.info<-summary(puffer.lm)
+puffer.lm.info
+
+likelihood <- function(m, b, residual.sd){
+  predator.fitted <- b + m * puffer$resemblance
+  sum(dnorm(puffer$predators, predator.fitted, residual.sd, log=TRUE))}
+
+samp <- crossing(b = seq(0.4, 3.5, .05),
+                      m = seq(2.4,3.5,.05),
+                      residual.sd = seq(2.75, 3.5, .05)) %>%
+  rowwise() %>%
+  mutate(logLik = likelihood(m, b, residual.sd)) %>%
+  ungroup()
+
+#the ML estimates are
+samp %>% filter(logLik == max(logLik)) -> samp.mle
+samp.mle
+
+```
+
+# 2. Surfaces! 
+> Filter the dataset to the MLE of the SD. Plot the surface for the slope and intercept in whatever way you find most compelling. You might want to play around with zooming in to different regions, etc. Have fun!
+
+
+```{r question2-surface}
+
+ggplot(samp %>% filter(residual.sd == 2.9)
+       %>%   filter(logLik >  max(logLik) - 1.92),
+       aes(x = m, y = b, fill = exp(logLik)))+
+       geom_raster()+
+   geom_hex()+
+   scale_fill_viridis(option="magma") + theme_bw()
+   
+```
+
+# 3. GLM!
+> Now, compare those results to results from glm. Show the profiles and confidence intervals from `glm()` for the slope and intercept.
+
+```{r question3-glm}
+
+puffer.glm <- glm(predators ~ resemblance, data = puffer,
+                 family = gaussian(link = "identity"))
+
+fitted <- predict(puffer.glm)
+res <- residuals(puffer.glm)
+qplot(fitted, res)
+
+par(mfrow=c(2,1))
+qqnorm(res)
+qqline(res)
+hist(res)
+par(mfrow=c(1,1))
+
+ggplot(data = puffer, aes(y=predators, x=resemblance))+
+   geom_point(col="blue")+
+   ggtitle("Puffer resemblance influence of preditor number with glm")+
+   geom_abline(data=puffer.glm,aes(intercept=puffer.glm$coefficients[1],
+                                  slope=puffer.glm$coefficients[2]))
+
+puffer.profile <- profileModel(puffer.glm,
+                     objective = "ordinaryDeviance",
+                     quantile = qchisq(0.95, 1))
+puffer.profile
+plot(puffer.profile)
+
+print(paste0("The confidence interval for the Intercept is ",
+             confint(puffer.glm)[1,1], " to ", confint(puffer.glm)[1,2]))
+print(paste0("The confidence interval for the slope is ",
+             confint(puffer.glm)[2,1], " to ", confint(puffer.glm)[2,2]))
+
+```
+
+
+# 4. Get Outside of GLM!
+> So, often, we have more complex models than the above. There are a variety of optimizers out there, and packages for accessing them. One of the best is `bbmle` by Ecologist Ben Bolker (whose dad is emeritus at UMB in computer science! Go visit him! He's fantastic!)  Load up `'bbmle` and try out `mle2`. It's a bit different, in that the first argument is a function that *minimizes* the log likelihood (not maximizes). The second argument is a list of start values - e.g. `list(slope = 2, intercept = 5, resid_sd = 2)`. Try and fit your model with `mle2` using start values close to the actual estimates. Look at the summary and plot the profile. Note, you might get a lot of errors because it will try impossible values of your residual SD. Also, note thatyou'll have to rewrite your likelihood function to return the negative log likelihood (or write a wrapper that does so). A small thing
+
+```{r question4-mle2}
+
+minimum.likelihood<-function(m, b, residual.sd) -1*likelihood(m,b, residual.sd)
+puffer.lm
+puffer.mle2 <- mle2(minimum.likelihood, start = list(m = 1.9, b = -1, residual.sd = 3))
+
+summary(puffer.mle2)
+plot(profile(puffer.mle2))
+
+```
+
+# 5. Start values!
+> What happens if you start with start values *very* far away from the initial values. Failing here is fine. But what do you think is happening, and what does this say about the value of start values?
+
+```{r question5-mle2.far}
+mle.far<-mle2(minimum.likelihood, start = list(m = 300, b = -300, residual.sd = 0.1))
+mle.far
+```
+## 5. Answer:
+> Using start values that have no relationship to the data structure or distribution makes the method innaccurate.   Start values are an integral component of the mle method.
+
+# 6. Algorithms!
+> By default, `mle2` uses the Nelder-Mead algorithm via the `optim` function. What happens if you add an `method` argument to "SANN" or "L-BFGS-B" (and for the later, which is bounded sampling, give it a `lower` argument for your residual value, so it's always positive). See `?optim` for some more guidance. Do these both converge to the same value? Based on their profiles, do you trust them? (Note, Simulated annealing takes a looooong time. Go have a cuppa while the profile for that one runs).
+ 
+```{r question6-mle2.sann}
+
+puffer.sann <- mle2(minimum.likelihood,
+                    start = list(m = 1.9, b = 1,
+                                 residual.sd = 2),
+                    method = "SANN")
+
+summary(puffer.sann)
+plot(profile(puffer.sann))
+
+puffer.bfgs <- mle2(minimum.likelihood,
+                    start = list(m = 1.9, b = 1, 
+                                 residual.sd = 2),
+                    method = "L-BFGS-B",
+                    lower=c(residual.sd = 0.1))
+
+plot(profile(puffer.bfgs))
+summary(puffer.bfgs)
+
+```
+
+## 6. Answer:
+> Both methods seem to produce similar estimates for slobe, intercept and residual st deviation. Howeber the standard error of the intercept is the same order of magnitude as the value of the intercept estimate.  The L-BFGS-B method also produced a Likelihood profile plot for the intercept that is completely uninformative despite changing the lower bound several times.
+

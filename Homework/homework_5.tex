@@ -1,0 +1,332 @@
+\documentclass{article}\usepackage[]{graphicx}\usepackage[]{color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+\let\hlipl\hlkwb
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+\usepackage{enumerate}
+
+\usepackage{hyperref} %must be last
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\begin{document}
+
+\title{Homework 5} % provide title info
+\author{Biology 697} % provide author info
+\date{10/5/2012} % provide date
+\maketitle % format and print title page
+
+
+
+\section{$\chi^2$ - the function!}
+\subsection{}
+Write a simple function to calculate a chi-squre test based on the assumption that you should have the same observed values across all categories.  Have it return the value of $\chi^2$, the degrees of freedom, and the p-value.  To test it, compare your function's output for the observed vector 1:10 versus R's chisq.test function.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{chiFun}\hlkwb{<-}\hlkwa{function}\hlstd{(}\hlkwc{obs}\hlstd{)\{}
+  \hlstd{exp} \hlkwb{<-} \hlkwd{rep}\hlstd{(}\hlkwd{sum}\hlstd{(obs)}\hlopt{/}\hlkwd{length}\hlstd{(obs),} \hlkwd{length}\hlstd{(obs))}
+  \hlstd{chisq} \hlkwb{<-} \hlkwd{sum}\hlstd{((obs}\hlopt{-}\hlstd{exp)}\hlopt{^}\hlnum{2}\hlopt{/}\hlstd{exp)}
+  \hlstd{p} \hlkwb{<-} \hlkwd{pchisq}\hlstd{(chisq,} \hlkwc{df}\hlstd{=}\hlkwd{length}\hlstd{(obs)}\hlopt{-}\hlnum{1}\hlstd{,} \hlkwc{lower.tail}\hlstd{=}\hlnum{FALSE}\hlstd{)}
+
+  \hlkwd{return}\hlstd{(}\hlkwd{list}\hlstd{(}\hlkwc{Chisq} \hlstd{= chisq,} \hlkwc{DF} \hlstd{=} \hlkwd{length}\hlstd{(obs)}\hlopt{-}\hlnum{1}\hlstd{,} \hlkwc{p}\hlstd{=p))}
+
+\hlstd{\}}
+
+\hlkwd{chiFun}\hlstd{(}\hlnum{1}\hlopt{:}\hlnum{10}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## $Chisq
+## [1] 15
+## 
+## $DF
+## [1] 9
+## 
+## $p
+## [1] 0.09093598
+\end{verbatim}
+\begin{alltt}
+\hlkwd{chisq.test}\hlstd{(}\hlnum{1}\hlopt{:}\hlnum{10}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## 
+## 	Chi-squared test for given probabilities
+## 
+## data:  1:10
+## X-squared = 15, df = 9, p-value = 0.09094
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+\subsection{}
+Use your function to answer question 13 on page 201 of W\&S.  Answer all parts of the question (some will not require R - sad, I know.)
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{windowVec}\hlkwb{<-}\hlkwd{c}\hlstd{(}\hlnum{30}\hlstd{,}\hlnum{15}\hlstd{,}\hlnum{8}\hlstd{)}
+\hlkwd{chiFun}\hlstd{(windowVec)}
+\end{alltt}
+\begin{verbatim}
+## $Chisq
+## [1] 14.30189
+## 
+## $DF
+## [1] 2
+## 
+## $p
+## [1] 0.000784124
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\section{Contingency Tables}
+In W\&S 9.3, we are introduces to the $\chi^2$ contingency test which seeks to evaluate association between categorical variables - such as whether a fish is infected or uninfected with a parasite v. whether or not it is eaten by birds.  Using the formulae in your book write a function that will return the $\chi^2$, DF, and p-value for a contingency table.  Use the following matrix as test data (from the book) as well as the output from R's own chisq.test.  Show me that your function works.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{#we specify a matrix by giving it a vector, then}
+\hlcom{#specifying how the rows and columns are setup}
+\hlstd{eaten} \hlkwb{<-} \hlkwd{matrix}\hlstd{(}\hlkwd{c}\hlstd{(} \hlnum{1}\hlstd{,} \hlnum{10}\hlstd{,} \hlnum{37}\hlstd{,}
+                   \hlnum{49}\hlstd{,} \hlnum{35}\hlstd{,} \hlnum{9}\hlstd{),} \hlkwc{ncol}\hlstd{=}\hlnum{3}\hlstd{,} \hlkwc{byrow}\hlstd{=T)}
+
+\hlcom{#now gives names to the rows and columns}
+\hlkwd{colnames}\hlstd{(eaten)} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlstr{"Uninfected"}\hlstd{,} \hlstr{"Infected"}\hlstd{,} \hlstr{"Highly Infected"}\hlstd{)}
+\hlkwd{rownames}\hlstd{(eaten)} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlstr{"Eaten"}\hlstd{,} \hlstr{"Not Eaten"}\hlstd{)}
+
+\hlstd{eaten}
+\end{alltt}
+\begin{verbatim}
+##           Uninfected Infected Highly Infected
+## Eaten              1       10              37
+## Not Eaten         49       35               9
+\end{verbatim}
+\begin{alltt}
+\hlkwd{chisq.test}\hlstd{(eaten)}
+\end{alltt}
+\begin{verbatim}
+## 
+## 	Pearson's Chi-squared test
+## 
+## data:  eaten
+## X-squared = 69.756, df = 2, p-value = 7.124e-16
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+Some helpful functions for you - {\tt nrow, ncol, rowSums, colSums}.  Also, read the whole section before writing this.  In writing the function, one thing that might help would be to write out what you're going to do, step by step, in comments.  Each comment should be one step.  Then fill in the function with code that impelemnts what you have written in each comment.  Heck, ponder adopting this as your standard workflow.  It will save you a lot of time.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{chiTableTest} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{aMatrix}\hlstd{)\{}
+  \hlcom{#degrees of freedom = (r-1)(c-1)}
+  \hlstd{df} \hlkwb{<-} \hlstd{(}\hlkwd{nrow}\hlstd{(aMatrix)}\hlopt{-}\hlnum{1}\hlstd{)} \hlopt{*} \hlstd{(}\hlkwd{ncol}\hlstd{(aMatrix)}\hlopt{-}\hlnum{1}\hlstd{)}
+
+  \hlcom{#get the row, col, and total sums for later use}
+  \hlstd{rs} \hlkwb{<-} \hlkwd{rowSums}\hlstd{(aMatrix)}
+  \hlstd{cs} \hlkwb{<-} \hlkwd{colSums}\hlstd{(aMatrix)}
+  \hlstd{total} \hlkwb{<-} \hlkwd{sum}\hlstd{(aMatrix)}
+
+  \hlcom{#now iterate over the entire matrix and get the (O-E)^2/E value for each cell}
+  \hlcom{#using the shortcut for calculating expected frequencies}
+  \hlstd{chisq}\hlkwb{<-}\hlnum{0}
+  \hlkwa{for}\hlstd{(i} \hlkwa{in} \hlnum{1}\hlopt{:}\hlkwd{nrow}\hlstd{(aMatrix))\{}
+    \hlkwa{for}\hlstd{(j} \hlkwa{in} \hlnum{1}\hlopt{:}\hlkwd{ncol}\hlstd{(aMatrix))\{}
+      \hlstd{obs} \hlkwb{<-} \hlstd{aMatrix[i,j]}
+      \hlstd{exp} \hlkwb{<-} \hlstd{rs[i]} \hlopt{*} \hlstd{cs[j]}\hlopt{/}\hlstd{total}
+      \hlstd{chisq} \hlkwb{<-} \hlstd{chisq} \hlopt{+} \hlstd{(obs}\hlopt{-}\hlstd{exp)}\hlopt{^}\hlnum{2}\hlopt{/}\hlstd{exp}
+    \hlstd{\}}
+  \hlstd{\}}
+
+  \hlkwd{return}\hlstd{(}\hlkwd{list}\hlstd{(}\hlkwc{chisq} \hlstd{= chisq,} \hlkwc{df} \hlstd{= df,} \hlkwc{p} \hlstd{=} \hlkwd{pchisq}\hlstd{(chisq, df,} \hlkwc{lower.tail}\hlstd{=F)))}
+
+\hlstd{\}}
+
+\hlkwd{chiTableTest}\hlstd{(eaten)}
+\end{alltt}
+\begin{verbatim}
+## $chisq
+##    Eaten 
+## 69.75571 
+## 
+## $df
+## [1] 2
+## 
+## $p
+##        Eaten 
+## 7.124282e-16
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+\subsection{}
+Show me that your function works by answering question 21 on page 230 of W\&S.  Note, the default behavior of R's chisq.test on the same data set is to invoke Yates' continuity correction.  So, careful when checking yourself.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{heart} \hlkwb{<-} \hlkwd{matrix} \hlstd{(}\hlkwd{c}\hlstd{(} \hlnum{229}\hlstd{,} \hlnum{1534}\hlstd{,}
+                    \hlnum{822}\hlstd{,} \hlnum{18296}\hlstd{),} \hlkwc{ncol}\hlstd{=}\hlnum{2}\hlstd{,} \hlkwc{byrow}\hlstd{=T)}
+
+\hlkwd{rownames}\hlstd{(heart)} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlstr{"Without Pain"}\hlstd{,} \hlstr{"With Pain"}\hlstd{)}
+\hlkwd{colnames}\hlstd{(heart)} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlstr{"Died"}\hlstd{,} \hlstr{"Lived"}\hlstd{)}
+
+\hlkwd{chiTableTest}\hlstd{(heart)}
+\end{alltt}
+\begin{verbatim}
+## $chisq
+## Without Pain 
+##     254.9889 
+## 
+## $df
+## [1] 1
+## 
+## $p
+## Without Pain 
+## 2.122589e-57
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\section{Student's T and Power}
+Have a Guiness.  There are some exact formulae to calculate the power of a t-test.  Let's see how they compare to a simulation based approach.  Let's compare the power via simulation for a sample with a sammple size of 10, a mean of 2, and a standard deviation of 3 to the one calculated by conventional means.  In R, to do this conventionally, we'd use the following for a 2-tailed one sample T-test.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{power.t.test}\hlstd{(}\hlkwc{n}\hlstd{=}\hlnum{10}\hlstd{,} \hlkwc{delta}\hlstd{=}\hlnum{2}\hlstd{,} \hlkwc{sd}\hlstd{=}\hlnum{3}\hlstd{,}
+             \hlkwc{alternative}\hlstd{=}\hlstr{"two.sided"}\hlstd{,} \hlkwc{type}\hlstd{=}\hlstr{"one.sample"}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+## 
+##      One-sample t test power calculation 
+## 
+##               n = 10
+##           delta = 2
+##              sd = 3
+##       sig.level = 0.05
+##           power = 0.4691805
+##     alternative = two.sided
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+How about simulation?  Let's put it together using functions.
+\subsection{T-Test!}
+To start with, let's write a function for the calculation of p-values for our data and evaluate it.  Write a function to conduct a one sample t-test.  Run it against sample of 10 values drawn from from a normal distribution with mean 2 and sd of 3.  Check the results against R's {\tt t.test} and show me that both agree.
+
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{se} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{sample}\hlstd{)} \hlkwd{sd}\hlstd{(sample)}\hlopt{/}\hlkwd{sqrt}\hlstd{(}\hlkwd{length}\hlstd{(sample))}
+
+\hlstd{tTest} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{sample}\hlstd{,} \hlkwc{nullMu}\hlstd{=}\hlnum{0}\hlstd{)\{}
+  \hlstd{n}\hlkwb{<-}\hlkwd{length}\hlstd{(sample)}
+  \hlkwd{pt}\hlstd{(}\hlkwd{abs}\hlstd{((}\hlkwd{mean}\hlstd{(sample)}\hlopt{-}\hlstd{nullMu)}\hlopt{/}\hlkwd{se}\hlstd{(sample)),} \hlkwc{df}\hlstd{=n}\hlopt{-}\hlnum{1}\hlstd{,} \hlkwc{lower.tail}\hlstd{=F)} \hlopt{*} \hlnum{2}
+\hlstd{\}}
+
+\hlstd{samp}\hlkwb{<-}\hlkwd{rnorm}\hlstd{(}\hlnum{10}\hlstd{,}\hlnum{2}\hlstd{,}\hlnum{3}\hlstd{)}
+\hlkwd{tTest}\hlstd{(samp)}
+\end{alltt}
+\begin{verbatim}
+## [1] 0.0154022
+\end{verbatim}
+\begin{alltt}
+\hlkwd{t.test}\hlstd{(samp)}
+\end{alltt}
+\begin{verbatim}
+## 
+## 	One Sample t-test
+## 
+## data:  samp
+## t = 2.9819, df = 9, p-value = 0.0154
+## alternative hypothesis: true mean is not equal to 0
+## 95 percent confidence interval:
+##  0.5497044 4.0051894
+## sample estimates:
+## mean of x 
+##  2.277447
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\subsection{In which we begin simulations}
+Now we need to get the power of our t-test via simulation.  We'll accomplish this in two steps.  First, write a function that will give you a vector of p values from t-tests on simulated data.  This function should accept the number of simulations, the sample size, an critical effect size (the delta from above), and a sample standard deviation as it's arguments at the very least.  Use it to create a vector of  5000 simulated p values using a sample size of 10, an effect size of 2, and a sd of 3, as above.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{pvecGen} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{n.sims}\hlstd{=}\hlnum{5000}\hlstd{,} \hlkwc{n}\hlstd{,} \hlkwc{ybar}\hlstd{=}\hlnum{0}\hlstd{,} \hlkwc{sd}\hlstd{=}\hlnum{1}\hlstd{,} \hlkwc{nullMu}\hlstd{=}\hlnum{0}\hlstd{)\{}
+  \hlstd{pv} \hlkwb{<-} \hlkwd{rep}\hlstd{(}\hlnum{NA}\hlstd{, n.sims)}
+  \hlkwa{for}\hlstd{(i} \hlkwa{in} \hlnum{1}\hlopt{:}\hlstd{n.sims)\{}
+    \hlstd{samp}\hlkwb{<-}\hlkwd{rnorm}\hlstd{(n,} \hlkwc{mean} \hlstd{= ybar,} \hlkwc{sd}\hlstd{=sd)}
+    \hlstd{pv[i]} \hlkwb{<-} \hlkwd{tTest}\hlstd{(samp)}
+  \hlstd{\}}
+
+  \hlstd{pv}
+\hlstd{\}}
+
+\hlkwd{set.seed}\hlstd{(}\hlnum{081178}\hlstd{)}
+\hlstd{pVector}\hlkwb{<-}\hlkwd{pvecGen}\hlstd{(}\hlkwc{n}\hlstd{=}\hlnum{10}\hlstd{,} \hlkwc{ybar}\hlstd{=}\hlnum{2}\hlstd{,} \hlkwc{sd}\hlstd{=}\hlnum{3}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\subsection{Simulated Power!}
+Now that you have a vector of simulated p-values, write a function that will take such a vector, and calculate it's power given an alpha.  What is the power of your test, given an alpha of 0.05?  How does it compare to the power from the exact calculation above?
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{power} \hlkwb{<-}\hlkwa{function} \hlstd{(}\hlkwc{p}\hlstd{,} \hlkwc{alpha}\hlstd{=}\hlnum{0.05}\hlstd{)} \hlnum{1}\hlopt{-}\hlkwd{sum}\hlstd{(p} \hlopt{>} \hlstd{alpha)}\hlopt{/}\hlkwd{length}\hlstd{(p)}
+
+\hlkwd{power}\hlstd{(pVector)}
+\end{alltt}
+\begin{verbatim}
+## [1] 0.468
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\end{document}

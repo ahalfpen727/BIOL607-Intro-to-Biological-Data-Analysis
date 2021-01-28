@@ -1,0 +1,90 @@
+\documentclass{article}
+    \usepackage{enumerate}
+
+    \usepackage{hyperref} %must be last
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\title{Homework 3} % provide title info
+\author{Biology 697} % provide author info
+\date{9/21/2012} % provide date
+\maketitle % format and print title page
+
+<<prep, include=FALSE>>=
+#read_chunk("./homework_3_solution.R")
+opts_chunk$set(echo=FALSE)
+opts_chunk$set(include=FALSE)
+opts_chunk$set(tidy=FALSE)
+opts_chunk$set(out.height = "0.7\\textwidth")
+opts_chunk$set(out.width = "0.7\\textwidth")
+@
+<<hwprep, include=FALSE>>=
+@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Problems from Whitlock \& Schluter}
+  Complete problems 10-12 on pg. 95.  Use R where possible.  Data sets (so you don't have to type things in) are available at \url{http://www.zoology.ubc.ca/~whitlock/ABD/teaching/datasets.html}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{R and Plotting}
+N.B. There is more than one way to code correct answers for any of these.  Have fun, and do them as efficiently as possible to the best of your abilities.  And feel free to spice them up and/or make improvements as you see fit.
+
+\subsection{Loading and Cleaning}
+We'll be working with the Lake Baikal Plankton Data.  To learn more about it, the instrumentation, etc., see \url{http://knb.ecoinformatics.org/knb/metacat/nceas.290/nceas}.  Load it in.  Screen it for any obvious outliers.  Should they be eliminated?  Why or why not?
+
+<<readAndClean>>=
+@
+
+\subsection{Error of Estimates other than the mean}
+As we discussed in class, the re-sampling based approach to assessing error in parameter estimates can be incredibly simple and powerful.  In particular, it can be quite powerful in the case of variables that have asymmetric confidence intervals.  To estimate asymmetric confidence intervals, one re-samples their data as usual to calculate a test statistic, but then looks at the quantiles or percentiles of the test statistic to determine the range of values in which 95\% of their sample estimates fall.
+\hfill \\
+Let's look at how this works for medians.
+
+\begin{enumerate}[(a)]
+  \item Calculate the naive bootstrapped standard error and 95\% confidence intervals for the median of the values of {\tt diatom} in the data.  Use 5000 bootstrapped replicates.
+
+  \item Compare this naive estimate to the percentile confidence intervals.  Take a look at the arguments for the function {\tt quantile}.  Are they different?  Why or why not?
+
+  \item Look at the {\tt bootstrap} function in the bootstrap package.  Can you use it to get the 95\% CIs in two lines of code?
+
+\end{enumerate}
+
+<<bootMedian>>=
+@
+
+<<bootMedian2>>=
+@
+
+
+
+\subsection{Faceting and Loops}
+One of the really interesting ways to look at the relationships in this data is to split them by month.  This lets us see trends within months so that we can directly compare processes between years.  For example, we can look at the Diatom-Dinoflagellate relationship as follows.
+
+<<facetPlotDinoByDiatom.ggplot, include=TRUE>>=
+@
+\hfill \\
+
+Reproduce this plot using both ggplot2 and the basic R graphing package.  The former is straightforward.  The latter should look something like:
+
+<<facetPlotDinoByDiatom, include=TRUE>>=
+@
+
+\subsection{Representing Variation}
+
+Often in plots we want to show an estimate and the variation around that estimate.  Boxplots do this for a whole sample, but what if we want to see means and the variation around the means?  Reproduce the following two plots.  These are plots of the median diatom abundance in different months and the bootstrapped 95\% confidence interval around the medians.  Produce the plot using both the base R graphics package and in ggplot2.  You'll need to look at some additional plotting functions to get those error lines in the base graphics package.  Likewise, you'll need to play with some additional geoms for ggplot2.  Feel free to spice up your graphs beyond what I have presented here.\\
+
+\newpage
+
+Base graphics package:
+
+<<medianPlot1, include=TRUE>>=
+@
+
+Ggplot2:
+
+<<medianPlot2, include=TRUE>>=
+@
+
+
+\end{document}

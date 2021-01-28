@@ -1,0 +1,197 @@
+---  
+  title: "Course Schedule and Readings"  
+---  
+  While the topics covered are broad, each week will feature different examples from genetics, ecology, molecular, and evolutionary biology highlighting uses of each individual set of techniques.    
+  
+  W&S = Whitlock and Schluter, W&G = [Wickham and Grolemund](http://r4ds.had.co.nz), U/P for linked pdfs = biol607  
+  
+  Change .html to .Rmd in your browser to get the markdown
+  
+**Turning in Homework**: All homework should be completed using RMarkdown. You'll freely mix answers in text and code there. Please submit both the .Rmd and .html output of your homework. If there are data files associated with your homework, when working on it, please make sure you are using the   
+  
+homework/  
+&nbsp; |--- markdown  
+&nbsp; |--- data  
+
+directory structure, so that all data is in `../data/` relative to where your homework markdown and outputs are. Please standardize filenames as follows: `number_lastName_firstName_2018.Rmd` where number is the homework number (you'll see it in the homework assignment's filename - and make sure to include the 0s for numbers like 01), and your last and first names - well, you should know them!  
+  
+To submit homework, go to https://www.dropbox.com/request/MgLy0OxePC4QN8ZDgQ0X and upload the files. 
+
+
+```{r dates, echo=FALSE, message=FALSE, warning=FALSE}
+library(lubridate)
+current_date = parse_date_time("2018-09-03", orders="ymd")
+datestring <- paste(month(current_date), day(current_date), year(current_date), sep="/")
+```    
+      
+### Week 1. 
+`r datestring`   
+__Lecture:__ [How do we use data to understand how the world works?](lectures/01_intro.html)\
+__Lab:__ [Intro to R](lectures/02_r_intro.html). [Matrices, Lists and Data Frames](lectures/02a_r_intro_list_matrix_df.html). [Introduction to Markdown](lab/01_markdown_intro.html)    
+__Reading:__ W&G  [Preface](http://r4ds.had.co.nz/introduction.html), [Intro](http://r4ds.had.co.nz/explore-intro.html), [Workflow basics](http://r4ds.had.co.nz/workflow-basics.html), [Vectors](http://r4ds.had.co.nz/vectors.html), and [Markdown](http://r4ds.had.co.nz/r-markdown.html) Chapters, [RMarkdown Cheat Sheet](https://www.rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf)  
+__In Class Code:__ [Code from Lab](in_class_code_2018/scripts/01_my_first_r_file.R)\
+__Install R:__ Go to https://cloud.r-project.org/ and get the right version of R for you. Then, go to https://www.rstudio.com/products/rstudio/download/#download and install Rstudio.  
+__Etherpad:__ https://etherpad.wikimedia.org/p/607-intro-2018  
+
+  
+### Week 2.   
+```{r next_date, echo=FALSE }
+current_date <- current_date+ days(7)
+datestring <- paste(month(current_date), day(current_date), year(current_date), sep="/")
+```
+`r datestring`   
+__Lecture:__ [Sampling](lectures/03_sampling_lecture.html) and [Simulation for Estimation](lectures/04_simulation_estimation.html). Descriptive statistics, and the creation of good observational sampling designs.   
+__Lab Topic:__ [Sampling and simulation](lab/02_sim_samp.html). Libraries in R. Dplyr.   
+__Reading:__ W&S 1,3-4, W&G Chapters on [data transformation](http://r4ds.had.co.nz/transform.html) and [pipes](http://r4ds.had.co.nz/pipes.html),  [Dplyr cheat sheet](https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdfPaperpile)  
+__Optional Reading:__ [Cumming et al. 2007 on SDs, SEs, and CIs](http://byrneslab.net/classes/biol607/readings/Cumming_2007_error.pdf), [Simpler Coding with Pipes](https://www.r-statistics.com/2014/08/simpler-r-coding-with-pipes-the-present-and-future-of-the-magrittr-package/), [Managing Data Frames with the Dplyr package](https://bookdown.org/rdpeng/exdata/managing-data-frames-with-the-dplyr-package.html)  
+__Etherpad:__ https://etherpad.wikimedia.org/p/sampling-2018  
+__Packages for the Week:__ [dplyr](https://dplyr.tidyverse.org/) - `install.packages("dplyr")`  
+__In Class Code:__ [Code from Lab](in_class_code_2018/scripts/02_sampling_sim.R)\
+__Homework:__ [R, Dplyr, and Sampling](./homework_2018/02_sampling.html)
+
+
+### Week 3.   
+```{r next_date, echo=FALSE}
+```
+`r datestring`   
+__Lecture:__ [Data visualization](lectures/05_data_viz_principles.pptx), [Data Creation](https://datacarpentry.org/spreadsheet-ecology-lesson/)\
+__Lab Topic:__  [Data import, libraries, factors and forcats](lectures/06_read_data_libraries.html) and [Introduction to ggplot2](lab/04_ggplot_intro.html).  Data for lab [here](lab/data_03_04.zip).  
+__Reading:__ W&S Chapter 2, [Unwin 2008](http://byrneslab.net/classes/biol607/readings/Unwin_2008_dataviz.pdf), W&G Chapters on [Data Vizualization](http://r4ds.had.co.nz/data-visualisation.html) and [Graphics for Communication](http://r4ds.had.co.nz/graphics-for-communication.html), [DC Starting with Data](http://www.datacarpentry.org/R-ecology-lesson/02-starting-with-data.html), [Ggplot2 cheat sheet](https://www.rstudio.com/wp-content/uploads/2015/03/ggplot2-cheatsheet.pdf), [Choosing a good chart cheat sheet](https://biol355.github.io/Readings/choosing-a-good-chart-09.pdf), [Data organization in spreadsheets](./readings/Browman_and_Woo_Spreadsheets.pdf)  
+__Optional Reading:__  [Friendly 2008 on History of Data Viz](http://byrneslab.net/classes/biol607/readings/Friendly_2008_dataviz_history.pdf), [Fundamentals of Data Visualization](https://serialmentor.com/dataviz/) - note, this is a whole book, but scan it - it's amazing\
+__Etherpad:__ https://etherpad.wikimedia.org/p/dataviz-2018  
+__Packages used this Week:__ [ggplot2](https://ggplot2.tidyverse.org/), [ggridges](https://cran.r-project.org/web/packages/ggridges/vignettes/introduction.html), [forcats](https://forcats.tidyverse.org/), [readr](https://readr.tidyverse.org/), [readxl](https://readxl.tidyverse.org/), [tibble](https://tibble.tidyverse.org/), [lubridate](https://lubridate.tidyverse.org/) - `install.packages(c("ggplot2", "ggridges", "forcats", "readr", "readxl", "tibble", "lubridate"))`  
+__In Class Code:__  [Intro to data and  ggplot2](in_class_code_2018/scripts/03_files_ggplot2.R)\
+__Homework:__ [ggplot2 homework](./homework_2018/03_ggplot.html)  
+  
+### Week 4.   
+```{r next_date, echo=FALSE}
+```
+`r datestring`   
+__Lecture:__ [Frequentist Hypothesis Testing](lectures/07_probability_hypotheses.html), [NHST, Z-Tests, and Power](lectures/08_testing_nhst_power.html) \
+__Lab Topic:__ [Distributions in R, Frequentist Hypothesis testing via simulation](lab/05_hypothesis_power.html)  \
+__Reading:__ W&S 5-7, W&G Chapter 7, 16, [Abraham Lincoln and Confidence Intervals](http://andrewgelman.com/2016/11/23/abraham-lincoln-confidence-intervals/) and links therein    
+__Etherpad:__ https://etherpad.wikimedia.org/p/607-hypotheses-2018  
+__Quiz:__ http://tinyurl.com/hyp-pre-quiz  
+__In Class Code:__  [Distributions and Power](in_class_code_2018/scripts/power_analysis_lab_in_class_code.R)  
+__Homework:__ [hypothesis testing and power](./homework_2018/04_hypothesis_power.html)  
+
+  
+  
+### Week 5.   
+```{r next_date, echo=FALSE}
+```
+`r datestring`   
+__Lecture:__ [T tests](lectures/09_the_t_test.html),  [χ2 tests](lectures/10_chisq.html), and p  
+__Lab Topic:__ [Statistical analysis functions for t and $\chi^2$ in R](lab/05_chisq_t.html), [data](lab/data_05.zip)   
+__Reading:__ W&S 8-12, W&G Chapter 10, 20  
+__Discussion Reading:__ [ASA Statement on P-Values](http://byrneslab.net/classes/biol607/readings/Wasserstein_Lazar_2016_The_American_Statistician.pdf), And choose one of the accompanying [rejoinders](http://byrneslab.net/classes/biol607/readings/p_value_statements.zip)
+(sign up in [here](https://etherpad.wikimedia.org/p/607-t_tests-2018))  (also feel free to read them all)  
+__Additional Readings on P-Values__: [Peaceful negotiation in the face of so-called ‘methodological terrorism’](https://errorstatistics.com/2016/10/01/a-new-front-in-the-statistics-wars-peaceful-negotiation-in-the-face-of-so-called-methodological-terrorism/), [P-value madness: A puzzle about the latest test ban (or ‘don’t ask, don’t tell’)](https://errorstatistics.com/2015/10/10/p-value-madness-a-puzzle-about-the-latest-test-ban-or-dont-ask-dont-tell/), [The Paradox of Replication, and the vindication of the P-value (but she can go deeper) ](https://errorstatistics.com/2015/08/31/the-paradox-of-replication-and-the-vindication-of-the-p-value-but-she-can-go-deeper-i/)  
+__Etherpad__: https://etherpad.wikimedia.org/p/607-t_tests-2018  
+__In Class Code:__ [t and chi square](in_class_code_2018/scripts/chisq_t.R)  
+__Homework:__ [Chi Square and T Tests](./homework_2018/05_t_chisq_power.html)  
+  
+### Week 6.   
+```{r next_date, echo=FALSE}
+```
+`r datestring`   
+__Lecture:__ Least Squares Linear Regression: [Correlation and Regression](lectures/11_cor_linear_model.html), [Fit and Power](lectures/12_linear_model_fit.html)  
+__Lab Topic:__ [Linear regression, diagnostics, visualization](lab/06_lm.html), and [data](lab/data_06.zip) \
+__Reading:__ W&S 16-17, W&G on [model basics](http://r4ds.had.co.nz/model-basics.html), [model building](http://r4ds.had.co.nz/model-building.html)  
+__Etherpad:__ https://etherpad.wikimedia.org/p/607-lm-2018  
+__In Class Code:__ [lm](in_class_code_2018/scripts/lm_code.R)  
+__Homework:__ [Correlation and Linear Models](homework_2018/06_correlation_regression.html)  
+  
+### Week 7.   
+```{r next_date, echo=FALSE}
+```
+`r datestring`   
+__Lecture:__ [Likelihood](lectures/13_likelihood.html), [Fitting a line with Likelihood](lectures/14_likelihood_2.html)  
+__Lab Topic:__ [Likelihood and linear models](lab/07_likelihood.html), [data](./lab/data/17e8ShrinkingSeals Trites 1996.csv)\
+__Reading:__ W&S 20, W&G Chapter [Iteration](http://r4ds.had.co.nz/iteration.html)  
+__Etherpad:__ https://etherpad.wikimedia.org/p/607-likelihood-2018  
+__In Class Code:__  [linear models with likelihood](in_class_code_2018/scripts/likelihood.R)  
+__Packages for The Week:__ `install.packages(c("MASS", "profileModel", "bbmle"))`  
+__Homework:__[pufferfish and likelihood](./homework_2018/07_likelihood.html)  
+
+### Week 8.   
+```{r next_date, echo=FALSE}
+```
+`r datestring`   
+__Lecture:__ [Bayesian Inference](lectures/15_bayesian_basics.html), [Fitting a line with Bayesian techniques](lectures/16_bayesian_lm.html)  
+__Lab Topic:__ Bayesian computation in R, [Fitting a line with Bayesian techniques](lab/08_bayes.html)   
+__Reading:__ [Ellison 1996](http://byrneslab.net/classes/biol607/readings/Ellison_1996_ecol_app.pdf), Statistical Rethinking [Chapter 1](http://byrneslab.net/classes/biol607/readings/rethinking_ch_1.pdf) and [Chapter 2](http://byrneslab.net/classes/biol607/readings/rethinking_ch_2.pdf), [R Users will Now Inevitably Become Bayesians](https://thinkinator.com/2016/01/12/r-users-will-now-inevitably-become-bayesians/), [bayesplot cheat sheet](https://github.com/roualdes/stan_cheatsheets/blob/master/bayesplot/main.pdf)  
+__Additional Reading__: [how to choose a prior](https://github.com/stan-dev/stan/wiki/Prior-Choice-Recommendations), [bayesian t-tests](https://vuorre.netlify.com/post/2017/how-to-compare-two-groups-with-robust-bayesian-estimation-using-r-stan-and-brms/), [regression models with brms](https://magesblog.com/post/2015-09-01-bayesian-regression-models-using-stan/), [rethinking with brms](https://bookdown.org/ajkurz/Statistical_Rethinking_recoded/) (many very cool examples), [brms tutorials](https://www.rensvandeschoot.com/tutorials/brms/), [How to use rstanarm](https://cran.r-project.org/web/packages/rstanarm/vignettes/rstanarm.html), [Linear Models in rstanarm](https://cran.r-project.org/web/packages/rstanarm/vignettes/lm.html), [Bayesian basics with R](https://m-clark.github.io/bayesian-basics/)  
+__Packages for The Week:__ `install.packages(c("brms", "rstanarm", "arm", "rethinking"))` and `devtools::install_github("mjskay/tidybayes")`  
+__Etherpad:__ https://etherpad.wikimedia.org/p/607-bayes-2018  
+__In Class Code:__ [Bayesian Data Analysis](in_class_code_2018/scripts/bayes.R)  
+
+### Week 9.   
+```{r next_date, echo=FALSE}
+```
+`r datestring`   
+__Lecture:__ [Joins](lectures/18_join.html), [Tidy data](lectures/17_tidy.html)  
+__Data:__ [Hemlock](lectures/data/18/hemlock.xlsx)  
+__Reading:__  [10 Commandments for Good Data Managament](https://dynamicecology.wordpress.com/2016/08/22/ten-commandments-for-good-data-management/), W&G Chapters on [tidy data](http://r4ds.had.co.nz/tidy-data.html), [Strings](http://r4ds.had.co.nz/strings.html), and [Dates](http://r4ds.had.co.nz/dates-and-times.html)   
+__Packages:__ `install.packages(c("reprex", "datapasta", "lubridate", "tidyr"))`  
+__Etherpad:__ http://etherpad.wikimedia.org/p/607-tidy-2018  
+__In Class Code:__ [Tidy](in_class_code_2016/09_tidy.R), [markdown options](in_class_code_2016/00_rmarkdown_options.Rmd)  
+  
+### Week 10.   
+```{r next_date, echo=FALSE}
+```
+`r datestring`   
+__Lecture:__ Experimental design and ANOVA [part 1](lectures/19_expts_anova.html), [part 2](lectures/20_anova_2.html)    
+__Lab Topic:__ [One-Way ANOVA](lab/10_anova.html), Midterm work session	  
+__Lab Data:__  [Multiple Files](lab/data_10.zip)  
+__Reading:__ W&S Chapter 14-15  
+__Packages for The Week:__ ` install.packages(c("car", "emmeans", "multcompView", "contrast"))`
+__Etherpad:__ https://etherpad.wikimedia.org/p/607-anova-2018
+__In Class Code:__ [lots of anova](./in_class_code_2018/scripts/10_anova.R)  
+  
+  
+### Week 11.   
+```{r next_date, echo=FALSE}
+```
+`r datestring`   
+__Lectures:__ Experimental Design in a Multicausal World - [Multiway ANOVA](lectures/21_multiway_anova.html), [Factorial ANOVA](lectures/22_factorial_anova.html)    
+__Lab Topic:__  Discussion of Hurlbert, Cottingham, [Factorial ANOVA](lab/11_anova.html)  
+__Lab Data:__  [Multiple Files](lab/data_10.zip)  
+__Reading:__ W&S 18, [Hurlbert 1984](http://byrneslab.net/classes/biol607/readings/Hurlbert_1984_eco_mono.pdf), [Cottingham et al. 2005](http://byrneslab.net/classes/biol607/readings/cottingham_et_al_2005_frontiers_all.pdf)  
+__In Class Code:__ [lots of anova](./in_class_code_2016/10_anova.R)  
+
+  
+  
+### Week 12.   
+```{r next_date, echo=FALSE}
+```
+`r datestring`   
+__Lecture:__ [The General Linear Model: ANCOVA, Multiple Regression, and Interaction Effects](./lectures/23_general_linear_model.html), [Information Theoretic Approaches](./lectures/24_AIC.html)  
+__Lab Topic:__ [Multiple Regression, Multimodel Inference](lab/11_glm_aic.html) - [data files](lab/data_11.zip)  
+__Readings:__ [Symonds and Moussalli 2010](http://byrneslab.net/classes/biol607/readings/Symonds_and_Moussalli_2010_behav_ecol.pdf)  
+__Optional Readings:__ The whole [Ecology Special Section on P Values](http://byrneslab.net/classes/biol607/readings/ecology_forum_on_p_values.pdf) is incredible reading.  
+__Etherpad:__ https://etherpad.wikimedia.org/p/607-mlr-2018  
+__In Class Code:__ [ancova, mlr, and aic](./in_class_code_2016/11_linear_model_aic.R)  
+   
+### Week 13.   
+```{r next_date, echo=FALSE}
+```
+`r datestring`   
+__Lecture:__ [Entering a non-normal world](lectures/25_generalized_linear_models.html) - Modeling count data with Genearlized linear models. Overdispersed continuous data.  
+__Lab Topic:__ Generalized Linear Models. Diagnostics with DHARMa.  
+__Reading:__ [O'Hara 2009](http://byrneslab.net/classes/biol607/readings/O'Hara_2009_glmm.pdf) through section on GLMs, [O'Hara and Kotze 2010](http://byrneslab.net/classes/biol607/readings/o'hara_and_kotze_do_not_log_transform.pdf), [Wharton and Hui 2011](http://byrneslab.net/classes/biol607/readings/Wharton_Hui_2011_Ecology.pdf), [Hartig DHARMa vignette](https://cran.r-project.org/web/packages/DHARMa/vignettes/DHARMa.html)  
+  
+  
+### Week 14.   
+```{r next_date, echo=FALSE}
+```
+`r datestring`   
+__Lecture:__ Class's Choice  
+__Lab Topic:__ Class's Choice, Final Presentation Open Lab  
+  
+  
+### Week 15.  
+```{r next_date, echo=FALSE}
+```
+`r datestring`   
+__Lecture:__ Final Presentations  
